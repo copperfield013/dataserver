@@ -3,6 +3,7 @@ package cn.sowell.dataserver.model.dict.service.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,16 +43,17 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	private final TimelinessMap<String, List<DictionaryComposite>> moduleCompositesMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinessMap<String, List<DictionaryField>> moduleFieldsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinenessWrapper<List<DictionaryOption>> optionsCache = new TimelinenessWrapper<>(GLOBAL_TIMEOUT);
+	private final TimelinessMap<Long, List<OptionItem>> optionItemsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final Map<String, Set<FieldParserDescription>> fieldDescsMap = new HashMap<>();
 	
 	@Override
-	public DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Long fieldId) {
+	public synchronized DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Long fieldId) {
 		DictionaryField field = getAllFields(module).stream().filter(f->fieldId.equals(f.getId())).findFirst().orElse(null);
 		return field != null? field.getComposite(): null;
 	}
 	
 	@Override
-	public List<DictionaryComposite> getAllComposites(String module) {
+	public synchronized List<DictionaryComposite> getAllComposites(String module) {
 		return moduleCompositesMap.get(module, m->{
 			List<DictionaryComposite> composites = dictDao.getAllComposites(m);
 			handerWithConfig(module, composites);
@@ -88,7 +90,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 
 	@Override
-	public List<DictionaryField> getAllFields(String module) {
+	public synchronized List<DictionaryField> getAllFields(String module) {
 		return moduleFieldsMap.get(module, m->{
 			List<DictionaryComposite> composites = getAllComposites(module);
 			List<DictionaryField> result = new ArrayList<>();
@@ -100,24 +102,26 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 
 	@Override
-	public List<DictionaryOption> getAllOptions() {
+	public synchronized List<DictionaryOption> getAllOptions() {
 		return optionsCache.getObject(()->dictDao.getAllOptions());
 	}
 	
 	@Override
-	public Map<Long, List<OptionItem>> getOptionsMap(Set<Long> fieldIds) {
-		return dictDao.getFieldOptionsMap(fieldIds);
+	public synchronized Map<Long, List<OptionItem>> getOptionsMap(Set<Long> fieldIds) {
+		return optionItemsMap.getMap(fieldIds, (fs, optionMap)->{
+			optionMap.putAll(dictDao.getFieldOptionsMap(fs));
+		});
 	}
 	
 	
 	@Override
-	public Set<FieldParserDescription> getFieldDescriptions(String module) {
+	public synchronized Set<FieldParserDescription> getFieldDescriptions(String module) {
 		if(!fieldDescsMap.containsKey(module)) {
 			Set<FieldParserDescription> fieldDescs = getLastFieldDescs(module);
 			fieldDescsMap.put(module, fieldDescs);
 			return fieldDescs;
 		}
-		return fieldDescsMap.get(module);
+		return new LinkedHashSet<FieldParserDescription>(fieldDescsMap.get(module));
 	}
 
 	private Set<FieldParserDescription> getLastFieldDescs(String module){
@@ -125,7 +129,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		return Collections.synchronizedSet(fieldDescs);
 	}
 	
-	public void updateDynamicFiedDescriptionSet(String module) {
+	public synchronized void updateDynamicFiedDescriptionSet(String module) {
 		if(fieldDescsMap.containsKey(module)) {
 			Set<FieldParserDescription> lastFieldDescs = getLastFieldDescs(module);
 			Set<FieldParserDescription> fieldDescs = fieldDescsMap.get(module);
@@ -138,7 +142,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public Map<String, Set<Label>> getAllLabelsMap() {
+	public synchronized Map<String, Set<Label>> getAllLabelsMap() {
 		Map<String, Set<Label>> labelsMap = new HashMap<>();
 		Set<FusionContextConfig> configs = fFactory.getAllConfigs();
 		configs.forEach(config->{
@@ -148,10 +152,18 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public Map<String, Label> getModuleLabelMap(String module) {
+	public synchronized Map<String, Label> getModuleLabelMap(String module) {
 		FusionContextConfig config = fFactory.getModuleConfig(module);
 		return CollectionUtils.toMap(config.getAllLabels(), label->label.getFieldName());
 	}
 	
+	@Override
+	public synchronized void refreshFields() {
+		fieldDescsMap.clear();
+		optionsCache.refresh();
+		optionItemsMap.refresh();
+		moduleFieldsMap.refresh();
+		moduleCompositesMap.refresh();
+	}
 	
 }

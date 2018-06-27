@@ -18,7 +18,7 @@ import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface ModulesService {
 
@@ -80,7 +80,7 @@ public interface ModulesService {
 	 * @param ePageInfo
 	 * @return
 	 */
-	EntityPagingIterator queryIterator(TemplateListTempalte ltmpl, Set<NormalCriteria> criteria,
+	EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> criteria,
 			ExportDataPageInfo ePageInfo);
 
 	

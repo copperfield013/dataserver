@@ -8,10 +8,10 @@ import javax.annotation.Resource;
 import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 
-public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<TemplateListTempalte> {
+public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<TemplateListTemplate> {
 
 	@Resource
 	TemplateService tService;
@@ -20,8 +20,8 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 	NormalOperateDao nDao;
 	
 	@Override
-	public void update(TemplateListTempalte template) {
-		TemplateListTempalte origin = tService.getListTemplate(template.getId());
+	public void update(TemplateListTemplate template) {
+		TemplateListTemplate origin = tService.getListTemplate(template.getId());
 		if(origin != null){
 			origin.setTitle(template.getTitle());
 			origin.setUnmodifiable(template.getUnmodifiable());
@@ -79,7 +79,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 	}
 
 	@Override
-	public Long create(TemplateListTempalte template) {
+	public Long create(TemplateListTemplate template) {
 		if(template.getId() == null){
 			Date now = new Date();
 			//创建

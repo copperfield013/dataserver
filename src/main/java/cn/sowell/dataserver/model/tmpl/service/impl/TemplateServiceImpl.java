@@ -33,7 +33,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.service.AdminIdGetter;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategy;
@@ -67,7 +67,7 @@ public class TemplateServiceImpl implements TemplateService{
 	FusionContextConfigFactory fFactory;
 	
 	@Override
-	public List<TemplateListTempalte> queryLtmplList(String module, UserIdentifier user) {
+	public List<TemplateListTemplate> queryLtmplList(String module, UserIdentifier user) {
 		return lDao.queryLtmplList(module, user.getId(), null);
 	}
 	
@@ -94,8 +94,8 @@ public class TemplateServiceImpl implements TemplateService{
 	}
 
 	@Override
-	public TemplateListTempalte getListTemplate(long tmplId) {
-		TemplateListTempalte tmpl = nDao.get(TemplateListTempalte.class, tmplId);
+	public TemplateListTemplate getListTemplate(long tmplId) {
+		TemplateListTemplate tmpl = nDao.get(TemplateListTemplate.class, tmplId);
 		if(tmpl != null){
 			Set<TemplateListColumn> columns = lDao.getColumnsByTmplId(tmpl.getId());
 			tmpl.setColumns(columns);
@@ -117,8 +117,8 @@ public class TemplateServiceImpl implements TemplateService{
 	}
 
 	@Override
-	public TemplateListTempalte getDefaultListTemplate(UserIdentifier user, String module) {
-		return (TemplateListTempalte) getDefaultTemplate(user, module, DataServerConstants.TEMPLATE_TYPE_LIST);
+	public TemplateListTemplate getDefaultListTemplate(UserIdentifier user, String module) {
+		return (TemplateListTemplate) getDefaultTemplate(user, module, DataServerConstants.TEMPLATE_TYPE_LIST);
 	}
 	
 	private AbstractTemplate getDefaultTemplate(UserIdentifier user, String module, String templateType) {

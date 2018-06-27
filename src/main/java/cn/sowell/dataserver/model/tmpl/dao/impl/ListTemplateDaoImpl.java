@@ -15,7 +15,7 @@ import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.utils.QueryUtils;
 
 @Repository
@@ -25,9 +25,9 @@ public class ListTemplateDaoImpl implements ListTemplateDao{
 	SessionFactory sFactory;
 	
 	@Override
-	public List<TemplateListTempalte> queryLtmplList(String module, Serializable userId,
+	public List<TemplateListTemplate> queryLtmplList(String module, Serializable userId,
 			PageInfo pageInfo) {
-		return QueryUtils.pagingQuery("from TemplateListTempalte t where t.module = :module order by t.updateTime desc", sFactory.getCurrentSession(), pageInfo, dQuery->{
+		return QueryUtils.pagingQuery("from TemplateListTemplate t where t.module = :module order by t.updateTime desc", sFactory.getCurrentSession(), pageInfo, dQuery->{
 			dQuery.setParam("module", module);
 		});
 	}

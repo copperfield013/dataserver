@@ -10,7 +10,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateAdminDefaultTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface TemplateService {
 
@@ -26,7 +26,7 @@ public interface TemplateService {
 	 * @param tmplId
 	 * @return
 	 */
-	TemplateListTempalte getListTemplate(long tmplId);
+	TemplateListTemplate getListTemplate(long tmplId);
 	
 	/**
 	 * 获得用户在某个模块某个类型的默认模板
@@ -53,7 +53,7 @@ public interface TemplateService {
 	 * @param module
 	 * @return
 	 */
-	TemplateListTempalte getDefaultListTemplate(UserIdentifier user, String module);
+	TemplateListTemplate getDefaultListTemplate(UserIdentifier user, String module);
 
 	/**
 	 * 移除列表模板
@@ -96,7 +96,7 @@ public interface TemplateService {
 	 */
 	AbstractTemplate getTemplate(long tmplId, String tmplType);
 	
-	List<TemplateListTempalte> queryLtmplList(String module, UserIdentifier user);
+	List<TemplateListTemplate> queryLtmplList(String module, UserIdentifier user);
 
 	/**
 	 * 获得该模块所有的模板组合

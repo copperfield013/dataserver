@@ -7,7 +7,7 @@ import java.util.Set;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTempalte;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface ListTemplateDao {
 
@@ -18,7 +18,7 @@ public interface ListTemplateDao {
 	 * @param pageInfo
 	 * @return
 	 */
-	List<TemplateListTempalte> queryLtmplList(String module, Serializable userId, PageInfo pageInfo);
+	List<TemplateListTemplate> queryLtmplList(String module, Serializable userId, PageInfo pageInfo);
 
 	/**
 	 * 根据模板id获得所有列数据

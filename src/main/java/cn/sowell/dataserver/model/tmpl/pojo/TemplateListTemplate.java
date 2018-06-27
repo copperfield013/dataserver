@@ -10,7 +10,7 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name="t_tmpl_list_template")
-public class TemplateListTempalte extends AbstractTemplate{
+public class TemplateListTemplate extends AbstractTemplate{
 	
 	@Column(name="c_def_pagesize")
 	private Integer defaultPageSize;

@@ -11,7 +11,7 @@
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.entityResolver>2.0</version.entityResolver>
+		<version.entityResolver>2.1</version.entityResolver>
 		<version.spring>4.3.4.RELEASE</version.spring>
 		<version.cxf>3.2.4</version.cxf>
 		<version.hibernate>5.0.7.Final</version.hibernate>
