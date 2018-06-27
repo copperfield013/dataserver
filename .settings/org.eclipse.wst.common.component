@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="dataserver">
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="entityResolver-2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/entityResolver/entityResolver">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="cpf-dao-0.3.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cpf-dao/cpf-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="cpf-spring-0.3.11.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cpf-spring/cpf-spring">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="cpf-utils-0.3.11.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cpf-utils/cpf-utils">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="cpf-webcore-0.1.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/cpf-webcore/cpf-webcore">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="dataserver"/>
+        <property name="java-output-path" value="/dataserver/target/classes"/>
+    </wb-module>
+</project-modules>
