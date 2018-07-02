@@ -24,6 +24,8 @@
 	<!-- serivce自动扫描 -->
 	<context:component-scan base-package="cn.sowell.dataserver.model.*.service.impl" />
 
+	<bean class="cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategyFactory" />
+
 	<bean id="dBFusionConfigContextFactory" class="cn.sowell.datacenter.entityResolver.config.DBFusionConfigContextFactory">
 		<property name="sessionFactory" ref="sessionFactory" />
 		<property name="fieldService" ref="dictionaryServiceImpl" />

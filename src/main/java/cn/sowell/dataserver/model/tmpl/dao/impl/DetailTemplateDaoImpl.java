@@ -65,5 +65,14 @@ public class DetailTemplateDaoImpl implements DetailTemplateDao{
 			return new HashMap<Long, List<TemplateDetailField>>();
 		}
 	}
+	
+	@Override
+	public TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId) {
+		String sql = "select d.* from t_tmpl_detail_template d left join t_tmpl_group g on d.id = g.detail_tmpl_id where g.id = :groupId";
+		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		query.setLong("groupId", templateGroupId);
+		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailTemplate.class));
+		return (TemplateDetailTemplate) query.uniqueResult();
+	}
 
 }

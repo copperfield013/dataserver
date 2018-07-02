@@ -26,7 +26,6 @@ import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.TempalteGroupDao;
 import cn.sowell.dataserver.model.tmpl.dao.TemplateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateAdminDefaultTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
@@ -37,6 +36,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.service.AdminIdGetter;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategy;
+import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategyFactory;
 
 @Service
 public class TemplateServiceImpl implements TemplateService{
@@ -58,7 +58,6 @@ public class TemplateServiceImpl implements TemplateService{
 
 	@Resource
 	AdminIdGetter adminIdGetter;
-	//SystemAdminService aService;
 	
 	@Resource
 	TemplateUpdateStrategyFactory tmplUpdateStrategyFactory;
@@ -97,7 +96,7 @@ public class TemplateServiceImpl implements TemplateService{
 	public TemplateListTemplate getListTemplate(long tmplId) {
 		TemplateListTemplate tmpl = nDao.get(TemplateListTemplate.class, tmplId);
 		if(tmpl != null){
-			Set<TemplateListColumn> columns = lDao.getColumnsByTmplId(tmpl.getId());
+			List<TemplateListColumn> columns = lDao.getColumnsByTmplId(tmpl.getId());
 			tmpl.setColumns(columns);
 			Set<TemplateListCriteria> criterias = lDao.getCriteriaByTmplId(tmpl.getId());
 			tmpl.setCriterias(criterias);
@@ -105,53 +104,12 @@ public class TemplateServiceImpl implements TemplateService{
 		return tmpl;
 	}
 
-	
-	@Override
-	public TemplateAdminDefaultTemplate getAdminDefaultTemplate(long adminId, String module, String type) {
-		return tDao.getAdminDefaultTempalte(adminId, module, type);
-	}
-	
-	@Override
-	public TemplateDetailTemplate getDefaultDetailTemplate(UserIdentifier user, String module) {
-		return (TemplateDetailTemplate) getDefaultTemplate(user, module, DataServerConstants.TEMPLATE_TYPE_DETAIL);
-	}
-
-	@Override
-	public TemplateListTemplate getDefaultListTemplate(UserIdentifier user, String module) {
-		return (TemplateListTemplate) getDefaultTemplate(user, module, DataServerConstants.TEMPLATE_TYPE_LIST);
-	}
-	
-	private AbstractTemplate getDefaultTemplate(UserIdentifier user, String module, String templateType) {
-		Long adminId = adminIdGetter.getSystemAdminIdByUserId((long) user.getId());
-		if(adminId != null) {
-			TemplateAdminDefaultTemplate t = tDao.getAdminDefaultTempalte(adminId, module, templateType);
-			if(t != null) {
-				return getTemplate(t.getTmplId(), templateType);
-			}
-		}
-		return null;
-	}
 
 	@Override
 	public void removeTemplate(UserIdentifier user, Long tmplId, String tmplType) {
 		AbstractTemplate template = getTemplate(tmplId, tmplType);
 		if(template != null) {
 			nDao.remove(template);
-		}
-	}
-
-	@Override
-	public void setTemplateAsDefault(UserIdentifier user, long tmplId, String tmplType) {
-		Long adminId = adminIdGetter.getSystemAdminIdByUserId((long) user.getId());
-		if(adminId != null) {
-			AbstractTemplate template = getTemplate(tmplId, tmplType);
-			if(template != null) {
-				tDao.setTemplateAsDefault(
-						adminId, 
-						template.getModule(), 
-						DataServerConstants.mapTemplateType(template.getClass()), 
-						tmplId);
-			}
 		}
 	}
 
@@ -248,6 +206,18 @@ public class TemplateServiceImpl implements TemplateService{
 	public Map<String, List<TemplateGroup>> queryTemplateGroups(Set<String> moduleNames) {
 		List<TemplateGroup> groups = gDao.getTemplateGroups(moduleNames);
 		return CollectionUtils.toListMap(groups, group->group.getModule());
+	}
+	
+	@Override
+	public TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId) {
+		TemplateDetailTemplate dtmpl = dDao.getDetailTemplateByGroupId(templateGroupId);
+		if(dtmpl != null){
+			List<TemplateDetailFieldGroup> groups = getTemplateGroups(fFactory.getModuleResolver(dtmpl.getModule()), dtmpl.getId());
+			if(groups != null){
+				dtmpl.setGroups(groups);
+			}
+		}
+		return dtmpl;
 	}
 	
 }

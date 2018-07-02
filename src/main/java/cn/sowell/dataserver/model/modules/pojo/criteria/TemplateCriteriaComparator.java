@@ -40,7 +40,7 @@ public class TemplateCriteriaComparator {
 	private static Map<String, TemplateCriteriaComparator> comparatorMap = new HashMap<String, TemplateCriteriaComparator>();
 	static{
 		comparatorMap.put("", new TemplateCriteriaComparator("s1", (cf, cs, criteria)->{
-			cf.createLikeQueryCriteria(criteria.getAttributeName(), criteria.getValue());
+			cf.createLikeQueryCriteria(criteria.getFieldName(), criteria.getValue());
 		}));
 	}
 	public static TemplateCriteriaComparator getComparator(String key){

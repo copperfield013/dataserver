@@ -64,6 +64,17 @@ public class ModulesServiceImpl implements ModulesService{
 	FrameDateFormat dateFormat;
 	
 	
+	
+	private Criteria createCriteria(NormalCriteria nCriteria, Supplier<Criteria> nFieldHandler, BiFunction<String, String, Criteria> relationFieldHandler) {
+		DictionaryComposite composite = nCriteria.getComposite();
+		if(composite != null && composite.getRelationSubdomain() != null) {
+			String compositeName = composite.getName();
+			return relationFieldHandler.apply(compositeName, nCriteria.getFieldName().substring(compositeName.length() + 1));
+		}else {
+			return nFieldHandler.get();
+		}
+	}
+	
 	@Override
 	public Map<Long, NormalCriteria> getCriteriasFromRequest(
 			MutablePropertyValues pvs, Map<Long, TemplateListCriteria> criteriaMap) {
@@ -73,36 +84,31 @@ public class ModulesServiceImpl implements ModulesService{
 			 if(criteriaId != null){
 				 TemplateListCriteria criteria = criteriaMap.get(criteriaId);
 				 if(criteria != null){
-					 NormalCriteria ncriteria = new NormalCriteria(criteria);
+					 NormalCriteria ncriteria = new NormalCriteria();
 					 //TODO: 需要将fieldKey转换成attributeName
-					 ncriteria.setAttributeName(criteria.getFieldKey());
+					 ncriteria.setFieldId(criteria.getFieldId());
+					 ncriteria.setFieldName(criteria.getFieldKey());
+					 ncriteria.setComparator(criteria.getComparator());
 					 ncriteria.setValue(FormatUtils.toString(pv.getValue()));
+					 ncriteria.setRelationLabel(criteria.getRelationLabel());
 					 map.put(criteriaId, ncriteria);
 				 }
 			 }
 		 });
 		 criteriaMap.forEach((criteriaId, criteria)->{
 			 if(TextUtils.hasText(criteria.getDefaultValue()) && !map.containsKey(criteriaId)){
-				 NormalCriteria nCriteria = new NormalCriteria(criteria);
+				 NormalCriteria nCriteria = new NormalCriteria();
 				 //TODO: 需要将fieldKey转换成attributeName
-				 nCriteria.setAttributeName(criteria.getFieldKey());
+				 nCriteria.setFieldId(criteria.getFieldId());
+				 nCriteria.setFieldName(criteria.getFieldKey());
+				 nCriteria.setComparator(criteria.getComparator());
 				 nCriteria.setValue(criteria.getDefaultValue());
+				 nCriteria.setRelationLabel(criteria.getRelationLabel());
 				 map.put(criteriaId, nCriteria);
 			 }
 		 });;
 		return map;
 	}
-	
-	private Criteria createCriteria(NormalCriteria nCriteria, Supplier<Criteria> nFieldHandler, BiFunction<String, String, Criteria> relationFieldHandler) {
-		DictionaryComposite composite = nCriteria.getComposite();
-		if(composite != null && composite.getRelationSubdomain() != null) {
-			String compositeName = composite.getName();
-			return relationFieldHandler.apply(compositeName, nCriteria.getAttributeName().substring(compositeName.length() + 1));
-		}else {
-			return nFieldHandler.get();
-		}
-	}
-	
 	
 	@Override
 	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module){
@@ -110,89 +116,89 @@ public class ModulesServiceImpl implements ModulesService{
 		CriteriaFactory criteriaFactory = new CriteriaFactory(context);
 		ArrayList<Criteria> cs = new ArrayList<Criteria>();
 		nCriterias.forEach(nCriteria->{
-			TemplateListCriteria criteria = nCriteria.getCriteria();
+			//TemplateListCriteria criteria = nCriteria.getCriteria();
 			if(TextUtils.hasText(nCriteria.getValue())){
-				String attributeName = nCriteria.getAttributeName();
+				String attributeName = nCriteria.getFieldName();
 				if(attributeName.contains(".")) {
-					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(module, nCriteria.getCriteria().getFieldId()));
+					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(module, nCriteria.getFieldId()));
 				}
-				String comparator = criteria.getComparator();
+				String comparator = nCriteria.getComparator();
 				if("t1".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createLikeQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createLikeQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createLikeQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("t2".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createLeftLikeQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createLeftLikeQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createLeftLikeQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("t3".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createRightLikeQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createRightLikeQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createRightLikeQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("t4".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("s1".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("d1".equals(comparator)) {
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue()), 
+							()->criteriaFactory.createQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue()
 									)
 							));
 				}else if("d2".equals(comparator)) {
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getAttributeName(), null, nCriteria.getValue()), 
+							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getFieldName(), null, nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createOpenBetweenQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									null, nCriteria.getValue()
 									)
 							));
 				}else if("d3".equals(comparator)) {
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getAttributeName(), nCriteria.getValue(), null), 
+							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue(), null), 
 							(compositeName, suffix)->criteriaFactory.createOpenBetweenQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									nCriteria.getValue(),
 									null
@@ -207,10 +213,10 @@ public class ModulesServiceImpl implements ModulesService{
 						}
 					}
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createIncludeQueryCriteria(nCriteria.getAttributeName(), valueSet), 
+							()->criteriaFactory.createIncludeQueryCriteria(nCriteria.getFieldName(), valueSet), 
 							(compositeName, suffix)->criteriaFactory.createIncludeQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									valueSet
 									)
@@ -227,10 +233,10 @@ public class ModulesServiceImpl implements ModulesService{
 						Set<String> s = new HashSet<String>();
 						s.add(label);
 						cs.add(createCriteria(nCriteria, 
-								()->criteriaFactory.createIncludeQueryCriteria(nCriteria.getAttributeName(), s), 
+								()->criteriaFactory.createIncludeQueryCriteria(nCriteria.getFieldName(), s), 
 								(compositeName, suffix)->criteriaFactory.createIncludeQueryCriteria(
 										compositeName, 
-										criteria.getRelationLabel(),
+										nCriteria.getRelationLabel(),
 										suffix, 
 										s
 										)
@@ -242,10 +248,10 @@ public class ModulesServiceImpl implements ModulesService{
 					rangeStr[0] = dateFormat.formatDate(range[0]);
 					rangeStr[1] = dateFormat.formatDate(range[1]);
 					cs.add(createCriteria(nCriteria, 
-							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getAttributeName(), rangeStr[0], rangeStr[1]), 
+							()->criteriaFactory.createOpenBetweenQueryCriteria(nCriteria.getFieldName(), rangeStr[0], rangeStr[1]), 
 							(compositeName, suffix)->criteriaFactory.createOpenBetweenQueryCriteria(
 									compositeName, 
-									criteria.getRelationLabel(),
+									nCriteria.getRelationLabel(),
 									suffix, 
 									rangeStr[0], rangeStr[1]
 									)

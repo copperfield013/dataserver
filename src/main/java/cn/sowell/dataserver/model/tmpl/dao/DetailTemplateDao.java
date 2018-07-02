@@ -28,4 +28,6 @@ public interface DetailTemplateDao {
 	 */
 	Map<Long, List<TemplateDetailField>> getTemplateFieldsMap(
 			Set<Long> groupIdSet);
+
+	TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId);
 }

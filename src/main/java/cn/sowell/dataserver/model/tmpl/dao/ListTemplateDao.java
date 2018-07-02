@@ -25,7 +25,7 @@ public interface ListTemplateDao {
 	 * @param ltmplId
 	 * @return
 	 */
-	Set<TemplateListColumn> getColumnsByTmplId(Long ltmplId);
+	List<TemplateListColumn> getColumnsByTmplId(Long ltmplId);
 
 	/**
 	 * 根据模板id获得所有查询条件数据

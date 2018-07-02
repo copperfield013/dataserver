@@ -1,4 +1,4 @@
-package cn.sowell.dataserver.model.tmpl.service.impl;
+package cn.sowell.dataserver.model.tmpl.strategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,16 +6,11 @@ import java.util.Map;
 import javax.annotation.Resource;
 
 import org.springframework.context.ApplicationContext;
-import org.springframework.stereotype.Repository;
 
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
-import cn.sowell.dataserver.model.tmpl.strategy.TemplateDetailUpdateStrategy;
-import cn.sowell.dataserver.model.tmpl.strategy.TemplateListUpdateStrategy;
-import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategy;
 
-@Repository
 public class TemplateUpdateStrategyFactory {
 
 	@Resource
@@ -24,9 +19,19 @@ public class TemplateUpdateStrategyFactory {
 	Map<Class<?>, TemplateUpdateStrategyParameter> strategyMap = new HashMap<Class<?>, TemplateUpdateStrategyParameter>();
 	
 	public TemplateUpdateStrategyFactory() {
+		this(null);
+	}
+	
+	public <T extends AbstractTemplate> TemplateUpdateStrategyFactory(Map<Class<T>, Class<TemplateUpdateStrategy<T>>> classMap) {
+		if(classMap != null) {
+			classMap.forEach((tmplClass, strategyClass)->{
+				add(tmplClass, strategyClass, true);
+			});
+		}
 		add(TemplateDetailTemplate.class, TemplateDetailUpdateStrategy.class, true);
 		add(TemplateListTemplate.class, TemplateListUpdateStrategy.class, true);
 	}
+	
 	
 	private void add(Class<?> templateClass, Class<?> strategyClass, boolean isSingleton) {
 		TemplateUpdateStrategyParameter param = new TemplateUpdateStrategyParameter();

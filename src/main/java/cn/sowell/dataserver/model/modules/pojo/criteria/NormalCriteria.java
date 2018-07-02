@@ -1,17 +1,17 @@
 package cn.sowell.dataserver.model.modules.pojo.criteria;
 
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 
 public class NormalCriteria {
-	private TemplateListCriteria criteria;
+	private Long fieldId;
+	private String fieldName;
+	private String comparator;
 	private String value;
-	private String attributeName;
+	private String relationLabel;
 	private DictionaryComposite composite;
 	
-	public NormalCriteria(TemplateListCriteria criteria) {
+	public NormalCriteria() {
 		super();
-		this.criteria = criteria;
 	}
 	public String getValue() {
 		return value;
@@ -19,19 +19,34 @@ public class NormalCriteria {
 	public void setValue(String value) {
 		this.value = value;
 	}
-	public String getAttributeName() {
-		return attributeName;
-	}
-	public void setAttributeName(String attributeName) {
-		this.attributeName = attributeName;
-	}
-	public TemplateListCriteria getCriteria() {
-		return criteria;
-	}
 	public DictionaryComposite getComposite() {
 		return composite;
 	}
 	public void setComposite(DictionaryComposite composite) {
 		this.composite = composite;
+	}
+	public Long getFieldId() {
+		return fieldId;
+	}
+	public void setFieldId(Long fieldId) {
+		this.fieldId = fieldId;
+	}
+	public String getFieldName() {
+		return fieldName;
+	}
+	public void setFieldName(String fieldName) {
+		this.fieldName = fieldName;
+	}
+	public String getComparator() {
+		return comparator;
+	}
+	public void setComparator(String comparator) {
+		this.comparator = comparator;
+	}
+	public String getRelationLabel() {
+		return relationLabel;
+	}
+	public void setRelationLabel(String relationLabel) {
+		this.relationLabel = relationLabel;
 	}
 }

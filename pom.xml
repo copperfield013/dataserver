@@ -26,7 +26,7 @@
 		<dependency>
 			<groupId>cn.sowell.copframe</groupId>
 			<artifactId>cpf-webcore</artifactId>
-			<version>0.1</version>
+			<version>0.2</version>
 		</dependency>
 		<!-- Spring -->
 		<dependency>

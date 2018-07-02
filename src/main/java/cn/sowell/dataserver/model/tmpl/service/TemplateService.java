@@ -7,19 +7,12 @@ import java.util.Set;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateAdminDefaultTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface TemplateService {
 
-	/**
-	 * 根据详情模板id和获得详情模板对象
-	 * @param tmplId
-	 * @return
-	 */
-	TemplateDetailTemplate getDetailTemplate(long tmplId);
 	
 	/**
 	 * 根据模板id获得列表模板对象
@@ -28,33 +21,7 @@ public interface TemplateService {
 	 */
 	TemplateListTemplate getListTemplate(long tmplId);
 	
-	/**
-	 * 获得用户在某个模块某个类型的默认模板
-	 * @param userId 用户id
-	 * @param module 模块名, 
-	 * @param type 模板类型({@linkplain DataCenterConstants#TEMPLATE_TYPE_LIST list}, 
-	 * {@linkplain DataCenterConstants#TEMPLATE_TYPE_DETAIL detail})
-	 * @return
-	 */
-	TemplateAdminDefaultTemplate getAdminDefaultTemplate(long adminId, String module, String type);
 	
-	/**
-	 * 根据用户和模块获得对应的默认详情模板对象
-	 * @param user
-	 * @param module
-	 * @return
-	 */
-	TemplateDetailTemplate getDefaultDetailTemplate(UserIdentifier user, String module);
-	
-	
-	/**
-	 * 根据用户和模块获得对应的默认列表模板对象
-	 * @param user
-	 * @param module
-	 * @return
-	 */
-	TemplateListTemplate getDefaultListTemplate(UserIdentifier user, String module);
-
 	/**
 	 * 移除列表模板
 	 * @param user
@@ -62,13 +29,6 @@ public interface TemplateService {
 	 */
 	void removeTemplate(UserIdentifier user, Long tmplId, String tmplType);
 	
-	/**
-	 * 将某个详情模板设置为用户的默认
-	 * @param tmplId
-	 * @param user
-	 */
-	void setTemplateAsDefault(UserIdentifier user, long tmplId, String tmplType);
-
 	/**
 	 * 创建或者更新详情模板
 	 * @param data
@@ -129,5 +89,11 @@ public interface TemplateService {
 	TemplateGroup getTemplateGroup(String module, String templateGroupKey);
 
 	Map<String, List<TemplateGroup>> queryTemplateGroups(Set<String> moduleNames);
+
+
+	TemplateDetailTemplate getDetailTemplate(long tmplId);
+
+
+	TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId);
 
 }

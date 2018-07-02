@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -156,6 +157,30 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		FusionContextConfig config = fFactory.getModuleConfig(module);
 		return CollectionUtils.toMap(config.getAllLabels(), label->label.getFieldName());
 	}
+	
+	@Override
+	public Map<String, Label> getModuleLabelMap(String module, Set<String> criteriaFieldNames) {
+		Map<String, Label> result = new HashMap<>();
+		if(criteriaFieldNames != null && !criteriaFieldNames.isEmpty()) {
+			Map<String, Label> labelMap = getModuleLabelMap(module);
+			criteriaFieldNames.forEach(fieldName->result.put(fieldName, labelMap.get(fieldName)));
+		}
+		return result;
+	}
+	
+	@Override
+	public DictionaryField getFieldName(String module, Long fieldId) {
+		return getAllFields(module).stream().filter(field->field.getId().equals(fieldId)).findFirst().get();
+	}
+
+	
+	@Override
+	public Map<Long, DictionaryField> getFieldMap(String module, Set<Long> fieldIds) {
+		return getAllFields(module)
+				.stream().filter(field->fieldIds.contains(field.getId()))
+				.collect(Collectors.toMap(field->field.getId(), field->field));
+	}
+	
 	
 	@Override
 	public synchronized void refreshFields() {

@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
@@ -40,7 +41,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 			);
 			Set<Long> originGroupFieldIds = new HashSet<Long>();
 			origin.getGroups().forEach(group->group.getFields().forEach(field->originGroupFieldIds.add(field.getId())));
-			//Map<Long, DictionaryField> fieldMap = dictDao.getFieldMap(addFieldIds);
+			Map<Long, DictionaryField> fieldMap = dictDao.getFieldMap(addFieldIds);
 			
 			Date now = new Date();
 			origin.setTitle(template.getTitle());
@@ -75,9 +76,14 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 									throw new RuntimeException("字段组[id=" + group.getId() + "]不能修改字段[id=" + field.getId() + "，因为字段不存在，可能是所在模板已经被修改]");
 								}
 							}else{
-								field.setGroupId(group.getId());
-								field.setUpdateTime(now);
-								nDao.save(field);
+								if(fieldMap.containsKey(field.getFieldId())){
+									field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
+									field.setGroupId(group.getId());
+									field.setUpdateTime(now);
+									nDao.save(field);
+								}else{
+									throw new RuntimeException("找不到fieldId为[" + field.getFieldId() + "]的字段");
+								}
 							}
 						}
 					}else{
@@ -88,9 +94,14 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 					group.setUpdateTime(now);
 					Long groupId = nDao.save(group);
 					for (TemplateDetailField field : group.getFields()) {
-						field.setGroupId(groupId);
-						field.setUpdateTime(now);
-						nDao.save(field);
+						if(fieldMap.containsKey(field.getFieldId())){
+							field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
+							field.setGroupId(groupId);
+							field.setUpdateTime(now);
+							nDao.save(field);
+						}else{
+							throw new RuntimeException("找不到fieldId为[" + field.getFieldId() + "]的字段");
+						}
 					}
 				}
 			}
@@ -105,6 +116,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 	public Long create(TemplateDetailTemplate template) {
 		Set<Long> fieldIds = new HashSet<Long>();
 		template.getGroups().forEach(group->group.getFields().forEach(field->fieldIds.add(field.getFieldId())));
+		Map<Long, DictionaryField> fieldMap = dictDao.getFieldMap(fieldIds);
 		Date now = new Date();
 		template.setCreateTime(now);
 		template.setUpdateTime(now);
@@ -114,9 +126,14 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 			group.setUpdateTime(now);
 			Long groupId = nDao.save(group);
 			for (TemplateDetailField field : group.getFields()) {
-				field.setGroupId(groupId);
-				field.setUpdateTime(now);
-				nDao.save(field);
+				if(fieldMap.containsKey(field.getFieldId())){
+					field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
+					field.setGroupId(groupId);
+					field.setUpdateTime(now);
+					nDao.save(field);
+				}else{
+					throw new RuntimeException("找不到fieldId为[" + field.getFieldId() + "]的字段");
+				}
 			}
 		}
 		return tmplId;

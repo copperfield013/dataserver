@@ -28,4 +28,6 @@ public interface DictionaryDao {
 	public List<DictionaryOption> getAllOptions();
 
 	Map<Long, List<OptionItem>> getFieldOptionsMap(Set<Long> fieldIds);
+
+	Map<Long, DictionaryField> getFieldMap(Set<Long> fieldIds);
 }

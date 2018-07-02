@@ -1,6 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.pojo;
 
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
@@ -27,7 +29,7 @@ public class TemplateListTemplate extends AbstractTemplate{
 	
 	
 	@Transient
-	private Set<TemplateListColumn> columns = new LinkedHashSet<TemplateListColumn>();
+	private List<TemplateListColumn> columns = new ArrayList<TemplateListColumn>();
 	
 	@Transient
 	private Set<TemplateListCriteria> criterias = new LinkedHashSet<TemplateListCriteria>();
@@ -37,10 +39,10 @@ public class TemplateListTemplate extends AbstractTemplate{
 	public void setUnmodifiable(Integer unmodifiable) {
 		this.unmodifiable = unmodifiable;
 	}
-	public Set<TemplateListColumn> getColumns() {
+	public List<TemplateListColumn> getColumns() {
 		return columns;
 	}
-	public void setColumns(Set<TemplateListColumn> columns) {
+	public void setColumns(List<TemplateListColumn> columns) {
 		this.columns = columns;
 	}
 	public Set<TemplateListCriteria> getCriterias() {

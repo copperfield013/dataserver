@@ -26,10 +26,6 @@ public interface ModulesService {
 	
 	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module);
 	
-	Map<Long, NormalCriteria> getCriteriasFromRequest(
-			MutablePropertyValues pvs,
-			Map<Long, TemplateListCriteria> criteriaMap);
-
 	/**
 	 * 根据模块名获得模块数据
 	 * @param moduleKey
@@ -82,6 +78,9 @@ public interface ModulesService {
 	 */
 	EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> criteria,
 			ExportDataPageInfo ePageInfo);
+
+	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
+			Map<Long, TemplateListCriteria> criteriaMap);
 
 	
 

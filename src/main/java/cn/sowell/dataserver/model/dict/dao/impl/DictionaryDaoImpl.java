@@ -63,6 +63,7 @@ public class DictionaryDaoImpl implements DictionaryDao{
 	}*/
 	
 	@SuppressWarnings("unchecked")
+	@Override
 	public Map<Long, DictionaryField> getFieldMap(Set<Long> fieldIds) {
 		if(fieldIds != null && !fieldIds.isEmpty()){
 			String hql = "from DictionaryField f where f.id in (:fieldIds)";

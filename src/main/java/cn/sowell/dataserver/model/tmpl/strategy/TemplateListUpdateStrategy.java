@@ -1,6 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.strategy;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -48,7 +50,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 						column.setUpdateTime(now);
 						column.setTemplateId(origin.getId());
 					})
-				.doUpdate(origin.getColumns(), template.getColumns());
+				.doUpdate(new HashSet<>(origin.getColumns()), new HashSet<>(template.getColumns()));
 			
 			NormalDaoSetUpdateStrategy.build(
 				TemplateListCriteria.class, nDao, 
@@ -86,7 +88,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 			template.setCreateTime(now );
 			template.setUpdateTime(now);
 			Long tmplId = nDao.save(template);
-			Set<TemplateListColumn> columns = template.getColumns();
+			List<TemplateListColumn> columns = template.getColumns();
 			for (TemplateListColumn column : columns) {
 				column.setTemplateId(tmplId);
 				column.setCreateTime(now);
