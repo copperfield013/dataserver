@@ -1,0 +1,16 @@
+{
+
+	"selectableType"	: {
+		"text"		: ["text"],
+		"select"	: ["text", "select"],
+		"date"		: ["date", "daterange"],
+		"label"		: ["label"]
+	},
+	"inputTypeTitleMap"	: {
+		"text"		: "文本框",
+		"select"	: "单选下拉框",
+		"date"		: "日期选择",
+		"label"		: "标签选择",
+		"daterange"	: "日期范围"
+	}
+}

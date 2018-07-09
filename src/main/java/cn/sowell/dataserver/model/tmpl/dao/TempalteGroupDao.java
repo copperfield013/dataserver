@@ -15,4 +15,6 @@ public interface TempalteGroupDao {
 
 	List<TemplateGroup> getTemplateGroups(Set<String> moduleNames);
 
+	List<TemplateGroup> queryGroups();
+
 }

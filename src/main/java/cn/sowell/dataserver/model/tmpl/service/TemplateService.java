@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import cn.sowell.copframe.common.UserIdentifier;
-import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
@@ -13,7 +12,8 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface TemplateService {
 
-	
+	List<TemplateDetailTemplate> queryDetailTemplates(String module);
+
 	/**
 	 * 根据模板id获得列表模板对象
 	 * @param tmplId
@@ -23,40 +23,12 @@ public interface TemplateService {
 	
 	
 	/**
-	 * 移除列表模板
-	 * @param user
-	 * @param tmplId
-	 */
-	void removeTemplate(UserIdentifier user, Long tmplId, String tmplType);
-	
-	/**
 	 * 创建或者更新详情模板
 	 * @param data
 	 */
 	public <T extends AbstractTemplate> Long mergeTemplate(T template);
 
-	/**
-	 * 
-	 * @param module
-	 * @param user
-	 * @param pageInfo
-	 * @param loadDetail
-	 * @return
-	 */
-	List<TemplateDetailTemplate> getAllDetailTemplateList(String module,
-			UserIdentifier user,
-			PageInfo pageInfo,
-			boolean loadDetail);
-
-	/**
-	 * 根据模板id获得模板对象。该方法适用于在不知道模板的类型的前提下使用。
-	 * 如果已经知道模板的类型，请使用对应的方法{@link #getDetailTemplate(long)}或{@link #getListTemplate(long)}
-	 * @param tmplId
-	 * @return
-	 */
-	AbstractTemplate getTemplate(long tmplId, String tmplType);
-	
-	List<TemplateListTemplate> queryLtmplList(String module, UserIdentifier user);
+	List<TemplateListTemplate> queryListTemplateList(String module, UserIdentifier user);
 
 	/**
 	 * 获得该模块所有的模板组合
@@ -95,5 +67,16 @@ public interface TemplateService {
 
 
 	TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId);
+
+
+	void removeListTemplate(Long ltmplId);
+
+
+	void removeDetailTemplate(Long dtmplId);
+
+	void clearCache();
+
+	void loadCache();
+
 
 }

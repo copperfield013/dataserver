@@ -70,6 +70,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 									originField.setColNum(field.getColNum());
 									originField.setOrder(field.getOrder());
 									originField.setViewValue(field.getViewValue());
+									originField.setValidators(field.getValidators());
 									originField.setUpdateTime(now);
 									nDao.update(originField);
 								}else{

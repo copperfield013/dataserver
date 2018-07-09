@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.hibernate.Query;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.stereotype.Repository;
@@ -125,6 +126,14 @@ public class TempalteGroupDaoImpl implements TempalteGroupDao{
 		public void setModules(Set<String> modules) {
 			this.modules = modules;
 		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroup> queryGroups() {
+		String hql = "from TemplateGroup g order by g.updateTime desc ";
+		Query query =  sFactory.getCurrentSession().createQuery(hql);
+		return query.list();
 	}
 	
 }

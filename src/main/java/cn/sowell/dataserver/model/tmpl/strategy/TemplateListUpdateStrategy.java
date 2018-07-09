@@ -56,7 +56,12 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 				TemplateListCriteria.class, nDao, 
 				criteria->criteria.getId(), 
 				(originCriteria, criteria)->{
-					originCriteria.setTitle(criteria.getTitle());
+					if(!criteria.getFieldAvailable()) {
+						originCriteria.setTitle(criteria.getTitle());
+						originCriteria.setOrder(criteria.getOrder());
+						originCriteria.setUpdateTime(now);
+						return;
+					}
 					originCriteria.setFieldId(criteria.getFieldId());
 					originCriteria.setFieldKey(criteria.getFieldKey());
 					originCriteria.setRelation(criteria.getRelation());
@@ -64,11 +69,10 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 					originCriteria.setComparator(criteria.getComparator());
 					originCriteria.setInputType(criteria.getInputType());
 					originCriteria.setRelationLabel(criteria.getRelationLabel());
-					originCriteria.setOrder(criteria.getOrder());
 					originCriteria.setViewOption(criteria.getViewOption());
 					originCriteria.setDefaultValue(criteria.getDefaultValue());
 					originCriteria.setPlaceholder(criteria.getPlaceholder());
-					originCriteria.setUpdateTime(now);
+					
 				}, criteria->{
 					criteria.setCreateTime(now);
 					criteria.setUpdateTime(now);

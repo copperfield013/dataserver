@@ -53,12 +53,10 @@ public class DetailTemplateDaoImpl implements DetailTemplateDao{
 	public Map<Long, List<TemplateDetailField>> getTemplateFieldsMap(
 			Set<Long> groupIdSet) {
 		if(groupIdSet != null && !groupIdSet.isEmpty()){
-			String sql = "select f.*, df.c_type, df.optgroup_id from t_tmpl_detail_field f "
-					+ "left join v_dictionary_field df on f.field_id = df.id where f.group_id in (:groupIds) order by f.c_order asc ";
-			SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+			String hql = "from TemplateDetailField f where f.groupId in (:groupIds) order by f.order asc";
+			Query query = sFactory.getCurrentSession().createQuery(hql);
 			
 			query.setParameterList("groupIds", groupIdSet);
-			query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailField.class));
 			List<TemplateDetailField> fieldList = query.list();
 			return CollectionUtils.toListMap(fieldList, field->field.getGroupId());
 		}else{
@@ -74,5 +72,84 @@ public class DetailTemplateDaoImpl implements DetailTemplateDao{
 		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailTemplate.class));
 		return (TemplateDetailTemplate) query.uniqueResult();
 	}
+	
+	
+	
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateDetailTemplate> queryTemplates() {
+		String hql = "from TemplateDetailTemplate t order by t.updateTime desc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		return query.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateDetailFieldGroup> queryFieldGroups() {
+		String hql = "from TemplateDetailFieldGroup g order by g.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		return query.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateDetailField> queryTemplateFields() {
+		String hql = "from TemplateDetailField f order by f.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		return query.list();
+	}
+	
+	
+	/*@SuppressWarnings("unchecked")
+	@Override
+	public Map<Long, List<TemplateDetailFieldValidator>> getTemplateFieldValidators(Long dtmplId) {
+		String sql = "SELECT v.*  FROM" +
+				"	t_tmpl_detail_field_validator v" +
+				"	LEFT JOIN t_tmpl_detail_field f ON v.dtmplfield_id = f.id" +
+				"	LEFT JOIN t_tmpl_detail_fieldgroup g ON f.group_id = g.id " +
+				" WHERE g.tmpl_id = :dtmplId";
+		
+		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		query.setLong("dtmplId", dtmplId);
+		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailFieldValidator.class));
+		List<TemplateDetailFieldValidator> list = query.list();
+		return CollectionUtils.toListMap(list, v->v.getDetailTemplateFieldId());
+	}
+	
+	@SuppressWarnings({ "serial", "unchecked" })
+	@Override
+	public Map<Long, Map<Long, List<TemplateDetailFieldValidator>>> queryAllFieldValidatorsMap() {
+		String sql = "SELECT v.*, g.tmpl_id dtmpl_id  FROM" +
+				"	t_tmpl_detail_field_validator v" +
+				"	LEFT JOIN t_tmpl_detail_field f ON v.dtmplfield_id = f.id" +
+				"	LEFT JOIN t_tmpl_detail_fieldgroup g ON f.group_id = g.id ";
+		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		Map<Long, Long> dtmplIdMap = new HashMap<>(); 
+		query.setResultTransformer(new ColumnMapResultTransformer<TemplateDetailFieldValidator>() {
+
+			@Override
+			protected TemplateDetailFieldValidator build(SimpleMapWrapper mapWrapper) {
+				TemplateDetailFieldValidator validator = HibernateRefrectResultTransformer.getInstance(TemplateDetailFieldValidator.class)
+							.build(mapWrapper);
+				dtmplIdMap.put(validator.getDetailTemplateFieldId(), mapWrapper.getLong("dtmpl_id"));
+				return validator;
+			}
+		});
+		
+		List<TemplateDetailFieldValidator> list = query.list();
+		Map<Long, List<TemplateDetailFieldValidator>> fieldValidatorsMap = CollectionUtils.toListMap(list, v->v.getDetailTemplateFieldId());
+		
+		Map<Long, Map<Long, List<TemplateDetailFieldValidator>>> map = new HashMap<>();
+		dtmplIdMap.forEach((tmplFieldId, dtmplId)->{
+			Map<Long, List<TemplateDetailFieldValidator>> tmplFieldValidatorMap = map.get(dtmplId);
+			if(tmplFieldValidatorMap == null) {
+				tmplFieldValidatorMap = new HashMap<Long, List<TemplateDetailFieldValidator>>();
+				map.put(dtmplId, tmplFieldValidatorMap);
+			}
+			tmplFieldValidatorMap.put(tmplFieldId, fieldValidatorsMap.get(tmplFieldId));
+		});
+		return map;
+	}*/
 
 }

@@ -127,14 +127,15 @@ public class ViewDataServiceImpl implements ViewDataService{
 		if(criteria.getCriteriaEntries() != null) {
 			criteria.getCriteriaEntries().forEach(entry->{
 				NormalCriteria nCriteria = new NormalCriteria();
-				nCriteria.setFieldId(entry.getFieldId());
-				String fieldName = dService.getFieldName(criteria.getModule(), entry.getFieldId()).getFullKey();
-				nCriteria.setFieldName(fieldName);
-				entry.setFieldName(fieldName);
-				nCriteria.setComparator(entry.getComparator());
-				nCriteria.setRelationLabel(entry.getRelationLabel());
-				nCriteria.setValue(entry.getValue());
-				nCriterias.add(nCriteria);
+				DictionaryField field = dService.getField(criteria.getModule(), entry.getFieldId());
+				if(field != null) {
+					nCriteria.setFieldId(entry.getFieldId());
+					nCriteria.setFieldName(field.getFullKey());
+					nCriteria.setComparator(entry.getComparator());
+					nCriteria.setRelationLabel(entry.getRelationLabel());
+					nCriteria.setValue(entry.getValue());
+					nCriterias.add(nCriteria);
+				}
 			});
 		}
 		List<Criteria> criterias = mService.toCriterias(nCriterias, criteria.getModule());

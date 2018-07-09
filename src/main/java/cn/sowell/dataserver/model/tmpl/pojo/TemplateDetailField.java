@@ -25,9 +25,12 @@ public class TemplateDetailField {
 	@Column(name="group_id")
 	private Long groupId;
 
-	@Column(name="c_field_name")
+	@Transient
 	@JSONField(name="name")
 	private String fieldName;
+	
+	@Transient
+	private boolean fieldAvailable = true;
 	
 	@Column(name="c_title")
 	private String title;
@@ -51,11 +54,15 @@ public class TemplateDetailField {
 	
 	@Transient
 	@Column(name="optgroup_id")
-	private String optionGroupId;
+	private Long optionGroupId;
 	
 	@Transient
 	@Column(name="c_type")
 	private String type;
+
+	@Column(name="c_validators")
+	private String validators;
+	
 	
 	public Long getId() {
 		return id;
@@ -123,11 +130,24 @@ public class TemplateDetailField {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public String getOptionGroupId() {
+	public Long getOptionGroupId() {
 		return optionGroupId;
 	}
-	public void setOptionGroupId(String optionGroupId) {
+	public void setOptionGroupId(Long optionGroupId) {
 		this.optionGroupId = optionGroupId;
+	}
+	public void setFieldUnavailable() {
+		this.fieldAvailable = false;
+	}
+	
+	public boolean getFieldAvailable() {
+		return this.fieldAvailable;
+	}
+	public String getValidators() {
+		return validators;
+	}
+	public void setValidators(String validators) {
+		this.validators = validators;
 	}
 	
 }

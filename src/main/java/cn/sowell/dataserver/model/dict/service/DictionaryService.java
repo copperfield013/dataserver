@@ -32,9 +32,11 @@ public interface DictionaryService {
 	
 	Map<String, Label> getModuleLabelMap(String module, Set<String> criteriaFieldNames);
 
-	DictionaryField getFieldName(String module, Long fieldId);
+	DictionaryField getField(String module, Long fieldId);
 
 	Map<Long, DictionaryField> getFieldMap(String module, Set<Long> fieldIds);
+
+	Map<String, Set<String>> getFieldInputTypeMap();
 
 
 

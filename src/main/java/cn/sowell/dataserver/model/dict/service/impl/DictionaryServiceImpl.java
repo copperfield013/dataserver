@@ -11,7 +11,13 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
+import org.apache.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
@@ -36,10 +42,13 @@ import cn.sowell.dataserver.model.dict.service.DictionaryService;
 @Service("dictionaryServiceImpl")
 public class DictionaryServiceImpl implements DictionaryService, FieldService{
 
-	private static final long GLOBAL_TIMEOUT = 20000l;
+	private static final long GLOBAL_TIMEOUT = Long.MAX_VALUE;
 
 	@Resource
 	DictionaryDao dictDao;
+	
+	Logger logger = Logger.getLogger(DictionaryServiceImpl.class);
+	
 	
 	private final TimelinessMap<String, List<DictionaryComposite>> moduleCompositesMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinessMap<String, List<DictionaryField>> moduleFieldsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
@@ -169,8 +178,8 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public DictionaryField getFieldName(String module, Long fieldId) {
-		return getAllFields(module).stream().filter(field->field.getId().equals(fieldId)).findFirst().get();
+	public DictionaryField getField(String module, Long fieldId) {
+		return getAllFields(module).stream().filter(field->field.getId().equals(fieldId)).findFirst().orElse(null);
 	}
 
 	
@@ -179,6 +188,37 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		return getAllFields(module)
 				.stream().filter(field->fieldIds.contains(field.getId()))
 				.collect(Collectors.toMap(field->field.getId(), field->field));
+	}
+	
+	
+	
+	Map<String, Set<String>> fieldInputTypeMap;
+	
+	@Override
+	public Map<String, Set<String>> getFieldInputTypeMap() {
+		synchronized (this) {
+			if(fieldInputTypeMap == null) {
+				try {
+					ClassPathResource resource = new ClassPathResource("field-input-typemap.json");
+					if(resource.exists()) {
+						JSONObject jo = (JSONObject) JSON.parse(TextUtils.readAsString(resource.getInputStream()));
+						Map<String, Set<String>> map = new HashMap<String, Set<String>>();
+						jo.getJSONObject("selectableType").forEach((type, v)->{
+							JSONArray jInputTypeArray = (JSONArray) v;
+							Set<String> inputTypeSet = new LinkedHashSet<String>();
+							map.put(type, inputTypeSet);
+							jInputTypeArray.forEach(t->inputTypeSet.add((String) t));
+						});
+						fieldInputTypeMap = map;
+					}else {
+						throw new RuntimeException("field-input-typemap.json文件不存在");
+					}
+				} catch (Exception e) {
+					throw new RuntimeException("初始化field-input-typemap.json时发生错误", e);
+				}
+			}
+			return fieldInputTypeMap;
+		}
 	}
 	
 	

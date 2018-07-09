@@ -30,4 +30,11 @@ public interface DetailTemplateDao {
 			Set<Long> groupIdSet);
 
 	TemplateDetailTemplate getDetailTemplateByGroupId(Long templateGroupId);
+
+	List<TemplateDetailTemplate> queryTemplates();
+
+	List<TemplateDetailFieldGroup> queryFieldGroups();
+
+	List<TemplateDetailField> queryTemplateFields();
+
 }

@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.tmpl.dao;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -33,5 +34,11 @@ public interface ListTemplateDao {
 	 * @return
 	 */
 	Set<TemplateListCriteria> getCriteriaByTmplId(Long ltmplId);
+
+	List<TemplateListTemplate> queryTemplates();
+
+	Map<Long, List<TemplateListColumn>> queryColumnsMap();
+
+	Map<Long, Set<TemplateListCriteria>> queryCriteriasMap();
 
 }

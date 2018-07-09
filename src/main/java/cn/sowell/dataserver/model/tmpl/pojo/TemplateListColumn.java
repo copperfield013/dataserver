@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name="t_tmpl_list_column")
@@ -25,8 +26,12 @@ public class TemplateListColumn {
 	@Column(name="field_id")
 	private Long fieldId;
 	
-	@Column(name="c_field_key")
+	//@Column(name="c_field_key")
+	@Transient
 	private String fieldKey;
+	
+	@Transient
+	private boolean fieldAvailable = true;
 	
 	@Column(name="c_spec_field")
 	private String specialField;
@@ -120,6 +125,14 @@ public class TemplateListColumn {
 	}
 	public void setSpecialField(String specialField) {
 		this.specialField = specialField;
+	}
+	
+	public void setFieldUnavailable() {
+		this.fieldAvailable = false;
+	}
+	
+	public boolean getFieldAvailable() {
+		return this.fieldAvailable;
 	}
 	
 }

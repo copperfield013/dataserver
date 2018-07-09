@@ -8,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name="t_tmpl_list_criteria")
@@ -33,7 +34,8 @@ public class TemplateListCriteria {
 	@Column(name="field_id")
 	private Long fieldId;
 	
-	@Column(name="c_field_key")
+	//@Column(name="c_field_key")
+	@Transient
 	private String fieldKey;
 	
 	@Column(name="c_relation")
@@ -71,6 +73,10 @@ public class TemplateListCriteria {
 	
 	@Column(name="create_user_id")
 	private Long createUserId;
+
+	@Transient
+	private boolean fieldAvailable = true;
+	
 	public Long getId() {
 		return id;
 	}
@@ -176,6 +182,12 @@ public class TemplateListCriteria {
 		this.relationLabel = relationLabel;
 	}
 	
+	public void setFieldUnavailable() {
+		this.fieldAvailable = false;
+	}
 	
+	public boolean getFieldAvailable() {
+		return this.fieldAvailable;
+	}
 	
 }
