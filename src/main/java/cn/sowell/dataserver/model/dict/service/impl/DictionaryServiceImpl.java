@@ -75,6 +75,11 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		});
 	}
 	
+	@Override
+	public DictionaryComposite getComposite(String module, Long compositeId) {
+		return getAllComposites(module).stream().filter(composite->compositeId.equals(composite.getId())).findFirst().orElse(null);
+	}
+	
 	
 	@Resource
 	FusionContextConfigFactory fFactory;
@@ -207,6 +212,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 							JSONArray jInputTypeArray = (JSONArray) v;
 							Set<String> inputTypeSet = new LinkedHashSet<String>();
 							map.put(type, inputTypeSet);
+							inputTypeSet.add("text");
 							jInputTypeArray.forEach(t->inputTypeSet.add((String) t));
 						});
 						fieldInputTypeMap = map;

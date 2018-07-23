@@ -38,6 +38,14 @@ public interface DictionaryService {
 
 	Map<String, Set<String>> getFieldInputTypeMap();
 
+	/**
+	 * 根据id获得composite对象
+	 * @param module
+	 * @param compositeId
+	 * @return
+	 */
+	DictionaryComposite getComposite(String module, Long compositeId);
+
 
 
 	

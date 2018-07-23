@@ -50,7 +50,7 @@ public interface TemplateService {
 	 * 移除模板组合
 	 * @param groupId
 	 */
-	void remveTemplateGroup(Long groupId);
+	void removeTemplateGroup(Long groupId);
 
 	/**
 	 * 根据模块和模板组的key获得对应的模板
@@ -78,5 +78,26 @@ public interface TemplateService {
 
 	void loadCache();
 
+	/**
+	 * 获得各个详情模板关联的所有模板组合
+	 * @param dtmplIds
+	 * @return
+	 */
+	Map<Long, Set<TemplateGroup>> getDetailTemplateRelatedGroupsMap(Set<Long> dtmplIds);
+
+	/**
+	 * 获得各个列表模板关联的所有模板组合
+	 * @param ltmplIds
+	 * @return
+	 */
+	Map<Long, Set<TemplateGroup>> getListTemplateRelatedGroupsMap(Set<Long> ltmplIds);
+
+	Set<TemplateGroup> getListTemplateRelatedGroups(Long ltmplId);
+
+	Set<TemplateGroup> getDetailTemplateRelatedGroups(Long dtmplId);
+
+	void switchAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId);
+
+	void switchAllGroupsListTemplate(Long ltmplId, Long targetLtmplId);
 
 }

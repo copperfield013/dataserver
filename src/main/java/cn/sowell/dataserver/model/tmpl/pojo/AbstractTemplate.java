@@ -26,8 +26,8 @@ public class AbstractTemplate {
 	@Column(name="update_time")
 	private Date updateTime;
 	
-	@Column(name="create_user_id")
-	private Long createUserId;
+	@Column(name="create_user_code")
+	private String createUserCode;
 	
 	@Column(name="c_authority")
 	private String authority;
@@ -73,20 +73,20 @@ public class AbstractTemplate {
 		this.updateTime = updateTime;
 	}
 
-	public Long getCreateUserId() {
-		return createUserId;
-	}
-
-	public void setCreateUserId(Long createUserId) {
-		this.createUserId = createUserId;
-	}
-
 	public String getAuthority() {
 		return authority;
 	}
 
 	public void setAuthority(String authority) {
 		this.authority = authority;
+	}
+
+	public String getCreateUserCode() {
+		return createUserCode;
+	}
+
+	public void setCreateUserCode(String createUserCode) {
+		this.createUserCode = createUserCode;
 	}
 
 	

@@ -123,7 +123,17 @@ public class ModulesServiceImpl implements ModulesService{
 					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(module, nCriteria.getFieldId()));
 				}
 				String comparator = nCriteria.getComparator();
-				if("t1".equals(comparator)){
+				if("equals".equals(comparator)){
+					cs.add(createCriteria(nCriteria, 
+							()->criteriaFactory.createQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
+							(compositeName, suffix)->criteriaFactory.createQueryCriteria(
+									compositeName, 
+									nCriteria.getRelationLabel(),
+									suffix, 
+									nCriteria.getValue()
+									)
+							));
+				}else if("t1".equals(comparator)){
 					cs.add(createCriteria(nCriteria, 
 							()->criteriaFactory.createLikeQueryCriteria(nCriteria.getFieldName(), nCriteria.getValue()), 
 							(compositeName, suffix)->criteriaFactory.createLikeQueryCriteria(

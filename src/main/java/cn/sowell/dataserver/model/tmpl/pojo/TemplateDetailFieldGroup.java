@@ -10,13 +10,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -41,9 +36,10 @@ public class TemplateDetailFieldGroup {
 	@Column(name="composite_id")
 	private Long compositeId;
 	
-	@ManyToOne
+	/*@ManyToOne
 	@JoinColumn(name = "composite_id",insertable = false, updatable = false)
-	@NotFound(action=NotFoundAction.IGNORE)
+	@NotFound(action=NotFoundAction.IGNORE)*/
+	@Transient
 	private DictionaryComposite composite;
 	
 	@Column(name="c_order")

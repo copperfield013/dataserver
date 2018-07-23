@@ -1,6 +1,7 @@
 package cn.sowell.dataserver.model.tmpl.service.impl;
 
-import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -34,11 +35,12 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
-import cn.sowell.dataserver.model.tmpl.service.AdminIdGetter;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.strategy.NormalDaoSetUpdateStrategy;
 import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategy;
 import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategyFactory;
 
@@ -58,9 +60,6 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	TempalteGroupDao gDao;
 
 	@Resource
-	AdminIdGetter adminIdGetter;
-	
-	@Resource
 	DictionaryService dictService;
 	
 	@Resource
@@ -74,7 +73,6 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	Map<Long, TemplateDetailTemplate> dtmplMap;
 	
 	Map<Long, TemplateListTemplate> ltmplMap;
-	
 	
 	Logger logger = Logger.getLogger(TemplateServiceImpl.class);
 
@@ -91,15 +89,17 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					List<TemplateListColumn> columns = lDao.getColumnsByTmplId(ltmplId);
 					Set<TemplateListCriteria> criterias = lDao.getCriteriaByTmplId(ltmplId);
 					handlerListTemplate(ltmpl, columns, criterias);
+					ltmplMap.put(ltmplId, ltmpl);
+					logger.debug("列表模板[" + ltmplId + "]缓存数据重新加载完成, 值为" + ltmpl);
 				}else {
-					ltmpl = null;
+					ltmplMap.remove(ltmplId);
+					logger.debug("从缓存中移除列表模板[id=" + ltmplId + "]");
 				}
-				ltmplMap.put(ltmplId, ltmpl);
-				logger.debug("列表模板[" + ltmplId + "]缓存数据重新加载完成, 值为" + ltmpl);
 			}
 		}
 	}
 	
+
 	private boolean checkModuleUsable(String moduleName) {
 		try {
 			return fFactory.getModuleConfig(moduleName) != null;
@@ -182,11 +182,12 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					List<TemplateDetailFieldGroup> fieldGroups = dDao.getTemplateGroups(dtmplId);
 					Map<Long, List<TemplateDetailField>> groupFieldsMap = dDao.getTemplateFieldsMap(CollectionUtils.toSet(fieldGroups, group->group.getId()));
 					handlerDetailTemplate(dtmpl, fieldGroups, groupFieldsMap);
+					dtmplMap.put(dtmplId, dtmpl);
+					logger.debug("列表模板[" + dtmplId + "]缓存数据重新加载完成, 值为" + dtmpl);
 				}else {
-					dtmpl = null;
+					dtmplMap.remove(dtmplId);
+					logger.debug("从缓存数据中移除列表模板[id=" + dtmplId + "]");
 				}
-				dtmplMap.put(dtmplId, dtmpl);
-				logger.debug("列表模板[" + dtmplId + "]缓存数据重新加载完成, 值为" + dtmpl);
 			}
 		}
 	}
@@ -199,6 +200,10 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			fieldGroups.forEach(fieldGroup->{
 				List<TemplateDetailField> groupFields = groupFieldsMap.get(fieldGroup.getId());
 				fieldGroup.setFields(groupFields);
+				if(fieldGroup.getCompositeId() != null) {
+					DictionaryComposite composite = dictService.getComposite(dtmpl.getModule(), fieldGroup.getCompositeId());
+					fieldGroup.setComposite(composite);
+				}
 				if(groupFields != null) {
 					groupFields.forEach(groupField->{
 						//通过fieldId来获得对应的字段数据
@@ -317,8 +322,9 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			if(tmplGroupMap == null) {
 				logger.debug("开始初始化所有模板组合缓存数据...");
 				List<TemplateGroup> groups = gDao.queryGroups().stream().filter(group->checkModuleUsable(group.getModule())).collect(Collectors.toList());
+				Map<Long, List<TemplateGroupPremise>> premisesMap = CollectionUtils.toListMap(gDao.queryPremises(), premise->premise.getGroupId());
 				for (TemplateGroup group : groups) {
-					handlerTmplGroup(group);
+					handlerTmplGroup(group, premisesMap.get(group.getId()));
 				}
 				tmplGroupMap = CollectionUtils.toMap(groups, group->group.getId());
 				logger.debug(tmplGroupMap);
@@ -333,14 +339,20 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			synchronized (tmplGroupMap) {
 				logger.debug("重新加载模板组合[id=" + tmplGroupId + "]缓存数据...");
 				TemplateGroup group = nDao.get(TemplateGroup.class, tmplGroupId);
-				handlerTmplGroup(group);
-				tmplGroupMap.put(tmplGroupId, group);
-				logger.debug("模板组合[" + tmplGroupId + "]缓存数据重新加载完成, 值为" + group);
+				if(group != null) {
+					List<TemplateGroupPremise> premises = gDao.queryPremises(group.getId());
+					handlerTmplGroup(group, premises);
+					tmplGroupMap.put(tmplGroupId, group);
+					logger.debug("模板组合[" + tmplGroupId + "]缓存数据重新加载完成, 值为" + group);
+				}else {
+					tmplGroupMap.remove(tmplGroupId);
+					logger.debug("从缓存中移除模板组合[id=" + tmplGroupId + "]");
+				}
 			}
 		}
 	}
 	
-	private void handlerTmplGroup(TemplateGroup group) {
+	private void handlerTmplGroup(TemplateGroup group, List<TemplateGroupPremise> premises) {
 		Long ltmplId = group.getListTemplateId(),
 				dtmplId = group.getDetailTemplateId();
 		TemplateListTemplate ltmpl = getListTemplate(ltmplId);
@@ -349,6 +361,16 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		Assert.notNull(dtmpl, "模板组合[id=" + group.getId() + "]的详情模板[id=" + dtmplId + "]不存在");
 		group.setListTemplateTitle(ltmpl.getTitle());
 		group.setDetailTemplateTitle(dtmpl.getTitle());
+		if(premises != null) {
+			group.setPremises(premises);
+			premises.forEach(premise->{
+				DictionaryField field = dictService.getField(group.getModule(), premise.getFieldId());
+				if(field != null) {
+					premise.setFieldTitle(field.getTitle());
+					premise.setFieldName(field.getFullKey());
+				}
+			});
+		}
 	}
 
 	@Override
@@ -360,19 +382,37 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	
 	@Override
 	public void saveGroup(TemplateGroup group, UserIdentifier user) {
-		group.setUpdateTime(new Date());
-		if(!TextUtils.hasText(group.getKey())) {
-			group.setKey(TextUtils.uuid(5, 62));
-		}
 		if(group.getId() != null) {
+			//修改模板组合
+			List<TemplateGroupPremise> originPremises = gDao.queryPremises(group.getId());
+			
 			nDao.update(group);
+			
+			NormalDaoSetUpdateStrategy.build(
+					TemplateGroupPremise.class, nDao,
+					premise->premise.getId(),
+					(oPremise, premise)->{
+						oPremise.setFieldValue(premise.getFieldValue());
+						oPremise.setOrder(premise.getOrder());
+					},premise->{
+						premise.setGroupId(group.getId());
+					})
+				.doUpdate(new HashSet<>(originPremises ), new HashSet<>(group.getPremises()));
 			reloadTemplateGroup(group.getId());
 		}else {
-			group.setCreateUserId((Long) user.getId());
+			//创建模板组合
+			group.setCreateUserCode((String) user.getId());
 			group.setCreateTime(group.getUpdateTime());
 			Long groupId = nDao.save(group);
+			if(group.getPremises() != null) {
+				group.getPremises().forEach(premise->{
+					premise.setGroupId(groupId);
+					nDao.save(premise);
+				});
+			}
 			reloadTemplateGroup(groupId);
 		}
+		
 	}
 	
 	@Override
@@ -381,7 +421,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	@Override
-	public void remveTemplateGroup(Long groupId) {
+	public void removeTemplateGroup(Long groupId) {
 		TemplateGroup group = new TemplateGroup();
 		group.setId(groupId);
 		nDao.remove(group);
@@ -437,5 +477,54 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		getListTemplateMap();
 		getTemplateGroupMap();
 	}
+	
+	@Override
+	public Set<TemplateGroup> getListTemplateRelatedGroups(Long ltmplId) {
+		return getTemplateGroupMap().values().stream()
+			.filter(group -> ltmplId.equals(group.getListTemplateId())).collect(Collectors.toSet());
+	}
+	
+	@Override
+	public Set<TemplateGroup> getDetailTemplateRelatedGroups(Long dtmplId) {
+		return getTemplateGroupMap().values().stream()
+			.filter(group -> dtmplId.equals(group.getDetailTemplateId())).collect(Collectors.toSet());
+	}
+	
+	
+	@Override
+	public Map<Long, Set<TemplateGroup>> getDetailTemplateRelatedGroupsMap(Set<Long> dtmplIds) {
+		Map<Long, Set<TemplateGroup>> map = new HashMap<>();
+		if(dtmplIds != null) {
+			for (Long dtmplId : dtmplIds) {
+				map.put(dtmplId, getDetailTemplateRelatedGroups(dtmplId));
+			}
+		}
+		return map;
+	}
+	
+	
+	@Override
+	public Map<Long, Set<TemplateGroup>> getListTemplateRelatedGroupsMap(Set<Long> ltmplIds) {
+		Map<Long, Set<TemplateGroup>> map = new HashMap<>();
+		if(ltmplIds != null) {
+			for (Long ltmplId : ltmplIds) {
+				map.put(ltmplId, getListTemplateRelatedGroups(ltmplId));
+			}
+		}
+		return map;
+	}
+	
+	@Override
+	public void switchAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId) {
+		gDao.updateAllGroupsDetailTemplate(dtmplId, targetDtmplId);
+		clearCache();
+	}
+	
+	@Override
+	public void switchAllGroupsListTemplate(Long ltmplId, Long targetLtmplId) {
+		gDao.updateAllGroupsDetailTemplate(ltmplId, targetLtmplId);
+		clearCache();
+	}
+	
 
 }

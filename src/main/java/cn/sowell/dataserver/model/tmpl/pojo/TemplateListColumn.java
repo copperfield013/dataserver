@@ -51,9 +51,6 @@ public class TemplateListColumn {
 	@Column(name="update_time")
 	private Date updateTime;
 	
-	@Column(name="create_user_id")
-	private Long createUserId;
-	
 	public Long getId() {
 		return id;
 	}
@@ -113,12 +110,6 @@ public class TemplateListColumn {
 	}
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
-	}
-	public Long getCreateUserId() {
-		return createUserId;
-	}
-	public void setCreateUserId(Long createUserId) {
-		this.createUserId = createUserId;
 	}
 	public String getSpecialField() {
 		return specialField;

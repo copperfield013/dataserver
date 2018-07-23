@@ -34,7 +34,6 @@
 		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 	
-	<bean class="cn.sowell.dataserver.ws.impl.AdminUserService" />
 	<bean
 		class="cn.sowell.copframe.spring.propTranslator.PropertyValueTranslatorSet">
 		<property name="translatorSet">

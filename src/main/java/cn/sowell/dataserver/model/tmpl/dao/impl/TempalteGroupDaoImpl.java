@@ -9,6 +9,7 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import org.hibernate.Query;
+import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,7 @@ import cn.sowell.copframe.dao.deferedQuery.DeferedParamSnippet;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.tmpl.dao.TempalteGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.utils.QueryUtils;
 
 @Repository
@@ -134,6 +136,40 @@ public class TempalteGroupDaoImpl implements TempalteGroupDao{
 		String hql = "from TemplateGroup g order by g.updateTime desc ";
 		Query query =  sFactory.getCurrentSession().createQuery(hql);
 		return query.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroupPremise> queryPremises() {
+		String hql = "from TemplateGroupPremise p order by p.order asc";
+		return sFactory.getCurrentSession().createQuery(hql).list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroupPremise> queryPremises(Long groupId) {
+		String hql = "from TemplateGroupPremise p where p.groupId = :groupId order by p.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		query.setLong("groupId", groupId);
+		return query.list();
+	}
+	
+	@Override
+	public void updateAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId) {
+		String sql = "update t_tmpl_group set detail_tmpl_id = :targetDtmplId where detail_tmpl_id = :dtmplId";
+		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		query.setLong("dtmplId", dtmplId);
+		query.setLong("targetDtmplId", targetDtmplId);
+		query.executeUpdate();
+	}
+
+	@Override
+	public void updateAllGroupsListTemplate(Long ltmplId, Long targetLtmplId) {
+		String sql = "update t_tmpl_group set list_tmpl_id = :targetLtmplId where list_tmpl_id = :ltmplId";
+		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		query.setLong("ltmplId", ltmplId);
+		query.setLong("targetLtmplId", targetLtmplId);
+		query.executeUpdate();
 	}
 	
 }

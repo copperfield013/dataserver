@@ -1,6 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.pojo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -47,14 +49,17 @@ public class TemplateGroup {
 	@Column(name="c_disabled")
 	private Integer disabled;
 	
-	@Column(name="create_user_id")
-	private Long createUserId;
+	@Column(name="create_user_code")
+	private String createUserCode;
 	
 	@Column(name="create_time")
 	private Date createTime;
 	
 	@Column(name="update_time")
 	private Date updateTime;
+	
+	@Transient
+	private List<TemplateGroupPremise> premises = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -129,13 +134,6 @@ public class TemplateGroup {
 		this.disabled = disabled;
 	}
 
-	public Long getCreateUserId() {
-		return createUserId;
-	}
-
-	public void setCreateUserId(Long createUserId) {
-		this.createUserId = createUserId;
-	}
 
 	public Date getCreateTime() {
 		return createTime;
@@ -160,5 +158,22 @@ public class TemplateGroup {
 	public void setKey(String key) {
 		this.key = key;
 	}
+
+	public List<TemplateGroupPremise> getPremises() {
+		return premises;
+	}
+
+	public void setPremises(List<TemplateGroupPremise> premises) {
+		this.premises = premises;
+	}
+
+	public String getCreateUserCode() {
+		return createUserCode;
+	}
+
+	public void setCreateUserCode(String createUserCode) {
+		this.createUserCode = createUserCode;
+	}
+
 	
 }

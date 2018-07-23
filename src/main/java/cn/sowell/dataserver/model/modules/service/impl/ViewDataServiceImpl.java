@@ -63,6 +63,19 @@ public class ViewDataServiceImpl implements ViewDataService{
 					tmplGroup = tService.getTemplateGroup(moduleName, lCriteria.getTemplateGroupKey());
 					Assert.hasText("根据[key=" + lCriteria.getTemplateGroupKey() + "]无法找到对应的模板组合");
 				}
+				//添加模板组合的默认字段条件
+				if(tmplGroup.getPremises() != null) {
+					tmplGroup.getPremises().forEach(premise->{
+						DictionaryField field = dService.getField(moduleName, premise.getFieldId());
+						if(field != null) {
+							CriteriaEntry entry = new CriteriaEntry();
+							entry.setFieldId(premise.getFieldId());
+							entry.setComparator("equals");
+							entry.setValue(premise.getFieldValue());
+							lCriteria.getCriteriaEntries().add(entry);
+						}
+					});
+				}
 				lCriteria.setListTemplateId(tmplGroup.getListTemplateId());
 			}
 			Assert.notNull(lCriteria.getListTemplateId(), "ListTemplateEntiryViewCriteria的listTemplateId不能为空");
