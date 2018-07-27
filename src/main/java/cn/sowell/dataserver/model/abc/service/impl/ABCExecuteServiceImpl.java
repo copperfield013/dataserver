@@ -47,7 +47,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	@Override
 	public EntityPagingQueryProxy getModuleQueryProxy(String moduleName, List<Criteria> cs, ExportDataPageInfo ePageInfo) {
 		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
-		BizFusionContext context = config.createContext();
+		BizFusionContext context = config.getCurrentContext();
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(cs, "编辑时间");
 		
@@ -61,7 +61,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	
 	
 	private List<Entity> queryEntityList(String moduleName, List<Criteria> criterias, PageInfo pageInfo){
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).createContext();
+		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext();
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(criterias, "编辑时间");
@@ -82,7 +82,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	
 	@Override
 	public Entity getHistoryEntity(QueryEntityParameter param, List<ErrorInfomation> errors) {
-		BizFusionContext context = fFactory.getModuleConfig(param.getModule()).createContext();
+		BizFusionContext context = fFactory.getModuleConfig(param.getModule()).getCurrentContext();
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		HistoryTracker tracker = discoverer.track(param.getCode(), param.getHistoryTime());
@@ -97,7 +97,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	@Override
 	public List<EntityHistoryItem> queryHistory(String moduleName, String code,
 			Integer pageNo, Integer pageSize) {
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).createContext();
+		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext();
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		List<RecordHistory> historyList = discoverer.trackHistory(code, pageNo, pageSize);
@@ -120,7 +120,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	
 	@Override
 	public Entity getModuleEntity(String moduleName, String code) {
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).createContext();
+		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext();
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		Entity result=discoverer.discover(code);
 		return result;

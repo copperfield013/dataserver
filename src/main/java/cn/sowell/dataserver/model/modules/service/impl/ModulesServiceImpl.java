@@ -112,7 +112,7 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Override
 	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module){
-		FusionContext context = fFactory.getModuleConfig(module).createContext();
+		FusionContext context = fFactory.getModuleConfig(module).getCurrentContext();
 		CriteriaFactory criteriaFactory = new CriteriaFactory(context);
 		ArrayList<Criteria> cs = new ArrayList<Criteria>();
 		nCriterias.forEach(nCriteria->{

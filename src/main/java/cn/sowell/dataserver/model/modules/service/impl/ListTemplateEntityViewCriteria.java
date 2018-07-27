@@ -1,10 +1,7 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 
 public class ListTemplateEntityViewCriteria extends EntityViewCriteria{
 	private Long listTemplateId;

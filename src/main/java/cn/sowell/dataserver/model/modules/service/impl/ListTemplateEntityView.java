@@ -6,6 +6,8 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
+import com.abc.util.ValueType;
+
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
@@ -74,8 +76,8 @@ public class ListTemplateEntityView extends EntityView{
 						}
 						
 						@Override
-						public String getFieldType() {
-							return getFieldDependency().getAbcType();
+						public ValueType getFieldType() {
+							return ValueType.getValueType(getFieldDependency().getAbcType());
 						}
 
 						@Override

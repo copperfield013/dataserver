@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.abc.mapping.entity.Entity;
+import com.abc.util.ValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -163,7 +164,7 @@ public class EntityView {
 		boolean getEffective();
 		Long getFieldId();
 		String getFieldName();
-		String getFieldType();
+		ValueType getFieldType();
 		String getFieldFormat();
 		String getFieldInputType();
 		String getTitle();

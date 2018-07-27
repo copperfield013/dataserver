@@ -65,13 +65,18 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	@Override
 	public synchronized List<DictionaryComposite> getAllComposites(String module) {
 		return moduleCompositesMap.get(module, m->{
-			List<DictionaryComposite> composites = dictDao.getAllComposites(m);
-			handerWithConfig(module, composites);
-			Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
-			Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
-			compositeFieldMap.forEach((cId, fields)->fields.forEach(field->field.setComposite(compositeMap.get(cId))));
-			composites.forEach(composite->composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>())));
-			return composites;
+			try {
+				List<DictionaryComposite> composites = dictDao.getAllComposites(m);
+				handerWithConfig(module, composites);
+				Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
+				Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
+				compositeFieldMap.forEach((cId, fields)->fields.forEach(field->field.setComposite(compositeMap.get(cId))));
+				composites.forEach(composite->composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>())));
+				return composites;
+			} catch (Exception e) {
+				logger.error("初始化模块[" + m + "]的字段数据时发生错误", e);
+				return null;
+			}
 		});
 	}
 	
