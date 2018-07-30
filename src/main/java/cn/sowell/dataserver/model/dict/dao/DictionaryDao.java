@@ -30,4 +30,6 @@ public interface DictionaryDao {
 	Map<Long, List<OptionItem>> getFieldOptionsMap(Set<Long> fieldIds);
 
 	Map<Long, DictionaryField> getFieldMap(Set<Long> fieldIds);
+
+	Map<Long, Set<String>> getRelationSubdomainMap(Set<Long> compositeIds);
 }

@@ -9,6 +9,7 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
 import cn.sowell.dataserver.model.modules.service.ViewDataService;
 import cn.sowell.dataserver.model.modules.service.impl.EntityView;
@@ -18,7 +19,6 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 
 @ContextConfiguration(locations = "classpath*:spring-dataserver.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
 public class TestDataserver {
 	
 	@Resource
@@ -51,6 +51,8 @@ public class TestDataserver {
 		entry.setComparator("s1");
 		entry.setValue("未婚");
 		criteria.getCriteriaEntries().add(entry);
+		UserIdentifier user = null;
+		criteria.setUser(user);
 		/*Map<Long, String> listTemplateCriteria = new HashMap<>();
 		listTemplateCriteria.put(59l, "1");
 		criteria.setListTemplateCriteria(listTemplateCriteria);*/

@@ -403,6 +403,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			//创建模板组合
 			group.setCreateUserCode((String) user.getId());
 			group.setCreateTime(group.getUpdateTime());
+			group.setKey(TextUtils.hasText(group.getKey())? group.getKey(): TextUtils.uuid(5, 36));
 			Long groupId = nDao.save(group);
 			if(group.getPremises() != null) {
 				group.getPremises().forEach(premise->{

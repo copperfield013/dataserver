@@ -24,14 +24,11 @@ import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.copframe.utils.TimelinenessWrapper;
 import cn.sowell.copframe.utils.TimelinessMap;
-import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FieldParserDescription;
 import cn.sowell.datacenter.entityResolver.FieldService;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
-import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.Label;
-import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
 import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
@@ -49,6 +46,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 	Logger logger = Logger.getLogger(DictionaryServiceImpl.class);
 	
+	static final Integer RELATION_ADD_TYPE = 5; 
 	
 	private final TimelinessMap<String, List<DictionaryComposite>> moduleCompositesMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinessMap<String, List<DictionaryField>> moduleFieldsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
@@ -71,7 +69,17 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 				Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
 				Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
 				compositeFieldMap.forEach((cId, fields)->fields.forEach(field->field.setComposite(compositeMap.get(cId))));
-				composites.forEach(composite->composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>())));
+				Map<Long, Set<String>> relationSubdomainMap = 
+						dictDao.getRelationSubdomainMap(
+								CollectionUtils.toSet(composites.stream().filter(
+										c->RELATION_ADD_TYPE.equals(c.getAddType())
+										).collect(Collectors.toSet()), c->c.getId()));
+				composites.forEach(composite->{
+					composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>()));
+					if(relationSubdomainMap.containsKey(composite.getId())) {
+						composite.setRelationSubdomain(relationSubdomainMap.get(composite.getId()));
+					}
+				});
 				return composites;
 			} catch (Exception e) {
 				logger.error("初始化模块[" + m + "]的字段数据时发生错误", e);
@@ -91,22 +99,10 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 	
 	private void handerWithConfig(String module, List<DictionaryComposite> composites) {
-		FusionContextConfig config = fFactory.getModuleConfigDependended(module);
+		/*FusionContextConfig config = fFactory.getModuleConfigDependended(module);
 		if(config.getConfigResolver() == null) {
 			config.loadResolver(null);
-		}
-		FusionContextConfigResolver resolver = config.getConfigResolver();
-		composites.forEach(composite->{
-			if(TextUtils.hasText(composite.getName())) {
-				FieldConfigure cpsConfig = resolver.getFieldConfigure(composite.getName());
-				if(cpsConfig instanceof RelationFieldConfigure) {
-					composite.setRelationSubdomain(((RelationFieldConfigure) cpsConfig).getLabelDomain());
-				}else {
-					composite.setRelationSubdomain(null);
-				}
-			}
-		});
-		
+		}*/
 	}
 
 	@Override

@@ -38,6 +38,9 @@ public class DictionaryComposite implements Composite{
 	@JSONField(name="isArray")
 	private Integer isArray;
 	
+	@Column(name="add_type")
+	private Integer addType;
+	
 	@Transient
 	private List<DictionaryField> fields;
 
@@ -85,6 +88,12 @@ public class DictionaryComposite implements Composite{
 	}
 	public Set<String> getRelationSubdomain() {
 		return relationSubdomain;
+	}
+	public Integer getAddType() {
+		return addType;
+	}
+	public void setAddType(Integer addType) {
+		this.addType = addType;
 	}
 	
 }

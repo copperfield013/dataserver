@@ -7,6 +7,7 @@ import com.abc.dto.ErrorInfomation;
 import com.abc.mapping.entity.Entity;
 import com.abc.query.criteria.Criteria;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
@@ -31,7 +32,8 @@ public interface ABCExecuteService {
 	 * @param pageSize
 	 * @return
 	 */
-	List<EntityHistoryItem> queryHistory(String module, String code, Integer pageNo, Integer pageSize);
+	List<EntityHistoryItem> queryHistory(String moduleName, String code, Integer pageNo, Integer pageSize,
+			UserIdentifier user);
 
 
 	/**
@@ -40,14 +42,14 @@ public interface ABCExecuteService {
 	 * @param errors
 	 * @return
 	 */
-	Entity getHistoryEntity(QueryEntityParameter param, List<ErrorInfomation> errors);
+	Entity getHistoryEntity(QueryEntityParameter param, List<ErrorInfomation> errors, UserIdentifier user);
 	/**
 	 * 根据模块名和code获得实体对象
 	 * @param module
 	 * @param code
 	 * @return
 	 */
-	Entity getModuleEntity(String module, String code);
+	Entity getModuleEntity(String moduleName, String code, UserIdentifier user);
 
 	/**
 	 * 根据code删除实体
@@ -61,9 +63,9 @@ public interface ABCExecuteService {
 	 * @param propMap
 	 * @return
 	 */
-	String mergeEntity(String module, Map<String, Object> propMap);
+	String mergeEntity(String module, Map<String, Object> propMap, UserIdentifier user);
 	
-	String fuseEntity(String module, Map<String, Object> map);
+	String fuseEntity(String module, Map<String, Object> map, UserIdentifier user);
 	
 	/**
 	 * 根据模块和code获得对应的的实体的转化对象
@@ -71,11 +73,25 @@ public interface ABCExecuteService {
 	 * @param code
 	 * @return
 	 */
-	ModuleEntityPropertyParser getModuleEntityParser(String module, String code);
+	ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user);
 
-	ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity);
+	ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user);
 
-	EntityPagingQueryProxy getModuleQueryProxy(String module, List<Criteria> cs, ExportDataPageInfo ePageInfo);
+	EntityPagingQueryProxy getModuleQueryProxy(String module, List<Criteria> cs, ExportDataPageInfo ePageInfo, UserIdentifier user);
+
+
+	
+
+
+	
+
+
+
+
+	
+
+
+	
 
 
 	

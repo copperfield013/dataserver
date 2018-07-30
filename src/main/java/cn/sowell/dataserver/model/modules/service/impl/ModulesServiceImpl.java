@@ -16,12 +16,13 @@ import javax.annotation.Resource;
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.stereotype.Service;
 
-import com.abc.application.FusionContext;
+import com.abc.application.BizFusionContext;
 import com.abc.dto.ErrorInfomation;
 import com.abc.mapping.entity.Entity;
 import com.abc.query.criteria.Criteria;
 import com.abc.query.criteria.CriteriaFactory;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
@@ -111,8 +112,8 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module){
-		FusionContext context = fFactory.getModuleConfig(module).getCurrentContext();
+	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module, UserIdentifier user){
+		BizFusionContext context = fFactory.getModuleConfig(module).getCurrentContext(user);
 		CriteriaFactory criteriaFactory = new CriteriaFactory(context);
 		ArrayList<Criteria> cs = new ArrayList<Criteria>();
 		nCriterias.forEach(nCriteria->{
@@ -278,7 +279,7 @@ public class ModulesServiceImpl implements ModulesService{
 	@Override
 	public List<ModuleEntityPropertyParser> queryEntities(QueryEntityParameter param) {
 		List<Entity> list = abcService.queryModuleEntities(param);
-		return CollectionUtils.toList(list, entity->abcService.getModuleEntityParser(param.getModule(), entity));
+		return CollectionUtils.toList(list, entity->abcService.getModuleEntityParser(param.getModule(), entity, param.getUser()));
 	}
 
 	
@@ -301,20 +302,20 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	
 	@Override
-	public ModuleEntityPropertyParser getEntity(String module, String code, Date date) {
+	public ModuleEntityPropertyParser getEntity(String module, String code, Date date, UserIdentifier user) {
 		Entity entity = null;
 		List<ErrorInfomation> errors = new ArrayList<ErrorInfomation>();
 		if(date == null) {
-			entity = abcService.getModuleEntity(module, code);
+			entity = abcService.getModuleEntity(module, code, user);
 		}else {
 			QueryEntityParameter param = new QueryEntityParameter();
 			param.setModule(module);
 			param.setCode(code);
 			param.setHistoryTime(date);
-			entity = abcService.getHistoryEntity(param, errors);
+			entity = abcService.getHistoryEntity(param, errors, user);
 		}
 		if(entity != null) {
-			ModuleEntityPropertyParser parser = abcService.getModuleEntityParser(module, entity);
+			ModuleEntityPropertyParser parser = abcService.getModuleEntityParser(module, entity, user);
 			parser.setErrors(errors);
 			return parser;
 		}else {
@@ -323,8 +324,8 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public List<EntityHistoryItem> queryHistory(String module, String code, Integer pageNo, Integer pageSize) {
-		return abcService.queryHistory(module, code, pageNo, pageSize);
+	public List<EntityHistoryItem> queryHistory(String module, String code, Integer pageNo, Integer pageSize, UserIdentifier user) {
+		return abcService.queryHistory(module, code, pageNo, pageSize, user);
 	}
 
 
@@ -334,21 +335,21 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public String mergeEntity(String module, Map<String, Object> map) {
-		return abcService.mergeEntity(module, map);
+	public String mergeEntity(String module, Map<String, Object> map, UserIdentifier user) {
+		return abcService.mergeEntity(module, map, user);
 	}
 	
 	@Override
-	public String fuseEntity(String module, Map<String, Object> map) {
-		return abcService.fuseEntity(module, map);
+	public String fuseEntity(String module, Map<String, Object> map, UserIdentifier user) {
+		return abcService.fuseEntity(module, map, user);
 	}
 	
 	@Override
 	public EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> nCriterias,
-			ExportDataPageInfo ePageInfo) {
+			ExportDataPageInfo ePageInfo, UserIdentifier user) {
 		PageInfo pageInfo = ePageInfo.getPageInfo();
-		List<Criteria> cs = toCriterias(nCriterias, ltmpl.getModule());
-		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cs, ePageInfo);
+		List<Criteria> cs = toCriterias(nCriterias, ltmpl.getModule(), user);
+		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cs, ePageInfo, user);
 		int dataCount = pageInfo.getPageSize();
 		int startPageNo = pageInfo.getPageNo();
 		int totalCount = proxy.getTotalCount();
@@ -371,7 +372,7 @@ public class ModulesServiceImpl implements ModulesService{
 				dataCount = ePageInfo.getRangeEnd();
 			}
 		}
-		return new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, proxy);
+		return new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, user, proxy);
 	}
 
 

@@ -10,6 +10,7 @@ import org.springframework.beans.MutablePropertyValues;
 
 import com.abc.query.criteria.Criteria;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
@@ -24,7 +25,7 @@ public interface ModulesService {
 
 	List<ModuleEntityPropertyParser> queryEntities(QueryEntityParameter param);
 	
-	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module);
+	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module, UserIdentifier user);
 	
 	/**
 	 * 根据模块名获得模块数据
@@ -40,7 +41,7 @@ public interface ModulesService {
 	 * @param date
 	 * @return
 	 */
-	ModuleEntityPropertyParser getEntity(String module, String code, Date date);
+	ModuleEntityPropertyParser getEntity(String module, String code, Date date, UserIdentifier user);
 
 	/**
 	 * 分页查询实体信息的历史
@@ -50,7 +51,7 @@ public interface ModulesService {
 	 * @param pageSize
 	 * @return
 	 */
-	List<EntityHistoryItem> queryHistory(String module, String code, Integer pageNo, Integer pageSize);
+	List<EntityHistoryItem> queryHistory(String module, String code, Integer pageNo, Integer pageSize, UserIdentifier user);
 
 	/**
 	 * 删除实体
@@ -65,22 +66,24 @@ public interface ModulesService {
 	 * @param map
 	 * @return 
 	 */
-	String mergeEntity(String module, Map<String, Object> map);
+	String mergeEntity(String module, Map<String, Object> map, UserIdentifier user);
 
-	String fuseEntity(String module, Map<String, Object> map);
+	String fuseEntity(String module, Map<String, Object> map, UserIdentifier user);
 	
 	/**
 	 * 根据条件查找列表迭代器
 	 * @param ltmpl
 	 * @param criteria
 	 * @param ePageInfo
+	 * @param userIdentifier 
 	 * @return
 	 */
 	EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> criteria,
-			ExportDataPageInfo ePageInfo);
+			ExportDataPageInfo ePageInfo, UserIdentifier userIdentifier);
 
 	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
 			Map<Long, TemplateListCriteria> criteriaMap);
+
 
 	
 

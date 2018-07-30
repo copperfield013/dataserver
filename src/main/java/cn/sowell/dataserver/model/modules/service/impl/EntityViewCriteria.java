@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.CommonPageInfo;
 import cn.sowell.copframe.dto.page.PageInfo;
 
@@ -15,6 +16,7 @@ public class EntityViewCriteria {
 	private List<Long> viewFieldIds = new ArrayList<>();
 	
 	private PageInfo pageInfo = new CommonPageInfo();
+	private UserIdentifier user;
 	
 	public static class CriteriaEntry{
 		private Long fieldId;
@@ -88,6 +90,14 @@ public class EntityViewCriteria {
 
 	public void setViewFieldIds(List<Long> viewFieldIds) {
 		this.viewFieldIds = viewFieldIds;
+	}
+
+	public UserIdentifier getUser() {
+		return this.user;
+	}
+
+	public void setUser(UserIdentifier user) {
+		this.user = user;
 	}
 	
 

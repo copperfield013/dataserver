@@ -3,6 +3,7 @@ package cn.sowell.dataserver.model.modules.bean;
 import java.util.Iterator;
 import java.util.Set;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 
 
@@ -25,19 +26,23 @@ public class EntityPagingIterator implements Iterator<ModuleEntityPropertyParser
 	private int pageNoInc = 0;
 	private int hasIgnored = 0;
 	private EntityPagingQueryProxy queryProxy;
+	private UserIdentifier user;
 	
 	
 	public EntityPagingIterator(
 			int totalCount,
 			int dataCount,
 			int ignoreDataCount,
-			int startPageNo, EntityPagingQueryProxy proxy) {
+			int startPageNo, 
+			UserIdentifier user,
+			EntityPagingQueryProxy proxy) {
 		super();
 		this.totalCount = totalCount;
 		this.dataCount = dataCount;
 		this.ignoreDataCount = ignoreDataCount;
 		this.startPageNo = startPageNo;
 		this.queryProxy = proxy;
+		this.user = user;
 	}
 
 	@Override
@@ -52,7 +57,7 @@ public class EntityPagingIterator implements Iterator<ModuleEntityPropertyParser
 	public synchronized ModuleEntityPropertyParser next() {
 		if(hasNext() && (cacheItr == null || !cacheItr.hasNext())){
 			Set<ModuleEntityPropertyParser> set = 
-					queryProxy.load(startPageNo + (pageNoInc++));
+					queryProxy.load(startPageNo + (pageNoInc++), this.user);
 			if(set != null){
 				cacheItr = set.iterator();
 				long currentTime = System.currentTimeMillis();

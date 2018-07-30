@@ -6,6 +6,7 @@ import java.util.Set;
 import com.abc.mapping.entity.Entity;
 import com.abc.query.entity.impl.EntitySortedPagedQuery;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.Assert;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
@@ -39,9 +40,9 @@ public class EntityQueryAdapter implements EntityPagingQueryProxy{
 	}
 
 	@Override
-	public Set<ModuleEntityPropertyParser> load(int pageNo) {
+	public Set<ModuleEntityPropertyParser> load(int pageNo, UserIdentifier user) {
 		List<Entity> entities = sortedPagedQuery.visit(pageNo);
-		return CollectionUtils.toSet(entities, entity->resolver.createParser(entity));
+		return CollectionUtils.toSet(entities, entity->resolver.createParser(entity, user));
 	}
 
 }

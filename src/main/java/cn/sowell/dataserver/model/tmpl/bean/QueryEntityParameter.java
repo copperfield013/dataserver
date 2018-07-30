@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.abc.query.criteria.Criteria;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 
 public class QueryEntityParameter {
@@ -13,6 +14,7 @@ public class QueryEntityParameter {
 	private String module;
 	private String code;
 	private Date historyTime;
+	private UserIdentifier user;
 	public String getModule() {
 		return module;
 	}
@@ -42,6 +44,12 @@ public class QueryEntityParameter {
 	}
 	public void setHistoryTime(Date historyTime) {
 		this.historyTime = historyTime;
+	}
+	public UserIdentifier getUser() {
+		return user;
+	}
+	public void setUser(UserIdentifier user) {
+		this.user = user;
 	}
 	
 	

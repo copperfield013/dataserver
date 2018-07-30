@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 import com.abc.mapping.entity.Entity;
 import com.abc.query.criteria.Criteria;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
@@ -86,9 +87,9 @@ public class ViewDataServiceImpl implements ViewDataService{
 			entities = queryEntities(lCriteria, ltmpl);
 		}else {
 			view = new EntityView();
-			entities = queryEntities(criteria);
+			entities = queryEntities(criteria, criteria.getUser());
 		}
-		List<ModuleEntityPropertyParser> parsers = CollectionUtils.toList(entities, entity->abcService.getModuleEntityParser(moduleName, entity));
+		List<ModuleEntityPropertyParser> parsers = CollectionUtils.toList(entities, entity->abcService.getModuleEntityParser(moduleName, entity, criteria.getUser()));
 		
 		Set<Long> criteriaFieldIds = view.getCriteria().getCriteriaEntries().stream().map(CriteriaEntry::getFieldId).collect(Collectors.toSet());
 		Set<String> criteriaFieldNames = view.getCriteria().getCriteriaEntries().stream().map(CriteriaEntry::getFieldName).collect(Collectors.toSet());
@@ -129,13 +130,14 @@ public class ViewDataServiceImpl implements ViewDataService{
 			});
 		}
 		
-		return queryEntities(criteria);
+		return queryEntities(criteria, criteria.getUser());
 	}
 
-	private List<Entity> queryEntities(EntityViewCriteria criteria) {
+	private List<Entity> queryEntities(EntityViewCriteria criteria, UserIdentifier user) {
 		QueryEntityParameter param = new QueryEntityParameter();
 		param.setModule(criteria.getModule());
 		param.setPageInfo(criteria.getPageInfo());
+		param.setUser(user);
 		Set<NormalCriteria> nCriterias = new HashSet<NormalCriteria>();
 		if(criteria.getCriteriaEntries() != null) {
 			criteria.getCriteriaEntries().forEach(entry->{
@@ -151,7 +153,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 				}
 			});
 		}
-		List<Criteria> criterias = mService.toCriterias(nCriterias, criteria.getModule());
+		List<Criteria> criterias = mService.toCriterias(nCriterias, criteria.getModule(), user);
 		param.setCriterias(criterias);
 		List<Entity> list = abcService.queryModuleEntities(param);
 		return list;

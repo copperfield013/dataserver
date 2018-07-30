@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.dict.dao.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,6 +19,7 @@ import cn.sowell.copframe.dao.deferedQuery.ColumnMapResultTransformer;
 import cn.sowell.copframe.dao.deferedQuery.DeferedParamQuery;
 import cn.sowell.copframe.dao.deferedQuery.SimpleMapWrapper;
 import cn.sowell.copframe.utils.CollectionUtils;
+import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
@@ -117,6 +119,34 @@ public class DictionaryDaoImpl implements DictionaryDao{
 						map.put(fieldId, new ArrayList<OptionItem>());
 					}
 					map.get(fieldId).add(item);
+					return null;
+				}
+			});
+			query.list();
+		}
+		return map;
+	}
+	
+	@SuppressWarnings("serial")
+	@Override
+	public Map<Long, Set<String>> getRelationSubdomainMap(Set<Long> compositeIds) {
+		Map<Long, Set<String>> map = new HashMap<>();
+		if(compositeIds != null && !compositeIds.isEmpty()) {
+			String sql = "select * from v_dictionary_relation_label l where l.relation_id in (:compositeIds)";
+			SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+			query.setParameterList("compositeIds", compositeIds);
+			query.setResultTransformer(new ColumnMapResultTransformer<byte[]>() {
+
+				@Override
+				protected byte[] build(SimpleMapWrapper mapWrapper) {
+					Long relationId = mapWrapper.getLong("relation_id");
+					if(!map.containsKey(relationId)) {
+						map.put(relationId, new LinkedHashSet<>());
+					}
+					String toSplit = mapWrapper.getString("label");
+					if(toSplit != null) {
+						map.get(relationId).addAll(TextUtils.split(toSplit, ",", LinkedHashSet::new, c->c));
+					}
 					return null;
 				}
 			});
