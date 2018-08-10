@@ -6,7 +6,7 @@ import java.util.Set;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 
-public interface TempalteGroupDao {
+public interface TemplateGroupDao {
 
 	List<TemplateGroup> queryGroups(String module);
 

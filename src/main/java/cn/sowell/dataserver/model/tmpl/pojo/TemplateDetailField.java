@@ -13,7 +13,7 @@ import javax.persistence.Transient;
 import com.alibaba.fastjson.annotation.JSONField;
 
 @Entity
-@Table(name="t_tmpl_detail_field")
+@Table(name="t_sa_tmpl_detail_field")
 public class TemplateDetailField {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

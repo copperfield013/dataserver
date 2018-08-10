@@ -16,7 +16,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.sowell.datacenter.entityResolver.Composite;
 
 @Entity
-@Table(name="v_dictionary_composite")
+@Table(name="v_sa_dictionary_composite")
 public class DictionaryComposite implements Composite{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

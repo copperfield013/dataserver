@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_tmpl_list_template")
+@Table(name="t_sa_tmpl_list_template")
 public class TemplateListTemplate extends AbstractTemplate{
 	
 	@Column(name="c_def_pagesize")

@@ -8,9 +8,11 @@ import java.util.Set;
 
 import org.springframework.beans.MutablePropertyValues;
 
+import com.abc.application.BizFusionContext;
 import com.abc.query.criteria.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
+import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
@@ -24,8 +26,6 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 public interface ModulesService {
 
 	List<ModuleEntityPropertyParser> queryEntities(QueryEntityParameter param);
-	
-	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module, UserIdentifier user);
 	
 	/**
 	 * 根据模块名获得模块数据
@@ -58,7 +58,7 @@ public interface ModulesService {
 	 * @param module
 	 * @param code
 	 */
-	void deleteEntity(String code);
+	void deleteEntity(String moduleName, String code, UserIdentifier user);
 
 	/**
 	 * 保存实体（创建或更新）
@@ -83,6 +83,13 @@ public interface ModulesService {
 
 	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
 			Map<Long, TemplateListCriteria> criteriaMap);
+
+	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context);
+
+	Map<String, CEntityPropertyParser> getEntityParsers(String moduleName, String relationName, Set<String> codes,
+			UserIdentifier user);
+
+	
 
 
 	

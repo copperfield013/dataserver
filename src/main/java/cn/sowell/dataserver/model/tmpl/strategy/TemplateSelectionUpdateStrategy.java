@@ -8,12 +8,12 @@ import java.util.Set;
 import javax.annotation.Resource;
 
 import cn.sowell.copframe.dao.utils.NormalOperateDao;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 
-public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<TemplateListTemplate> {
+public class TemplateSelectionUpdateStrategy implements TemplateUpdateStrategy<TemplateSelectionTemplate> {
 
 	@Resource
 	TemplateService tService;
@@ -22,19 +22,20 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 	NormalOperateDao nDao;
 	
 	@Override
-	public void update(TemplateListTemplate template) {
-		TemplateListTemplate origin = tService.getListTemplate(template.getId());
+	public void update(TemplateSelectionTemplate template) {
+		TemplateSelectionTemplate origin = tService.getSelectionTemplate(template.getId());
 		if(origin != null){
 			origin.setTitle(template.getTitle());
-			origin.setUnmodifiable(template.getUnmodifiable());
 			origin.setDefaultPageSize(template.getDefaultPageSize());
 			origin.setDefaultOrderFieldId(template.getDefaultOrderFieldId());
 			origin.setDefaultOrderDirection(template.getDefaultOrderDirection());
+			origin.setMultiple(template.getMultiple());
+			origin.setNonunique(template.getNonunique());
 			nDao.update(origin);
 			Date now = new Date();
 			
 			NormalDaoSetUpdateStrategy.build(
-					TemplateListColumn.class, nDao,
+					TemplateSelectionColumn.class, nDao,
 					column->column.getId(),
 					(oColumn, column)->{
 						oColumn.setTitle(column.getTitle());
@@ -53,7 +54,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 				.doUpdate(new HashSet<>(origin.getColumns()), new HashSet<>(template.getColumns()));
 			
 			NormalDaoSetUpdateStrategy.build(
-				TemplateListCriteria.class, nDao, 
+				TemplateSelectionCriteria.class, nDao, 
 				criteria->criteria.getId(), 
 				(originCriteria, criteria)->{
 					if(!criteria.getFieldAvailable()) {
@@ -85,22 +86,22 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 	}
 
 	@Override
-	public Long create(TemplateListTemplate template) {
+	public Long create(TemplateSelectionTemplate template) {
 		if(template.getId() == null){
 			Date now = new Date();
 			//创建
 			template.setCreateTime(now );
 			template.setUpdateTime(now);
 			Long tmplId = nDao.save(template);
-			List<TemplateListColumn> columns = template.getColumns();
-			for (TemplateListColumn column : columns) {
+			List<TemplateSelectionColumn> columns = template.getColumns();
+			for (TemplateSelectionColumn column : columns) {
 				column.setTemplateId(tmplId);
 				column.setCreateTime(now);
 				column.setUpdateTime(now);
 				nDao.save(column);
 			}
-			Set<TemplateListCriteria> criterias = template.getCriterias();
-			for (TemplateListCriteria criteria : criterias) {
+			Set<TemplateSelectionCriteria> criterias = template.getCriterias();
+			for (TemplateSelectionCriteria criteria : criterias) {
 				criteria.setTemplateId(tmplId);
 				criteria.setCreateTime(now);
 				criteria.setUpdateTime(now);

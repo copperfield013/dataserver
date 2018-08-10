@@ -9,7 +9,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_tmpl_group_premise")
+@Table(name="t_sa_tmpl_group_premise")
 public class TemplateGroupPremise {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -11,7 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_tmpl_list_criteria")
+@Table(name="t_sa_tmpl_list_criteria")
 public class TemplateListCriteria {
 	
 	public TemplateListCriteria() {}

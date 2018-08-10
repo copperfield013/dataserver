@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="v_dictionary_option")
+@Table(name="v_sa_dictionary_option")
 public class DictionaryOption {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

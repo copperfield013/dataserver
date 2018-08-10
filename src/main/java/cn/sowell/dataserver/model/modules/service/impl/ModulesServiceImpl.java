@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import javax.annotation.Resource;
 
 import org.springframework.beans.MutablePropertyValues;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.abc.application.BizFusionContext;
 import com.abc.dto.ErrorInfomation;
@@ -28,9 +30,11 @@ import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.copframe.utils.date.FrameDateFormat;
+import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
+import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -112,8 +116,7 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String module, UserIdentifier user){
-		BizFusionContext context = fFactory.getModuleConfig(module).getCurrentContext(user);
+	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
 		CriteriaFactory criteriaFactory = new CriteriaFactory(context);
 		ArrayList<Criteria> cs = new ArrayList<Criteria>();
 		nCriterias.forEach(nCriteria->{
@@ -121,7 +124,7 @@ public class ModulesServiceImpl implements ModulesService{
 			if(TextUtils.hasText(nCriteria.getValue())){
 				String attributeName = nCriteria.getFieldName();
 				if(attributeName.contains(".")) {
-					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(module, nCriteria.getFieldId()));
+					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
 				}
 				String comparator = nCriteria.getComparator();
 				if("equals".equals(comparator)){
@@ -330,8 +333,8 @@ public class ModulesServiceImpl implements ModulesService{
 
 
 	@Override
-	public void deleteEntity(String code) {
-		abcService.delete(code);
+	public void deleteEntity(String moduleName, String code, UserIdentifier user) {
+		abcService.delete(moduleName, code, user);
 	}
 	
 	@Override
@@ -348,7 +351,7 @@ public class ModulesServiceImpl implements ModulesService{
 	public EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> nCriterias,
 			ExportDataPageInfo ePageInfo, UserIdentifier user) {
 		PageInfo pageInfo = ePageInfo.getPageInfo();
-		List<Criteria> cs = toCriterias(nCriterias, ltmpl.getModule(), user);
+		List<Criteria> cs = toCriterias(nCriterias, ltmpl.getModule(), fFactory.getModuleConfig(ltmpl.getModule()).getCurrentContext(user));
 		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cs, ePageInfo, user);
 		int dataCount = pageInfo.getPageSize();
 		int startPageNo = pageInfo.getPageNo();
@@ -376,7 +379,30 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 
 
-	
+	@Override
+	public Map<String, CEntityPropertyParser> getEntityParsers(String moduleName, String relationName, Set<String> codes, UserIdentifier user) {
+		Assert.hasText(moduleName);
+		Map<String, CEntityPropertyParser> map = new LinkedHashMap<>();
+		if(codes != null && !codes.isEmpty()) {
+			if(relationName != null) {
+				for (String code : codes) {
+					RelationEntityPropertyParser parser = abcService.getRelationEntityParser(moduleName, relationName, code, user);
+					if(parser != null) {
+						map.put(code, parser);
+					}
+				}
+			}else {
+				for (String code : codes) {
+					ModuleEntityPropertyParser parser = abcService.getModuleEntityParser(moduleName, code, user);
+					if(parser != null) {
+						map.put(code, parser);
+					}
+				}
+			}
+		}
+		return map;
+		
+	}
 	
 	
 	

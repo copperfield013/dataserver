@@ -95,9 +95,9 @@ public class DictionaryDaoImpl implements DictionaryDao{
 					"	SELECT" +
 							"		f.id field_id, o.c_title" +
 							"	FROM" +
-							"		v_dictionary_field f" +
-							"	LEFT JOIN v_dictionary_optiongroup og ON f.optgroup_id = og.id" +
-							"	LEFT JOIN v_dictionary_option o ON og.id = o.group_id" +
+							"		v_sa_dictionary_field f" +
+							"	LEFT JOIN v_sa_dictionary_optiongroup og ON f.optgroup_id = og.id" +
+							"	LEFT JOIN v_sa_dictionary_option o ON og.id = o.group_id" +
 							"	where f.id in (:fieldIds)" +
 //							"	and o.c_disabled is null" +
 //							"	and o.c_deleted is NULL" +
@@ -132,7 +132,7 @@ public class DictionaryDaoImpl implements DictionaryDao{
 	public Map<Long, Set<String>> getRelationSubdomainMap(Set<Long> compositeIds) {
 		Map<Long, Set<String>> map = new HashMap<>();
 		if(compositeIds != null && !compositeIds.isEmpty()) {
-			String sql = "select * from v_dictionary_relation_label l where l.relation_id in (:compositeIds)";
+			String sql = "select * from v_sa_dictionary_relation_label l where l.relation_id in (:compositeIds)";
 			SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
 			query.setParameterList("compositeIds", compositeIds);
 			query.setResultTransformer(new ColumnMapResultTransformer<byte[]>() {
@@ -145,7 +145,8 @@ public class DictionaryDaoImpl implements DictionaryDao{
 					}
 					String toSplit = mapWrapper.getString("label");
 					if(toSplit != null) {
-						map.get(relationId).addAll(TextUtils.split(toSplit, ",", LinkedHashSet::new, c->c));
+						Set<String> labels = TextUtils.split(toSplit, ",", LinkedHashSet::new, c->c);
+						map.get(relationId).addAll(labels);
 					}
 					return null;
 				}

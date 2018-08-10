@@ -11,9 +11,12 @@ import cn.sowell.copframe.dto.page.PageInfo;
 
 public class EntityViewCriteria {
 	private String module;
+	private String relationName;
 	private Set<CriteriaEntry> criteriaEntries = new HashSet<>();
 	
 	private List<Long> viewFieldIds = new ArrayList<>();
+	
+	private Set<String> existCodes ;
 	
 	private PageInfo pageInfo = new CommonPageInfo();
 	private UserIdentifier user;
@@ -99,6 +102,23 @@ public class EntityViewCriteria {
 	public void setUser(UserIdentifier user) {
 		this.user = user;
 	}
+
+	public String getRelationName() {
+		return relationName;
+	}
+
+	public void setRelationName(String relationName) {
+		this.relationName = relationName;
+	}
+
+	public Set<String> getExistCodes() {
+		return existCodes;
+	}
+
+	public void setExistCodes(Set<String> existCodes) {
+		this.existCodes = existCodes;
+	}
+	
 	
 
 

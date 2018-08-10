@@ -13,7 +13,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.sowell.datacenter.entityResolver.Field;
 
 @Entity
-@Table(name="v_dictionary_field")
+@Table(name="v_sa_dictionary_field")
 public class DictionaryField implements Field{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

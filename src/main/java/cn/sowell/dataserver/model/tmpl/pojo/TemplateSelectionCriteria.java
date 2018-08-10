@@ -11,8 +11,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_sa_tmpl_list_column")
-public class TemplateListColumn {
+@Table(name="t_sa_tmpl_selection_criteria")
+public class TemplateSelectionCriteria {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
@@ -30,20 +30,32 @@ public class TemplateListColumn {
 	@Transient
 	private String fieldKey;
 	
-	@Transient
-	private boolean fieldAvailable = true;
+	@Column(name="c_relation")
+	private String relation;
 	
-	@Column(name="c_spec_field")
-	private String specialField;
+	@Column(name="c_query_show")
+	private Integer queryShow;
+	
+	@Column(name="c_comparator")
+	private String comparator;
+	
+	@Column(name="c_input_type")
+	private String inputType;
+	
+	@Column(name="c_relation_label")
+	private String relationLabel;
 	
 	@Column(name="c_order")
 	private Integer order;
 	
-	@Column(name="c_orderable")
-	private Integer orderable;
-	
 	@Column(name="c_view_option")
 	private String viewOption;
+	
+	@Column(name="c_def_val")
+	private String defaultValue;
+	
+	@Column(name="c_placeholder")
+	private String placeholder;
 	
 	@Column(name="create_time")
 	private Date createTime;
@@ -51,79 +63,142 @@ public class TemplateListColumn {
 	@Column(name="update_time")
 	private Date updateTime;
 	
+	@Transient
+	private boolean fieldAvailable = true;
+
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	public Long getTemplateId() {
 		return templateId;
 	}
+
 	public void setTemplateId(Long templateId) {
 		this.templateId = templateId;
 	}
+
 	public String getTitle() {
 		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public Long getFieldId() {
 		return fieldId;
 	}
+
 	public void setFieldId(Long fieldId) {
 		this.fieldId = fieldId;
 	}
+
 	public String getFieldKey() {
 		return fieldKey;
 	}
+
 	public void setFieldKey(String fieldKey) {
 		this.fieldKey = fieldKey;
 	}
+
+	public String getRelation() {
+		return relation;
+	}
+
+	public void setRelation(String relation) {
+		this.relation = relation;
+	}
+
+	public Integer getQueryShow() {
+		return queryShow;
+	}
+
+	public void setQueryShow(Integer queryShow) {
+		this.queryShow = queryShow;
+	}
+
+	public String getComparator() {
+		return comparator;
+	}
+
+	public void setComparator(String comparator) {
+		this.comparator = comparator;
+	}
+
+	public String getInputType() {
+		return inputType;
+	}
+
+	public void setInputType(String inputType) {
+		this.inputType = inputType;
+	}
+
+	public String getRelationLabel() {
+		return relationLabel;
+	}
+
+	public void setRelationLabel(String relationLabel) {
+		this.relationLabel = relationLabel;
+	}
+
 	public Integer getOrder() {
 		return order;
 	}
+
 	public void setOrder(Integer order) {
 		this.order = order;
 	}
-	public Integer getOrderable() {
-		return orderable;
-	}
-	public void setOrderable(Integer orderable) {
-		this.orderable = orderable;
-	}
+
 	public String getViewOption() {
 		return viewOption;
 	}
+
 	public void setViewOption(String viewOption) {
 		this.viewOption = viewOption;
 	}
+
+	public String getDefaultValue() {
+		return defaultValue;
+	}
+
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+
+	public String getPlaceholder() {
+		return placeholder;
+	}
+
+	public void setPlaceholder(String placeholder) {
+		this.placeholder = placeholder;
+	}
+
 	public Date getCreateTime() {
 		return createTime;
 	}
+
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
+
 	public Date getUpdateTime() {
 		return updateTime;
 	}
+
 	public void setUpdateTime(Date updateTime) {
 		this.updateTime = updateTime;
 	}
-	public String getSpecialField() {
-		return specialField;
-	}
-	public void setSpecialField(String specialField) {
-		this.specialField = specialField;
-	}
-	
+
 	public void setFieldUnavailable() {
-		this.fieldAvailable = false;
+		fieldAvailable = false;
 	}
-	
+
 	public boolean getFieldAvailable() {
-		return this.fieldAvailable;
+		return fieldAvailable;
 	}
-	
 }

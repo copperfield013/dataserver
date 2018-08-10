@@ -8,7 +8,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_tmpl_detail_template")
+@Table(name="t_sa_tmpl_detail_template")
 public class TemplateDetailTemplate extends AbstractTemplate{
 	
 	

@@ -13,7 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
-@Table(name="t_tmpl_group")
+@Table(name="t_sa_tmpl_group")
 public class TemplateGroup {
 	
 	@Id

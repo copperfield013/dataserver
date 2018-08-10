@@ -18,7 +18,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 
 @Entity
-@Table(name="t_tmpl_detail_fieldgroup")
+@Table(name="t_sa_tmpl_detail_fieldgroup")
 public class TemplateDetailFieldGroup {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
@@ -32,6 +32,9 @@ public class TemplateDetailFieldGroup {
 	
 	@Column(name="c_is_array")
 	private Integer isArray;
+	
+	@Column(name="stmpl_id")
+	private Long selectionTemplateId;
 	
 	@Column(name="composite_id")
 	private Long compositeId;
@@ -123,4 +126,13 @@ public class TemplateDetailFieldGroup {
 	public void setComposite(DictionaryComposite composite) {
 		this.composite = composite;
 	}
+
+	public Long getSelectionTemplateId() {
+		return selectionTemplateId;
+	}
+
+	public void setSelectionTemplateId(Long selectionTemplateId) {
+		this.selectionTemplateId = selectionTemplateId;
+	}
+
 }

@@ -9,6 +9,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
 public interface TemplateService {
 
@@ -99,5 +100,7 @@ public interface TemplateService {
 	void switchAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId);
 
 	void switchAllGroupsListTemplate(Long ltmplId, Long targetLtmplId);
+
+	TemplateSelectionTemplate getSelectionTemplate(Long stmplId);
 
 }

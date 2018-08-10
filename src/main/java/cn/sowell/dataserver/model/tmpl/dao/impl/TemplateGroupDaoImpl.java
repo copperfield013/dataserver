@@ -16,13 +16,13 @@ import org.springframework.stereotype.Repository;
 
 import cn.sowell.copframe.dao.deferedQuery.DeferedParamSnippet;
 import cn.sowell.copframe.utils.TextUtils;
-import cn.sowell.dataserver.model.tmpl.dao.TempalteGroupDao;
+import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.utils.QueryUtils;
 
 @Repository
-public class TempalteGroupDaoImpl implements TempalteGroupDao{
+public class TemplateGroupDaoImpl implements TemplateGroupDao{
 
 	@Resource
 	SessionFactory sFactory;
@@ -30,9 +30,9 @@ public class TempalteGroupDaoImpl implements TempalteGroupDao{
 	private List<TemplateGroup> queryGroups(GroupQueryCriteria criteria) {
 		return QueryUtils.queryList(
 				"	SELECT g.*, l.c_title list_tmpl_title, d.c_title detail_tmpl_title" +
-				"	FROM t_tmpl_group g" +
-				"		LEFT JOIN t_tmpl_list_template l ON g.list_tmpl_id = l.id" +
-				"		LEFT JOIN t_tmpl_detail_template d ON g.detail_tmpl_id = d.id " +
+				"	FROM t_sa_tmpl_group g" +
+				"		LEFT JOIN t_sa_tmpl_list_template l ON g.list_tmpl_id = l.id" +
+				"		LEFT JOIN t_sa_tmpl_detail_template d ON g.detail_tmpl_id = d.id " +
 				"	WHERE" +
 				"		g.id is not null @moduleSnippet @keySnippet @groupIdsSnippet @modulesSnippet",
 				TemplateGroup.class, sFactory.getCurrentSession(), dQuery->{
@@ -156,7 +156,7 @@ public class TempalteGroupDaoImpl implements TempalteGroupDao{
 	
 	@Override
 	public void updateAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId) {
-		String sql = "update t_tmpl_group set detail_tmpl_id = :targetDtmplId where detail_tmpl_id = :dtmplId";
+		String sql = "update t_sa_tmpl_group set detail_tmpl_id = :targetDtmplId where detail_tmpl_id = :dtmplId";
 		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
 		query.setLong("dtmplId", dtmplId);
 		query.setLong("targetDtmplId", targetDtmplId);
@@ -165,7 +165,7 @@ public class TempalteGroupDaoImpl implements TempalteGroupDao{
 
 	@Override
 	public void updateAllGroupsListTemplate(Long ltmplId, Long targetLtmplId) {
-		String sql = "update t_tmpl_group set list_tmpl_id = :targetLtmplId where list_tmpl_id = :ltmplId";
+		String sql = "update t_sa_tmpl_group set list_tmpl_id = :targetLtmplId where list_tmpl_id = :ltmplId";
 		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
 		query.setLong("ltmplId", ltmplId);
 		query.setLong("targetLtmplId", targetLtmplId);

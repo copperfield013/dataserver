@@ -13,6 +13,7 @@ public class QueryEntityParameter {
 	private PageInfo pageInfo;
 	private String module;
 	private String code;
+	private String relationName;
 	private Date historyTime;
 	private UserIdentifier user;
 	public String getModule() {
@@ -50,6 +51,12 @@ public class QueryEntityParameter {
 	}
 	public void setUser(UserIdentifier user) {
 		this.user = user;
+	}
+	public String getRelationName() {
+		return relationName;
+	}
+	public void setRelationName(String relationName) {
+		this.relationName = relationName;
 	}
 	
 	

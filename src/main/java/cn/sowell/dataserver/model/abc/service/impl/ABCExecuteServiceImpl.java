@@ -10,7 +10,6 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.abc.application.BizFusionContext;
-import com.abc.application.RemovedFusionContext;
 import com.abc.dto.ErrorInfomation;
 import com.abc.extface.dto.RecordHistory;
 import com.abc.mapping.entity.Entity;
@@ -28,6 +27,7 @@ import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
+import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.EntityQueryAdapter;
@@ -61,21 +61,28 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	}
 	
 	
-	private List<Entity> queryEntityList(String moduleName, List<Criteria> criterias, PageInfo pageInfo, UserIdentifier user){
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
-		Discoverer discoverer=PanelFactory.getDiscoverer(context);
+	private List<Entity> queryEntityList(String moduleName, String relationName, List<Criteria> criterias, PageInfo pageInfo, UserIdentifier user){
+		BizFusionContext context;
+		if(TextUtils.hasText(relationName)) {
+			context = fFactory.getModuleConfig(moduleName).createRelationContext(relationName, user);
+		}else {
+			context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
+		}
+		
+		Discoverer discoverer = PanelFactory.getDiscoverer(context);
 		
 		EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(criterias, "编辑时间");
 		sortedPagedQuery.setPageSize(pageInfo.getPageSize());
 		pageInfo.setCount(sortedPagedQuery.getAllCount());
-		List<Entity> peoples = sortedPagedQuery.visit(pageInfo.getPageNo());
-		return peoples;
+		List<Entity> entities = sortedPagedQuery.visit(pageInfo.getPageNo());
+		return entities;
 	}
 	
 	@Override
 	public List<Entity> queryModuleEntities(QueryEntityParameter param) {
 		return queryEntityList(
 				param.getModule(), 
+				param.getRelationName(),
 				param.getCriterias(), 
 				param.getPageInfo(),
 				param.getUser());
@@ -128,13 +135,19 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		return result;
 	}
 	
+	@Override
+	public Entity getModuleRelationEntity(String moduleName, String relationName, String code, UserIdentifier user) {
+		BizFusionContext context = fFactory.getModuleConfig(moduleName).createRelationContext(relationName, user);
+		Discoverer discoverer=PanelFactory.getDiscoverer(context);
+		Entity result=discoverer.discover(code);
+		return result;
+	}
+	
 
 	@Override
-	public void delete(String code) {
-		RemovedFusionContext appInfo=new RemovedFusionContext(code, null, "list-delete" );
-		if(!PanelFactory.getIntegration().remove(appInfo)){
-			throw new RuntimeException("删除失败");
-		}
+	public void delete(String moduleName, String code, UserIdentifier user) {
+		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
+		config.removeEntity(code, user);
 	}
 	
 	@Override
@@ -148,7 +161,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		String code = (String) map.remove(config.getCodeAttributeName());
 		map.remove(ABCNodeProxy.CODE_PROPERTY_NAME);
 		if(TextUtils.hasText(code)) {
-			delete(code);
+			delete(module, code, user);
 		}
 		return mergeEntity(module, map, user);
 	}
@@ -162,6 +175,17 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user) {
 		return fFactory.getModuleResolver(module).createParser(entity, user);
+	}
+	
+	@Override
+	public RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, Entity entity,
+			UserIdentifier user) {
+		return fFactory.getModuleResolver(moduleName).createRelationParser(entity, relationName, user);
+	}
+	
+	@Override
+	public RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, String code, UserIdentifier user) {
+		return getRelationEntityParser(moduleName, relationName, getModuleRelationEntity(moduleName, relationName, code, user), user);
 	}
 
 

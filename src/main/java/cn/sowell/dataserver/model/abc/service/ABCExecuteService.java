@@ -9,6 +9,7 @@ import com.abc.query.criteria.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
 import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
@@ -55,7 +56,7 @@ public interface ABCExecuteService {
 	 * 根据code删除实体
 	 * @param code
 	 */
-	void delete(String code);
+	void delete(String moduleName, String code, UserIdentifier user);
 
 	/**
 	 * 保存或者修改数据库中的实体对象
@@ -80,21 +81,15 @@ public interface ABCExecuteService {
 	EntityPagingQueryProxy getModuleQueryProxy(String module, List<Criteria> cs, ExportDataPageInfo ePageInfo, UserIdentifier user);
 
 
-	
+	RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, Entity entity, UserIdentifier user);
 
 
-	
+	Entity getModuleRelationEntity(String moduleName, String relationName, String code, UserIdentifier user);
 
 
+	RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, String code,
+			UserIdentifier user);
 
-
-	
-
-
-	
-
-
-	
 
 
 }

@@ -10,6 +10,7 @@ import org.springframework.context.ApplicationContext;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
 public class TemplateUpdateStrategyFactory {
 
@@ -30,6 +31,7 @@ public class TemplateUpdateStrategyFactory {
 		}
 		add(TemplateDetailTemplate.class, TemplateDetailUpdateStrategy.class, true);
 		add(TemplateListTemplate.class, TemplateListUpdateStrategy.class, true);
+		add(TemplateSelectionTemplate.class, TemplateSelectionUpdateStrategy.class, true);
 	}
 	
 	

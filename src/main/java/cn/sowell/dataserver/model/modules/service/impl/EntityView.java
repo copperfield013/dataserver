@@ -10,6 +10,7 @@ import com.abc.util.ValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
@@ -18,7 +19,7 @@ import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 
 public class EntityView {
 	private List<Entity> entities;
-	private List<ModuleEntityPropertyParser> parsers;
+	private List<? extends CEntityPropertyParser> parsers;
 	
 	private EntityViewCriteria criteria = new EntityViewCriteria();
 	
@@ -36,9 +37,6 @@ public class EntityView {
 		this.entities = entities;
 	}
 	
-	void setParsers(List<ModuleEntityPropertyParser> parsers) {
-		this.parsers = parsers;
-	}
 	
 	void setCriteria(EntityViewCriteria criteria) {
 		this.criteria = criteria;
@@ -60,9 +58,6 @@ public class EntityView {
 		return module;
 	}
 	
-	public List<ModuleEntityPropertyParser> getParsers(){
-		return parsers;
-	}
 	
 	private Map<Long, List<OptionItem>> criteriaOptionMap = new HashMap<>();
 	private Map<String, Label> criteriaLabelMap = new HashMap<>();
@@ -85,10 +80,10 @@ public class EntityView {
 	
 	public List<EntityRow> getRows(){
 		List<EntityRow> list = new ArrayList<EntityRow>();
-		List<ModuleEntityPropertyParser> parsers = getParsers();
+		List<? extends CEntityPropertyParser> parsers = getParsers();
 		List<EntityColumn> columns = getColumns();
 		for (int i = 0; i < parsers.size(); i++) {
-			ModuleEntityPropertyParser parser = parsers.get(i);
+			CEntityPropertyParser parser = parsers.get(i);
 			final int index = i;
 			EntityRow row = new EntityRow() {
 
@@ -131,7 +126,11 @@ public class EntityView {
 
 				@Override
 				public String getTitle() {
-					return parser.getTitle();
+					if(parser instanceof ModuleEntityPropertyParser) {
+						return ((ModuleEntityPropertyParser) parser).getTitle();
+					}else {
+						return null;
+					}
 				}
 				
 			};
@@ -182,6 +181,14 @@ public class EntityView {
 	
 	public static interface EntityCell{
 		String getText();
+	}
+
+	public List<? extends CEntityPropertyParser> getParsers() {
+		return parsers;
+	}
+
+	public void setParsers(List<? extends CEntityPropertyParser> parsers) {
+		this.parsers = parsers;
 	}
 
 

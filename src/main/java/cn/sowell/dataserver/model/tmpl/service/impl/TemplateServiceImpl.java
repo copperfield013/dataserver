@@ -19,6 +19,7 @@ import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.datacenter.entityResolver.Composite;
 import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
@@ -29,7 +30,8 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.tmpl.dao.DetailTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
-import cn.sowell.dataserver.model.tmpl.dao.TempalteGroupDao;
+import cn.sowell.dataserver.model.tmpl.dao.SelectionTemplateDao;
+import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
@@ -39,6 +41,9 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 import cn.sowell.dataserver.model.tmpl.strategy.NormalDaoSetUpdateStrategy;
 import cn.sowell.dataserver.model.tmpl.strategy.TemplateUpdateStrategy;
@@ -57,7 +62,10 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	DetailTemplateDao dDao;
 	
 	@Resource
-	TempalteGroupDao gDao;
+	TemplateGroupDao gDao;
+	
+	@Resource
+	SelectionTemplateDao sDao;
 
 	@Resource
 	DictionaryService dictService;
@@ -74,7 +82,11 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	
 	Map<Long, TemplateListTemplate> ltmplMap;
 	
+	Map<Long, TemplateSelectionTemplate> stmplMap;
+	
 	Logger logger = Logger.getLogger(TemplateServiceImpl.class);
+
+	
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -312,11 +324,15 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			reloadDetailTemplate(tmplId);
 		}else if(template instanceof TemplateListTemplate) {
 			reloadListTemplate(tmplId);
+		}else if(template instanceof TemplateSelectionTemplate) {
+			reloadSelectionTemplate(tmplId);
 		}
 		return tmplId;
 	}
 	
 	
+	
+
 	Map<Long, TemplateGroup> getTemplateGroupMap(){
 		synchronized (this) {
 			if(tmplGroupMap == null) {
@@ -527,5 +543,85 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		clearCache();
 	}
 	
+	@Override
+	public TemplateSelectionTemplate getSelectionTemplate(Long stmplId) {
+		return getSelectionTemplateMap().get(stmplId);
+	}
+	
+	Map<Long, TemplateSelectionTemplate> getSelectionTemplateMap(){
+		synchronized (this) {
+			if(stmplMap == null) {
+				logger.debug("开始初始化所有选择模板缓存数据...");
+				List<TemplateSelectionTemplate> stmpls = sDao.queryTemplates();
+				Map<Long, List<TemplateSelectionColumn>> columnsMap = sDao.queryColumnsMap();
+				Map<Long, Set<TemplateSelectionCriteria>> criteriasMap = sDao.queryCriteriasMap();
+				stmpls = stmpls.stream().filter(stmpl->checkModuleUsable(stmpl.getModule())).collect(Collectors.toList());
+				stmpls.forEach(ltmpl->{
+					List<TemplateSelectionColumn> columns = columnsMap.get(ltmpl.getId());
+					Set<TemplateSelectionCriteria> criterias = criteriasMap.get(ltmpl.getId());
+					handlerSelectionTemplate(ltmpl, columns, criterias);
+				});
+				stmplMap = CollectionUtils.toMap(stmpls, ltmpl->ltmpl.getId());
+				logger.debug(ltmplMap);
+				logger.debug("初始化选择模板缓存数据完成，共缓存" + ltmplMap.size() + "个列表模板");
+			}
+			return stmplMap;
+		}
+	}
+	
+	private void handlerSelectionTemplate(TemplateSelectionTemplate stmpl, List<TemplateSelectionColumn> columns,
+			Set<TemplateSelectionCriteria> criterias) {
+		Assert.notNull(stmpl.getCompositeId());
+		DictionaryComposite composite = dictService.getComposite(stmpl.getModule(), stmpl.getCompositeId());
+		if(composite != null && Composite.RELATION_ADD_TYPE.equals(composite.getAddType())) {
+			stmpl.setRelationName(composite.getName());
+		}
+		if(columns != null) {
+			columns.forEach(column->{
+				if(column.getSpecialField() == null) {
+					DictionaryField field = dictService.getField(stmpl.getModule(), column.getFieldId());
+					if(field != null) {
+						column.setFieldKey(field.getFullKey());
+					}else {
+						column.setFieldUnavailable();
+					}
+				}
+			});
+			stmpl.setColumns(columns);
+		}
+		if(criterias != null) {
+			criterias.forEach(criteria->{
+				DictionaryField field = dictService.getField(stmpl.getModule(), criteria.getFieldId());
+				if(field != null) {
+					if(supportFieldInputType(criteria.getInputType(), field.getType())) {
+						criteria.setFieldKey(field.getFullKey());
+						//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
+						//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
+						return;
+					}
+				}
+				criteria.setFieldUnavailable();
+			});
+			stmpl.setCriterias(criterias);
+		}
+	}
+	private void reloadSelectionTemplate(Long tmplId) {
+		if(stmplMap != null) {
+			synchronized (ltmplMap) {
+				logger.debug("重新加载选择模板[id=" + tmplId + "]缓存数据...");
+				TemplateSelectionTemplate stmpl = nDao.get(TemplateSelectionTemplate.class, tmplId);
+				if(stmpl != null && checkModuleUsable(stmpl.getModule())) {
+					List<TemplateSelectionColumn> columns = sDao.getColumnsByTmplId(tmplId);
+					Set<TemplateSelectionCriteria> criterias = sDao.getCriteriaByTmplId(tmplId);
+					handlerSelectionTemplate(stmpl, columns, criterias);
+					stmplMap.put(tmplId, stmpl);
+					logger.debug("列表模板[" + tmplId + "]缓存数据重新加载完成, 值为" + stmpl);
+				}else {
+					ltmplMap.remove(tmplId);
+					logger.debug("从缓存中移除选择模板[id=" + tmplId + "]");
+				}
+			}
+		}
+	}
 
 }

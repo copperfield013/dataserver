@@ -57,6 +57,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 						toDeleteGroupId.remove(group.getId());
 						originGroup.setTitle(group.getTitle());
 						originGroup.setOrder(group.getOrder());
+						originGroup.setSelectionTemplateId(group.getSelectionTemplateId());
 						originGroup.setUpdateTime(now);
 						nDao.update(originGroup);
 						

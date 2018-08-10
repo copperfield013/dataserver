@@ -14,6 +14,7 @@ import javax.annotation.Resource;
 import org.apache.log4j.Logger;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -24,6 +25,7 @@ import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.copframe.utils.TimelinenessWrapper;
 import cn.sowell.copframe.utils.TimelinessMap;
+import cn.sowell.datacenter.entityResolver.Composite;
 import cn.sowell.datacenter.entityResolver.FieldParserDescription;
 import cn.sowell.datacenter.entityResolver.FieldService;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
@@ -46,7 +48,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 	Logger logger = Logger.getLogger(DictionaryServiceImpl.class);
 	
-	static final Integer RELATION_ADD_TYPE = 5; 
+	
 	
 	private final TimelinessMap<String, List<DictionaryComposite>> moduleCompositesMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinessMap<String, List<DictionaryField>> moduleFieldsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
@@ -72,7 +74,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 				Map<Long, Set<String>> relationSubdomainMap = 
 						dictDao.getRelationSubdomainMap(
 								CollectionUtils.toSet(composites.stream().filter(
-										c->RELATION_ADD_TYPE.equals(c.getAddType())
+										c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
 										).collect(Collectors.toSet()), c->c.getId()));
 				composites.forEach(composite->{
 					composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>()));
@@ -109,6 +111,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	public synchronized List<DictionaryField> getAllFields(String module) {
 		return moduleFieldsMap.get(module, m->{
 			List<DictionaryComposite> composites = getAllComposites(module);
+			Assert.notNull(composites, "模块");
 			List<DictionaryField> result = new ArrayList<>();
 			composites.forEach(composite->composite.getFields().forEach(field->result.add(field)));
 			return result;

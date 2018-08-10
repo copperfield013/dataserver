@@ -8,7 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="v_dictionary_optiongroup")
+@Table(name="v_sa_dictionary_optiongroup")
 public class DictionaryOptionGroup {
 	
 	@Id
