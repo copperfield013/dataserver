@@ -2,7 +2,7 @@ package cn.sowell.dataserver.model.modules.pojo.criteria;
 
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 
-public class NormalCriteria {
+public class NormalCriteria implements Cloneable{
 	private Long fieldId;
 	private String fieldName;
 	private String comparator;
@@ -13,6 +13,19 @@ public class NormalCriteria {
 	public NormalCriteria() {
 		super();
 	}
+	
+	@Override
+	public NormalCriteria clone() {
+		NormalCriteria criteria = new NormalCriteria();
+		criteria.setFieldId(this.getFieldId());
+		criteria.setFieldName(this.getFieldName());
+		criteria.setComparator(this.getComparator());
+		criteria.setValue(this.getValue());
+		criteria.setRelationLabel(this.getRelationLabel());
+		criteria.setComposite(this.getComposite());
+		return criteria;
+	}
+	
 	public String getValue() {
 		return value;
 	}

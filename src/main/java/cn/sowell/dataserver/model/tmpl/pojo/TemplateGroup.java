@@ -40,7 +40,7 @@ public class TemplateGroup {
 	@Column(name="detail_tmpl_title")
 	private String detailTemplateTitle;
 	
-	@Column(name="c_key")
+	@Column(name="c_key", updatable=false)
 	private String key;
 	
 	@Column(name="c_authority")

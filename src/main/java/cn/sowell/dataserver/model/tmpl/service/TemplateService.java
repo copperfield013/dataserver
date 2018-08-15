@@ -103,4 +103,6 @@ public interface TemplateService {
 
 	TemplateSelectionTemplate getSelectionTemplate(Long stmplId);
 
+	void reloadSelectionTemplate(Long tmplId);
+
 }

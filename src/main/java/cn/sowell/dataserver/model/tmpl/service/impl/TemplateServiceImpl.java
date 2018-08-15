@@ -13,6 +13,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
 import org.springframework.util.Assert;
 
 import cn.sowell.copframe.common.UserIdentifier;
@@ -320,6 +321,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}else {
 			tmplId = strategy.create(template);
 		}
+		TransactionAspectSupport.currentTransactionStatus().flush();
+		nDao.clear();
 		if(template instanceof TemplateDetailTemplate) {
 			reloadDetailTemplate(tmplId);
 		}else if(template instanceof TemplateListTemplate) {
@@ -414,6 +417,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 						premise.setGroupId(group.getId());
 					})
 				.doUpdate(new HashSet<>(originPremises ), new HashSet<>(group.getPremises()));
+			TransactionAspectSupport.currentTransactionStatus().flush();
+			nDao.clear();
 			reloadTemplateGroup(group.getId());
 		}else {
 			//创建模板组合
@@ -605,7 +610,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			stmpl.setCriterias(criterias);
 		}
 	}
-	private void reloadSelectionTemplate(Long tmplId) {
+	@Override
+	public void reloadSelectionTemplate(Long tmplId) {
 		if(stmplMap != null) {
 			synchronized (ltmplMap) {
 				logger.debug("重新加载选择模板[id=" + tmplId + "]缓存数据...");
