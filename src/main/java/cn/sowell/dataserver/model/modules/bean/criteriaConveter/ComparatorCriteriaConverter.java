@@ -1,9 +1,13 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.springframework.util.Assert;
 
+import com.abc.application.BizFusionContext;
+import com.abc.application.FusionContext;
 import com.abc.query.criteria.Criteria;
 import com.abc.query.criteria.CriteriaFactory;
 
@@ -22,7 +26,6 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 		return true;
 	}
 	protected abstract Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value);
-	protected abstract Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel, String suffix, String value);
 	
 	@Override
 	public boolean support(NormalCriteria nCriteria) {
@@ -33,26 +36,53 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 	
 
 	@Override
-	public void invokeAddCriteria(CriteriaFactory criteriaFactory, NormalCriteria nCriteria, List<Criteria> cs) {
-		Assert.notNull(criteriaFactory, "criteriaFactory不能为null");
+	public void invokeAddCriteria(BizFusionContext fusionContext, NormalCriteria nCriteria, List<Criteria> cs) {
+		Assert.notNull(fusionContext, "fusionContext不能为null");
+		CriteriaFactory criteriaFactory = new CriteriaFactory(fusionContext);
 		DictionaryComposite composite = nCriteria.getComposite();
-		Criteria criteria;
+		Criteria criteria = null;
 		if(composite != null && composite.getRelationSubdomain() != null) {
 			String compositeName = composite.getName();
 			String suffix = nCriteria.getFieldName().substring(compositeName.length() + 1);
-			criteria = getRelationCriteria(criteriaFactory, compositeName, 
-					nCriteria.getRelationLabel(),
-					suffix, 
-					nCriteria.getValue());
+			String mappingName = fusionContext.getABCNode().getRelation(compositeName).getFullTitle();
+			BizFusionContext relationFusionContext = new BizFusionContext();
+			relationFusionContext.setMappingName(mappingName);
+			relationFusionContext.setSource(FusionContext.SOURCE_COMMON);
+			relationFusionContext.setToEntityRange(FusionContext.ENTITY_CONTENT_RANGE_INTERSECTION);
+			Collection<Criteria> relCriterias = getRelationCriterias(new CriteriaFactory(relationFusionContext), suffix, nCriteria.getValue());
+			if(relCriterias != null) {
+				criteria = criteriaFactory.createRelationCriteria(compositeName, nCriteria.getRelationLabel(), relCriterias);
+			}
 		}else {
 			criteria = getNormalCriteria(criteriaFactory, nCriteria.getFieldName(), nCriteria.getValue());
 		}
-		
-		cs.add(criteria);
+		if(criteria != null) {
+			cs.add(criteria);
+		}
+	}
+	protected Collection<Criteria> getRelationCriterias(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value){
+		Criteria criteria = getRelationCriteria(relationCriteriaFactory, fieldNameInRelation, value);
+		if(criteria != null) {
+			return wrap(criteria);
+		}
+		return null;
 	}
 	
 
-	
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
+		return null;
+	}
+	protected Collection<Criteria> wrap(Criteria... criterias) {
+		ArrayList<Criteria> cs = new ArrayList<>();
+		for (Criteria c : criterias) {
+			if(c != null) {
+				cs.add(c);
+			}
+		}
+		return cs;
+	}
 
 	
 	

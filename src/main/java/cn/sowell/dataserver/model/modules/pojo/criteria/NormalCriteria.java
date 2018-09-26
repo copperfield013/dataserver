@@ -4,6 +4,7 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 
 public class NormalCriteria implements Cloneable{
 	private Long fieldId;
+	private Long compositeId;
 	private String fieldName;
 	private String comparator;
 	private String value;
@@ -61,5 +62,13 @@ public class NormalCriteria implements Cloneable{
 	}
 	public void setRelationLabel(String relationLabel) {
 		this.relationLabel = relationLabel;
+	}
+
+	public Long getCompositeId() {
+		return compositeId;
+	}
+
+	public void setCompositeId(Long compositeId) {
+		this.compositeId = compositeId;
 	}
 }

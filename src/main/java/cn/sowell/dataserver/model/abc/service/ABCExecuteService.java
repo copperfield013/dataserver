@@ -3,7 +3,6 @@ package cn.sowell.dataserver.model.abc.service;
 import java.util.List;
 import java.util.Map;
 
-import com.abc.dto.ErrorInfomation;
 import com.abc.mapping.entity.Entity;
 import com.abc.query.criteria.Criteria;
 
@@ -40,10 +39,9 @@ public interface ABCExecuteService {
 	/**
 	 * 
 	 * @param param
-	 * @param errors
 	 * @return
 	 */
-	Entity getHistoryEntity(QueryEntityParameter param, List<ErrorInfomation> errors, UserIdentifier user);
+	ModuleEntityPropertyParser getHistoryEntityParser(QueryEntityParameter param, UserIdentifier user);
 	/**
 	 * 根据模块名和code获得实体对象
 	 * @param module
@@ -75,8 +73,10 @@ public interface ABCExecuteService {
 	 * @return
 	 */
 	ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user);
+	ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user, Object propertyGetterArgument);
 
 	ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user);
+	ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user, Object propertyGetterArgument);
 
 	EntityPagingQueryProxy getModuleQueryProxy(String module, List<Criteria> cs, ExportDataPageInfo ePageInfo, UserIdentifier user);
 

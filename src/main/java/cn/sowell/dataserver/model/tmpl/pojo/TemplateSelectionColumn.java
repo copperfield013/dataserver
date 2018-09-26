@@ -143,7 +143,7 @@ public class TemplateSelectionColumn {
 		fieldAvailable = false;
 	}
 
-	public Object getFieldAvailable() {
+	public boolean getFieldAvailable() {
 		return fieldAvailable;
 	}
 }

@@ -1,6 +1,8 @@
 package cn.sowell.dataserver.model.abc.service.impl;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +76,11 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(criterias, "编辑时间");
 		sortedPagedQuery.setPageSize(pageInfo.getPageSize());
 		pageInfo.setCount(sortedPagedQuery.getAllCount());
+		if(Integer.valueOf(0).equals(pageInfo.getCount())) {
+			pageInfo.setPageNo(1);
+		}else if(pageInfo.getCount() < pageInfo.getPageSize() * pageInfo.getPageNo() ) {
+			pageInfo.setPageNo((int) Math.ceil(Double.valueOf(pageInfo.getCount()) / pageInfo.getPageSize()));
+		}
 		List<Entity> entities = sortedPagedQuery.visit(pageInfo.getPageNo());
 		return entities;
 	}
@@ -90,17 +97,29 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	
 	
 	@Override
-	public Entity getHistoryEntity(QueryEntityParameter param, List<ErrorInfomation> errors, UserIdentifier user) {
+	public ModuleEntityPropertyParser getHistoryEntityParser(QueryEntityParameter param, UserIdentifier user) {
 		BizFusionContext context = fFactory.getModuleConfig(param.getModule()).getCurrentContext(user);
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
-		
-		HistoryTracker tracker = discoverer.track(param.getCode(), param.getHistoryTime());
-		List<ErrorInfomation> errorInfomations = tracker.getErrorInfomations();
-		if(errors != null && errorInfomations != null && !errorInfomations.isEmpty()){
-			errors.addAll(errorInfomations);
+		HistoryTracker tracker = null;
+		if(param.getHistoryId() != null) {
+			tracker = discoverer.track(BigInteger.valueOf(param.getHistoryId()));
+		}else if(param.getCode() != null) {
+			if(param.getHistoryTime() == null) {
+				param.setHistoryTime(new Date());
+			}
+			tracker = discoverer.track(param.getCode(), param.getHistoryTime());
+		}else {
+			logger.error("historyId一级entityCode不能都为null！！！");
 		}
-		return tracker.getEntity();
-		
+		if(tracker != null) {
+			Entity entity = tracker.getEntity();
+			List<ErrorInfomation> errors = tracker.getErrorInfomations();
+			ModuleEntityPropertyParser parser = fFactory.getModuleResolver(param.getModule()).createParser(entity, user, discoverer);
+			parser.setErrors(errors);
+			return parser;
+		}else {
+			return null;
+		}
 	}
 	
 	@Override
@@ -110,14 +129,13 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		List<RecordHistory> historyList = discoverer.trackHistory(code, pageNo, pageSize);
-		
 		List<EntityHistoryItem> list = new ArrayList<EntityHistoryItem>();
 		historyList.forEach(history->{
 			EntityHistoryItem item = new EntityHistoryItem();
 			item.setId(FormatUtils.toLong(history.getId()));
 			item.setTime(history.getCreationTime());
 			item.setUserName(toUserName(history.getUsergroupId()));
-			item.setDesc(history.getContent());
+			item.setDesc(history.getContentWithDecompress());
 			list.add(item);
 		});
 		return list;
@@ -166,15 +184,24 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		return mergeEntity(module, map, user);
 	}
 	
-	
 	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user) {
-		return getModuleEntityParser(module, getModuleEntity(module, code, user), user);
+		return getModuleEntityParser(module, code, user, null);
+	}
+	
+	@Override
+	public ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user, Object propertyGetterArgument) {
+		return getModuleEntityParser(module, getModuleEntity(module, code, user), user, propertyGetterArgument);
 	}
 	
 	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user) {
-		return fFactory.getModuleResolver(module).createParser(entity, user);
+		return getModuleEntityParser(module, entity, user, null);
+	}
+	
+	@Override
+	public ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user, Object propertyGetterArgument) {
+		return fFactory.getModuleResolver(module).createParser(entity, user, propertyGetterArgument);
 	}
 	
 	@Override

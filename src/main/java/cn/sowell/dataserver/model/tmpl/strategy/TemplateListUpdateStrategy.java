@@ -56,23 +56,22 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 				TemplateListCriteria.class, nDao, 
 				criteria->criteria.getId(), 
 				(originCriteria, criteria)->{
-					if(!criteria.getFieldAvailable()) {
-						originCriteria.setTitle(criteria.getTitle());
-						originCriteria.setOrder(criteria.getOrder());
-						originCriteria.setUpdateTime(now);
-						return;
+					originCriteria.setTitle(criteria.getTitle());
+					originCriteria.setOrder(criteria.getOrder());
+					originCriteria.setUpdateTime(now);
+					if(criteria.getFieldAvailable()) {
+						originCriteria.setFieldId(criteria.getFieldId());
+						originCriteria.setCompositeId(criteria.getCompositeId());
+						originCriteria.setFieldKey(criteria.getFieldKey());
+						originCriteria.setRelation(criteria.getRelation());
+						originCriteria.setQueryShow(criteria.getQueryShow());
+						originCriteria.setComparator(criteria.getComparator());
+						originCriteria.setInputType(criteria.getInputType());
+						originCriteria.setRelationLabel(criteria.getRelationLabel());
+						originCriteria.setViewOption(criteria.getViewOption());
+						originCriteria.setDefaultValue(criteria.getDefaultValue());
+						originCriteria.setPlaceholder(criteria.getPlaceholder());
 					}
-					originCriteria.setFieldId(criteria.getFieldId());
-					originCriteria.setFieldKey(criteria.getFieldKey());
-					originCriteria.setRelation(criteria.getRelation());
-					originCriteria.setQueryShow(criteria.getQueryShow());
-					originCriteria.setComparator(criteria.getComparator());
-					originCriteria.setInputType(criteria.getInputType());
-					originCriteria.setRelationLabel(criteria.getRelationLabel());
-					originCriteria.setViewOption(criteria.getViewOption());
-					originCriteria.setDefaultValue(criteria.getDefaultValue());
-					originCriteria.setPlaceholder(criteria.getPlaceholder());
-					
 				}, criteria->{
 					criteria.setCreateTime(now);
 					criteria.setUpdateTime(now);

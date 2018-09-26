@@ -52,6 +52,16 @@ public class TemplateGroup {
 	@Column(name="create_user_code")
 	private String createUserCode;
 	
+	
+	@Column(name="c_hide_create_btn")
+	private Integer hideCreateButton;
+	
+	@Column(name="c_hide_import_btn")
+	private Integer hideImportButton;
+	
+	@Column(name="c_hide_export_btn")
+	private Integer hideExportButton;
+	
 	@Column(name="create_time")
 	private Date createTime;
 	
@@ -174,6 +184,31 @@ public class TemplateGroup {
 	public void setCreateUserCode(String createUserCode) {
 		this.createUserCode = createUserCode;
 	}
+
+	public Integer getHideCreateButton() {
+		return hideCreateButton;
+	}
+
+	public void setHideCreateButton(Integer hideCreateButton) {
+		this.hideCreateButton = hideCreateButton;
+	}
+
+	public Integer getHideImportButton() {
+		return hideImportButton;
+	}
+
+	public void setHideImportButton(Integer hideImportButton) {
+		this.hideImportButton = hideImportButton;
+	}
+
+	public Integer getHideExportButton() {
+		return hideExportButton;
+	}
+
+	public void setHideExportButton(Integer hideExportButton) {
+		this.hideExportButton = hideExportButton;
+	}
+
 
 	
 }

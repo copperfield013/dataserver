@@ -7,6 +7,7 @@ import java.util.Set;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryOption;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryRelationLabels;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
 
 public interface DictionaryDao {
@@ -31,5 +32,7 @@ public interface DictionaryDao {
 
 	Map<Long, DictionaryField> getFieldMap(Set<Long> fieldIds);
 
-	Map<Long, Set<String>> getRelationSubdomainMap(Set<Long> compositeIds);
+	Map<Long, DictionaryRelationLabels> getRelationSubdomainMap(Set<Long> compositeIds);
+
+	List<DictionaryOption> queryOptions(Long optGroupId);
 }

@@ -15,12 +15,9 @@ public class IsNotNullCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
-		return cFactory.createIsNotNullQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix);
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
+		return relationCriteriaFactory.createIsNotNullQueryCriteria(fieldNameInRelation);
 	}
 
 	@Override

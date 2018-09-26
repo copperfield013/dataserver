@@ -191,6 +191,5 @@ public class EntityView {
 		this.parsers = parsers;
 	}
 
-
 }
 

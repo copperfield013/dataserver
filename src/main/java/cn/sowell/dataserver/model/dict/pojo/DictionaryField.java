@@ -32,6 +32,9 @@ public class DictionaryField implements Field{
 	@JSONField(name="name")
 	private String fullKey;
 	
+	@Column(name="c_opt")
+	private String fieldAccess;
+	
 	
 	@Column(name="c_title")
 	@JSONField(name="cname")
@@ -46,6 +49,18 @@ public class DictionaryField implements Field{
 	
 	@Column(name="optgroup_id")
 	private Long optionGroupId;
+	
+	@Column(name="c_cas_level")
+	private Integer casLevel;
+	
+	@Column(name="c_abcattr_code")
+	private String abcAttrCode;
+	
+	@Column(name="module")
+	private String moduleName;
+	
+	@Transient
+	private String fieldPattern;
 	
 	public Long getId() {
 		return id;
@@ -94,5 +109,35 @@ public class DictionaryField implements Field{
 	}
 	public void setComposite(DictionaryComposite composite) {
 		this.composite = composite;
+	}
+	public String getFieldAccess() {
+		return fieldAccess;
+	}
+	public void setFieldAccess(String fieldAccess) {
+		this.fieldAccess = fieldAccess;
+	}
+	public Integer getCasLevel() {
+		return casLevel;
+	}
+	public void setCasLevel(Integer casLevel) {
+		this.casLevel = casLevel;
+	}
+	public String getFieldPattern() {
+		return fieldPattern;
+	}
+	public void setFieldPattern(String fieldPattern) {
+		this.fieldPattern = fieldPattern;
+	}
+	public String getAbcAttrCode() {
+		return abcAttrCode;
+	}
+	public void setAbcAttrCode(String abcAttrCode) {
+		this.abcAttrCode = abcAttrCode;
+	}
+	public String getModuleName() {
+		return moduleName;
+	}
+	public void setModuleName(String moduleName) {
+		this.moduleName = moduleName;
 	}
 }

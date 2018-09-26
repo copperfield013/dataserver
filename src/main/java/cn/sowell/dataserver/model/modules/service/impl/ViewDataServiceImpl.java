@@ -107,8 +107,13 @@ public class ViewDataServiceImpl implements ViewDataService{
 			entities = queryEntities(criteria, criteria.getUser());
 		}
 		
-		Set<Long> criteriaFieldIds = view.getCriteria().getCriteriaEntries().stream().map(CriteriaEntry::getFieldId).collect(Collectors.toSet());
-		Set<String> criteriaFieldNames = view.getCriteria().getCriteriaEntries().stream().map(CriteriaEntry::getFieldName).collect(Collectors.toSet());
+		view.setCriteria(criteria);
+		Set<Long> criteriaFieldIds = view.getCriteria().getCriteriaEntries().stream().filter(entry->entry.getFieldId() != null).map(CriteriaEntry::getFieldId).collect(Collectors.toSet());
+		Set<String> criteriaFieldNames = view.getCriteria()
+					.getCriteriaEntries().stream().map(entry->{
+						DictionaryField field = dService.getField(moduleName, entry.getFieldId());
+						return field != null? field.getFullKey().replaceAll("\\[\\d+\\]", ""): null;
+					}).collect(Collectors.toSet());
 		view.setCriteriaOptionMap(dService.getOptionsMap(criteriaFieldIds));
 		view.setCriteriaLabelMap(dService.getModuleLabelMap(moduleName, criteriaFieldNames));
 		view.setParsers(parsers);
@@ -127,7 +132,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		
 		if(tCriteriaMap != null) {
 			tCriteriaMap.forEach((criteriaId, tCriteria)->{
-				if(tCriteria.getDefaultValue() != null && !stmplCrteriaMap.containsKey(criteriaId)) {
+				if(!stmplCrteriaMap.containsKey(criteriaId)) {
 					stmplCrteriaMap.put(criteriaId, tCriteria.getDefaultValue());
 				}
 			});
@@ -156,7 +161,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		
 		if(tCriteriaMap != null) {
 			tCriteriaMap.forEach((criteriaId, tCriteria)->{
-				if(tCriteria.getDefaultValue() != null && !ltmplCrteriaMap.containsKey(criteriaId)) {
+				if(!ltmplCrteriaMap.containsKey(criteriaId)) {
 					ltmplCrteriaMap.put(criteriaId, tCriteria.getDefaultValue());
 				}
 			});
@@ -166,6 +171,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 				TemplateListCriteria tCriteria = tCriteriaMap.get(criteriaId);
 				CriteriaEntry cEntry = new CriteriaEntry();
 				cEntry.setFieldId(tCriteria.getFieldId());
+				cEntry.setCompositeId(tCriteria.getCompositeId());
 				cEntry.setComparator(tCriteria.getComparator());
 				cEntry.setValue(value);
 				cEntry.setRelationLabel(tCriteria.getRelationLabel());
@@ -187,16 +193,24 @@ public class ViewDataServiceImpl implements ViewDataService{
 		if(criteria.getCriteriaEntries() != null) {
 			criteria.getCriteriaEntries().forEach(entry->{
 				NormalCriteria nCriteria = new NormalCriteria();
-				DictionaryField field = dService.getField(criteria.getModule(), entry.getFieldId());
-				if(field != null) {
-					nCriteria.setFieldId(entry.getFieldId());
-					String fieldName = field.getFullKey();
-					if(hasRelation && fieldName.startsWith(criteria.getRelationName())) {
-						fieldName = fieldName.substring(criteria.getRelationName().length() + 1);
+				if(entry.getFieldId() != null) {
+					DictionaryField field = dService.getField(criteria.getModule(), entry.getFieldId());
+					if(field != null) {
+						nCriteria.setCompositeId(entry.getCompositeId());
+						nCriteria.setFieldId(entry.getFieldId());
+						String fieldName = field.getFullKey();
+						if(hasRelation && fieldName.startsWith(criteria.getRelationName())) {
+							fieldName = fieldName.substring(criteria.getRelationName().length() + 1);
+						}
+						nCriteria.setFieldName(fieldName);
+						nCriteria.setComparator(entry.getComparator());
+						nCriteria.setRelationLabel(entry.getRelationLabel());
+						nCriteria.setValue(entry.getValue());
+						nCriterias.add(nCriteria);
 					}
-					nCriteria.setFieldName(fieldName);
+				}else if(entry.getCompositeId() != null) {
+					nCriteria.setCompositeId(entry.getCompositeId());
 					nCriteria.setComparator(entry.getComparator());
-					nCriteria.setRelationLabel(entry.getRelationLabel());
 					nCriteria.setValue(entry.getValue());
 					nCriterias.add(nCriteria);
 				}

@@ -16,8 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.abc.application.BizFusionContext;
-import com.abc.dto.ErrorInfomation;
 import com.abc.mapping.entity.Entity;
+import com.abc.mapping.node.NodeOpsType;
 import com.abc.query.criteria.Criteria;
 import com.abc.query.criteria.CriteriaFactory;
 
@@ -29,8 +29,10 @@ import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.copframe.utils.date.FrameDateFormat;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
+import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
+import cn.sowell.datacenter.entityResolver.impl.ABCNodeFusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -81,6 +83,7 @@ public class ModulesServiceImpl implements ModulesService{
 					 NormalCriteria ncriteria = new NormalCriteria();
 					 //TODO: 需要将fieldKey转换成attributeName
 					 ncriteria.setFieldId(criteria.getFieldId());
+					 ncriteria.setCompositeId(criteria.getCompositeId());
 					 ncriteria.setFieldName(criteria.getFieldKey());
 					 ncriteria.setComparator(criteria.getComparator());
 					 ncriteria.setValue(FormatUtils.toString(pv.getValue()));
@@ -108,18 +111,26 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Override
 	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
-		CriteriaFactory criteriaFactory = new CriteriaFactory(context);
 		ArrayList<Criteria> cs = new ArrayList<Criteria>();
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
-				String attributeName = nCriteria.getFieldName();
-				if(attributeName.contains(".")) {
-					nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
+				if(nCriteria.getFieldName() != null) {
+					String attributeName = nCriteria.getFieldName();
+					if(attributeName.contains(".")) {
+						nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
+					}
+				}else if(nCriteria.getCompositeId() != null) {
+					nCriteria.setComposite(dictService.getComposite(moduleName, nCriteria.getCompositeId()));
 				}
-				converter.invokeAddCriteria(criteriaFactory, nCriteria, cs);
+				converter.invokeAddCriteria(context, nCriteria, cs);
 			}
 		});
+		if(cs.isEmpty()) {
+			CriteriaFactory cf = new CriteriaFactory(context);
+			Criteria c = cf.createIsNotNullQueryCriteria("唯一编码");
+			cs.add(c);
+		}
 		return cs;
 	}
 	
@@ -151,24 +162,26 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Override
 	public ModuleEntityPropertyParser getEntity(String module, String code, Date date, UserIdentifier user) {
-		Entity entity = null;
-		List<ErrorInfomation> errors = new ArrayList<ErrorInfomation>();
 		if(date == null) {
-			entity = abcService.getModuleEntity(module, code, user);
+			Entity entity = abcService.getModuleEntity(module, code, user);
+			return entity == null? null: abcService.getModuleEntityParser(module, entity, user, null);
 		}else {
 			QueryEntityParameter param = new QueryEntityParameter();
 			param.setModule(module);
 			param.setCode(code);
 			param.setHistoryTime(date);
-			entity = abcService.getHistoryEntity(param, errors, user);
+			return abcService.getHistoryEntityParser(param, user);
 		}
-		if(entity != null) {
-			ModuleEntityPropertyParser parser = abcService.getModuleEntityParser(module, entity, user);
-			parser.setErrors(errors);
-			return parser;
-		}else {
-			return null;
-		}
+	}
+	
+	@Override
+	public ModuleEntityPropertyParser getHistoryEntityParser(String moduleName, String code, Long historyId,
+			UserIdentifier user) {
+		QueryEntityParameter param = new QueryEntityParameter();
+		param.setModule(moduleName);
+		param.setCode(code);
+		param.setHistoryId(historyId);
+		return abcService.getHistoryEntityParser(param, user);
 	}
 	
 	@Override
@@ -249,6 +262,26 @@ public class ModulesServiceImpl implements ModulesService{
 		
 	}
 	
+	@Override
+	public boolean getModuleEntityWritable(String moduleName) {
+		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
+		if(resolver instanceof ABCNodeFusionContextConfigResolver) {
+			NodeOpsType nodeAccess = ((ABCNodeFusionContextConfigResolver) resolver).getABCNodeAccess();
+			if(NodeOpsType.READ.equals(nodeAccess)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	public EntityHistoryItem getLastHistoryItem(String moduleName, String code, UserIdentifier user) {
+		List<EntityHistoryItem> histories = abcService.queryHistory(moduleName, code, 1, 1, user);
+		if(histories != null && !histories.isEmpty()) {
+			return histories.get(0);
+		}
+		return null;
+	}
 	
 	
 }

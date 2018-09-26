@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+
 @Entity
 @Table(name="t_sa_tmpl_list_criteria")
 public class TemplateListCriteria {
@@ -33,6 +35,12 @@ public class TemplateListCriteria {
 	
 	@Column(name="field_id")
 	private Long fieldId;
+	
+	@Column(name="composite_id")
+	private Long compositeId;
+	
+	@Transient
+	private DictionaryComposite composite;
 	
 	//@Column(name="c_field_key")
 	@Transient
@@ -188,6 +196,22 @@ public class TemplateListCriteria {
 	
 	public boolean getFieldAvailable() {
 		return this.fieldAvailable;
+	}
+
+	public Long getCompositeId() {
+		return compositeId;
+	}
+
+	public void setCompositeId(Long compositeId) {
+		this.compositeId = compositeId;
+	}
+
+	public DictionaryComposite getComposite() {
+		return composite;
+	}
+
+	public void setComposite(DictionaryComposite composite) {
+		this.composite = composite;
 	}
 	
 }

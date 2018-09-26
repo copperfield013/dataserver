@@ -27,15 +27,14 @@ public class DateRangeInCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
 		String[] rangeStr = getDateRange(value);
-		return cFactory.createOpenBetweenQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix,
-				rangeStr[0],
-				rangeStr[1]);
+		if(rangeStr[0] != null || rangeStr[1] != null) {
+			return relationCriteriaFactory.createOpenBetweenQueryCriteria(fieldNameInRelation, rangeStr[0], rangeStr[1]);
+		}else {
+			return null;
+		}
 	}
 	
 
@@ -43,7 +42,11 @@ public class DateRangeInCriteriaConverter extends ComparatorCriteriaConverter {
 	@Override
 	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {
 		String[] rangeStr = getDateRange(value);
-		return cFactory.createOpenBetweenQueryCriteria(fieldName, rangeStr[0], rangeStr[1]);
+		if(rangeStr[0] != null || rangeStr[1] != null) {
+			return cFactory.createOpenBetweenQueryCriteria(fieldName, rangeStr[0], rangeStr[1]);
+		}else {
+			return null;
+		}
 	}
 
 }

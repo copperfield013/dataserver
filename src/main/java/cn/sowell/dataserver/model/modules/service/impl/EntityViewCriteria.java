@@ -23,10 +23,10 @@ public class EntityViewCriteria {
 	
 	public static class CriteriaEntry{
 		private Long fieldId;
+		private Long compositeId; 
 		private String comparator;
 		private String value;
 		private String relationLabel;
-		private String fieldName;
 		public String getComparator() {
 			return comparator;
 		}
@@ -51,11 +51,11 @@ public class EntityViewCriteria {
 		public void setFieldId(Long fieldId) {
 			this.fieldId = fieldId;
 		}
-		String getFieldName() {
-			return fieldName;
+		public Long getCompositeId() {
+			return compositeId;
 		}
-		void setFieldName(String fieldName) {
-			this.fieldName = fieldName;
+		public void setCompositeId(Long compositeId) {
+			this.compositeId = compositeId;
 		}
 	}
 

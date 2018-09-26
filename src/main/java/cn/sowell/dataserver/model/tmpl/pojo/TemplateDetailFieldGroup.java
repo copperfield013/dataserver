@@ -39,6 +39,13 @@ public class TemplateDetailFieldGroup {
 	@Column(name="composite_id")
 	private Long compositeId;
 	
+	@Transient
+	private String relationLabelAccess;
+	
+	@Transient
+	private String additionRelationLabelAccess;
+	
+	
 	/*@ManyToOne
 	@JoinColumn(name = "composite_id",insertable = false, updatable = false)
 	@NotFound(action=NotFoundAction.IGNORE)*/
@@ -133,6 +140,22 @@ public class TemplateDetailFieldGroup {
 
 	public void setSelectionTemplateId(Long selectionTemplateId) {
 		this.selectionTemplateId = selectionTemplateId;
+	}
+
+	public String getRelationLabelAccess() {
+		return relationLabelAccess;
+	}
+
+	public void setRelationLabelAccess(String relationLabelAccess) {
+		this.relationLabelAccess = relationLabelAccess;
+	}
+
+	public String getAdditionRelationLabelAccess() {
+		return additionRelationLabelAccess;
+	}
+
+	public void setAdditionRelationLabelAccess(String additionRelationLabelAccess) {
+		this.additionRelationLabelAccess = additionRelationLabelAccess;
 	}
 
 }

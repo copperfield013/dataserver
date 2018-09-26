@@ -15,6 +15,7 @@ public class QueryEntityParameter {
 	private String code;
 	private String relationName;
 	private Date historyTime;
+	private Long historyId;
 	private UserIdentifier user;
 	public String getModule() {
 		return module;
@@ -57,6 +58,12 @@ public class QueryEntityParameter {
 	}
 	public void setRelationName(String relationName) {
 		this.relationName = relationName;
+	}
+	public Long getHistoryId() {
+		return historyId;
+	}
+	public void setHistoryId(Long historyId) {
+		this.historyId = historyId;
 	}
 	
 	

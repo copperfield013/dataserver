@@ -32,6 +32,14 @@ public class TemplateDetailField {
 	@Transient
 	private boolean fieldAvailable = true;
 	
+	//字段是否可以被编辑
+	@Transient
+	private String fieldAccess;
+	
+	//如果是一对多字段，那么要判断新建的记录的该字段是否可以编辑
+	@Transient
+	private String additionAccess;
+	
 	@Column(name="c_title")
 	private String title;
 	
@@ -55,6 +63,9 @@ public class TemplateDetailField {
 	@Transient
 	@Column(name="optgroup_id")
 	private Long optionGroupId;
+	
+	@Transient
+	private String optionGroupKey;
 	
 	@Transient
 	@Column(name="c_type")
@@ -148,6 +159,24 @@ public class TemplateDetailField {
 	}
 	public void setValidators(String validators) {
 		this.validators = validators;
+	}
+	public String getFieldAccess() {
+		return fieldAccess;
+	}
+	public void setFieldAccess(String fieldAccess) {
+		this.fieldAccess = fieldAccess;
+	}
+	public String getAdditionAccess() {
+		return additionAccess;
+	}
+	public void setAdditionAccess(String additionAccess) {
+		this.additionAccess = additionAccess;
+	}
+	public String getOptionGroupKey() {
+		return optionGroupKey;
+	}
+	public void setOptionGroupKey(String optionGroupKey) {
+		this.optionGroupKey = optionGroupKey;
 	}
 	
 }

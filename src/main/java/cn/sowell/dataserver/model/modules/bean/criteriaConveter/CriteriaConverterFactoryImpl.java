@@ -24,11 +24,12 @@ public class CriteriaConverterFactoryImpl implements CriteriaConverterFactory
 		converters.add(new LabelIncludeAllConverter());
 		converters.add(new LabelNotIncludeAnyConverter());
 		converters.add(new DateRangeInCriteriaConverter());
+		converters.add(new RelationExistCriteriaConverter());
 	}
 	
 	
 	public void setExtendConverters(List<CriteriaConverter> extendConverters) {
-		converters.addAll(0, converters);
+		converters.addAll(0, extendConverters);
 	}
 	
 	

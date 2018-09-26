@@ -11,15 +11,13 @@ public class DateAfterCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
-		return cFactory.createOpenBetweenQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix,
-				value,
-				null);
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory,
+			String fieldNameInRelation, String value) {
+		return relationCriteriaFactory.createOpenBetweenQueryCriteria(fieldNameInRelation, value, null);
 	}
+	
+
+	
 
 	@Override
 	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {

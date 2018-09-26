@@ -6,11 +6,6 @@ import java.util.List;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
@@ -33,8 +28,7 @@ import cn.sowell.dataserver.model.modules.service.impl.ListTemplateEntityViewCri
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 
-@ContextConfiguration(locations = "classpath*:spring-dataserver.xml")
-@RunWith(SpringJUnit4ClassRunner.class)
+//@ContextConfiguration(locations = "classpath*:spring-dataserver.xml")
 public class TestDataserver {
 	
 	@Resource
@@ -51,8 +45,7 @@ public class TestDataserver {
 	@Resource
 	FusionContextConfigFactory fFactory;
 	
-	@Test
-	@Transactional
+	//@Test
 	public void testRelation() {
 		FusionContextConfig config = fFactory.getModuleConfig("DSNc5a274h");
 		FusionContextConfigResolver resolver = config.getConfigResolver();

@@ -6,23 +6,22 @@ import java.util.Set;
 import com.abc.query.criteria.Criteria;
 import com.abc.query.criteria.CriteriaFactory;
 
-public class LabelIncludeAnyConverter extends ComparatorCriteriaConverter{
+public class LabelIncludeAnyConverter extends MultiSupportComparatorCriteriaConverter{
 
-	@Override
-	public String getComparator() {
-		return "l1";
+	public LabelIncludeAnyConverter() {
+		super(new String[]{"l1", "ms1"});
 	}
 	
+	protected LabelIncludeAnyConverter(String[] comparatorNames) {
+		super(comparatorNames);
+	}
+	
+	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
 		Set<String> valueSet = getValueSet(value);
-		return cFactory.createIncludeQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix, 
-				valueSet
-				);
+		return relationCriteriaFactory.createIncludeQueryCriteria(fieldNameInRelation, valueSet);
 	}
 
 	protected Set<String> getValueSet(String value) {

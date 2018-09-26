@@ -10,14 +10,11 @@ public class TextLikeCriteriaConverter extends ComparatorCriteriaConverter {
 		return "t1";
 	}
 
+	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
-		return cFactory.createLikeQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix, 
-				value);
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
+		return relationCriteriaFactory.createLikeQueryCriteria(fieldNameInRelation, value);
 	}
 
 	@Override

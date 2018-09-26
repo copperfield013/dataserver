@@ -6,6 +6,7 @@ import java.util.Set;
 import com.abc.query.criteria.Criteria;
 import com.abc.query.criteria.CriteriaFactory;
 
+import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 
 public class EqualsCriteriaConverter extends ComparatorCriteriaConverter{
@@ -27,18 +28,13 @@ public class EqualsCriteriaConverter extends ComparatorCriteriaConverter{
 	
 	@Override
 	public boolean support(NormalCriteria nCriteria) {
-		return comparators.contains(nCriteria.getComparator());
+		return (!shouldHasValue() || TextUtils.hasText(nCriteria.getValue())) && comparators.contains(nCriteria.getComparator());
 	}
 
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory cFactory, String compositeName, String relationLabel,
-			String suffix, String value) {
-		return cFactory.createQueryCriteria(
-				compositeName, 
-				relationLabel,
-				suffix, 
-				value
-				);
+	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
+			String value) {
+		return relationCriteriaFactory.createQueryCriteria(fieldNameInRelation, value);
 	}
 
 	@Override

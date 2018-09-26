@@ -41,6 +41,15 @@ public class DictionaryComposite implements Composite{
 	@Column(name="add_type")
 	private Integer addType;
 	
+	@Column(name="c_opt")
+	private String access;
+	
+	@Transient
+	private String relationLabelAccess;
+	
+	@Transient
+	private String relationKey;
+	
 	@Transient
 	private List<DictionaryField> fields;
 
@@ -95,5 +104,22 @@ public class DictionaryComposite implements Composite{
 	public void setAddType(Integer addType) {
 		this.addType = addType;
 	}
-	
+	public String getAccess() {
+		return access;
+	}
+	public void setAccess(String access) {
+		this.access = access;
+	}
+	public String getRelationLabelAccess() {
+		return relationLabelAccess;
+	}
+	public void setRelationLabelAccess(String relationLabelAccess) {
+		this.relationLabelAccess = relationLabelAccess;
+	}
+	public String getRelationKey() {
+		return relationKey;
+	}
+	public void setRelationKey(String relationKey) {
+		this.relationKey = relationKey;
+	}
 }

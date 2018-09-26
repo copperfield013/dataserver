@@ -46,7 +46,25 @@ public interface DictionaryService {
 	 */
 	DictionaryComposite getComposite(String module, Long compositeId);
 
+	/**
+	 * 
+	 * @param optGroupId
+	 * @return
+	 */
+	List<DictionaryOption> queryOptions(Long optGroupId);
 
+	Set<String> getCompositeClasses(String moduleName, Long compositeId);
 
+	/**
+	 * 获得字段在目标模块中的字段对象
+	 * @param targetModuleName
+	 * @param originField
+	 * @return
+	 */
+	DictionaryField mapModuleField(String targetModuleName, DictionaryField originField);
 	
+	DictionaryComposite mapModuleComposite(String targetModuleName, DictionaryComposite composite);
+
+
+
 }

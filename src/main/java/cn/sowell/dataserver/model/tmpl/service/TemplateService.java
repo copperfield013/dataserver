@@ -3,6 +3,9 @@ package cn.sowell.dataserver.model.tmpl.service;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
+
+import org.springframework.beans.factory.InitializingBean;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
@@ -42,8 +45,9 @@ public interface TemplateService {
 	 * 保存模板组
 	 * @param group
 	 * @param userIdentifier 
+	 * @return 
 	 */
-	void saveGroup(TemplateGroup group, UserIdentifier userIdentifier);
+	Long saveGroup(TemplateGroup group, UserIdentifier userIdentifier);
 
 	TemplateGroup getTemplateGroup(Long groupId);
 
@@ -104,5 +108,17 @@ public interface TemplateService {
 	TemplateSelectionTemplate getSelectionTemplate(Long stmplId);
 
 	void reloadSelectionTemplate(Long tmplId);
+
+	/**
+	 * 不允许重复执行绑定，最好在{@link InitializingBean#afterPropertiesSet()}方法中执行
+	 * @param run
+	 */
+	void bindTemplateGroupReloadEvent(Consumer<TemplateGroup> consumer);
+
+	Long copyDetailTemplate(Long dtmplId, String targetModuleName);
+
+	Long copyListTemplate(Long ltmplId, String targetModuleName);
+
+	Long copyTemplateGroup(Long tmplGroupId, String targetModuleName, UserIdentifier user);
 
 }

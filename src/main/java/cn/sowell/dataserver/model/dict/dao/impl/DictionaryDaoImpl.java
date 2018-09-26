@@ -24,6 +24,7 @@ import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryOption;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryRelationLabels;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
 
 
@@ -129,8 +130,8 @@ public class DictionaryDaoImpl implements DictionaryDao{
 	
 	@SuppressWarnings("serial")
 	@Override
-	public Map<Long, Set<String>> getRelationSubdomainMap(Set<Long> compositeIds) {
-		Map<Long, Set<String>> map = new HashMap<>();
+	public Map<Long, DictionaryRelationLabels> getRelationSubdomainMap(Set<Long> compositeIds) {
+		Map<Long, DictionaryRelationLabels> map = new HashMap<>();
 		if(compositeIds != null && !compositeIds.isEmpty()) {
 			String sql = "select * from v_sa_dictionary_relation_label l where l.relation_id in (:compositeIds)";
 			SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
@@ -140,13 +141,14 @@ public class DictionaryDaoImpl implements DictionaryDao{
 				@Override
 				protected byte[] build(SimpleMapWrapper mapWrapper) {
 					Long relationId = mapWrapper.getLong("relation_id");
-					if(!map.containsKey(relationId)) {
-						map.put(relationId, new LinkedHashSet<>());
-					}
 					String toSplit = mapWrapper.getString("label");
-					if(toSplit != null) {
-						Set<String> labels = TextUtils.split(toSplit, ",", LinkedHashSet::new, c->c);
-						map.get(relationId).addAll(labels);
+					if(toSplit != null && relationId != null) {
+						DictionaryRelationLabels labels = new DictionaryRelationLabels();
+						labels.setRelationId(relationId);
+						labels.setLabelId(mapWrapper.getLong("label_id"));
+						labels.setAccess(mapWrapper.getString("opt"));
+						labels.setLabels(TextUtils.split(toSplit, ",", LinkedHashSet::new, c->c));
+						map.put(relationId, labels);
 					}
 					return null;
 				}
@@ -155,4 +157,14 @@ public class DictionaryDaoImpl implements DictionaryDao{
 		}
 		return map;
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DictionaryOption> queryOptions(Long optGroupId) {
+		String hql = "from DictionaryOption o where o.groupId = :groupId order by o.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		query.setLong("groupId", optGroupId);
+		return query.list();
+	}
+	
 }
