@@ -325,7 +325,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 			//获得目标模块中所有abcattrCode相同的字段
 			Set<DictionaryField> eligibilities = 
 					fields.stream()
-					.filter(field->field.getAbcAttrCode().equals(abcAttrCode))
+					.filter(field->field.getAbcAttrCode()!= null && field.getAbcAttrCode().equals(abcAttrCode))
 					.collect(Collectors.toSet());
 			if(!eligibilities.isEmpty()) {
 				//如果有多个字段匹配
