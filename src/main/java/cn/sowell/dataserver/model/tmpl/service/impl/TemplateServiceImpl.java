@@ -146,10 +146,11 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 
 	private void handlerListTemplate(TemplateListTemplate ltmpl, List<TemplateListColumn> columns,
 			Set<TemplateListCriteria> criterias) {
+		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(ltmpl.getModule()), DictionaryField::getId);
 		if(columns != null) {
 			columns.forEach(column->{
 				if(column.getSpecialField() == null) {
-					DictionaryField field = dictService.getField(ltmpl.getModule(), column.getFieldId());
+					DictionaryField field = fieldMap.get(column.getFieldId());
 					if(field != null) {
 						column.setFieldKey(field.getFullKey());
 					}else {
@@ -162,7 +163,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		if(criterias != null) {
 			criterias.forEach(criteria->{
 				if(criteria.getFieldId() != null) {
-					DictionaryField field = dictService.getField(ltmpl.getModule(), criteria.getFieldId());
+					DictionaryField field = fieldMap.get(criteria.getFieldId());
 					if(field != null) {
 						if(supportFieldInputType(criteria.getInputType(), field.getType())) {
 							criteria.setFieldKey(field.getFullKey());
@@ -236,12 +237,12 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	
-	private String getFieldAccess(DictionaryField field, String moduleName) {
+	private String getFieldAccess(DictionaryField field, boolean moduleEntityWritable) {
 		Assert.notNull(field);
 		String fAccess = field.getFieldAccess();
 		DictionaryComposite composite = field.getComposite();
 		final NodeOpsType READ = NodeOpsType.READ;
-		if(!mService.getModuleEntityWritable(moduleName)) {
+		if(!moduleEntityWritable) {
 			return READ.getName();
 		}else {
 			if(READ.getName().equals(fAccess) || composite == null) {
@@ -266,12 +267,12 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 	}
 	
-	private String getFieldAdditionAccess(DictionaryField field, String moduleName) {
+	private String getFieldAdditionAccess(DictionaryField field, boolean moduleEntityWritable) {
 		Assert.notNull(field);
 		String fAccess = field.getFieldAccess();
 		DictionaryComposite composite = field.getComposite();
 		final NodeOpsType READ = NodeOpsType.READ;
-		if(!mService.getModuleEntityWritable(moduleName)) {
+		if(!moduleEntityWritable) {
 			return READ.getName();
 		}
 		if(composite != null && READ.getName().equals(composite.getAccess())) {
@@ -314,11 +315,14 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		FusionContextConfigResolver resolver = config.getConfigResolver();
 		dtmpl.setGroups(fieldGroups);
 		if(fieldGroups != null) {
+			Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(dictService.getAllComposites(dtmpl.getModule()), DictionaryComposite::getId);
+			Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(dtmpl.getModule()), DictionaryField::getId);
+			boolean moduleEntityWritable = mService.getModuleEntityWritable(dtmpl.getModule());
 			fieldGroups.forEach(fieldGroup->{
 				List<TemplateDetailField> groupFields = groupFieldsMap.get(fieldGroup.getId());
 				fieldGroup.setFields(groupFields);
 				if(fieldGroup.getCompositeId() != null) {
-					DictionaryComposite composite = dictService.getComposite(dtmpl.getModule(), fieldGroup.getCompositeId());
+					DictionaryComposite composite = compositeMap.get(fieldGroup.getCompositeId());
 					fieldGroup.setComposite(composite);
 					if(composite != null) {
 						fieldGroup.setRelationLabelAccess(getRelationLabelAccess(composite, dtmpl.getModule()));
@@ -328,10 +332,10 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(groupFields != null) {
 					groupFields.forEach(groupField->{
 						//通过fieldId来获得对应的字段数据
-						DictionaryField field = dictService.getField(dtmpl.getModule(), groupField.getFieldId());
+						DictionaryField field = fieldMap.get(groupField.getFieldId());
 						if(field != null) {
-							groupField.setFieldAccess(getFieldAccess(field, dtmpl.getModule()));
-							groupField.setAdditionAccess(getFieldAdditionAccess(field, dtmpl.getModule()));
+							groupField.setFieldAccess(getFieldAccess(field, moduleEntityWritable));
+							groupField.setAdditionAccess(getFieldAdditionAccess(field, moduleEntityWritable));
 							groupField.setFieldName(field.getFullKey());
 							groupField.setType(field.getType());
 							groupField.setOptionGroupId(field.getOptionGroupId());
@@ -716,13 +720,14 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			Set<TemplateSelectionCriteria> criterias) {
 		Assert.notNull(stmpl.getCompositeId());
 		DictionaryComposite composite = dictService.getComposite(stmpl.getModule(), stmpl.getCompositeId());
+		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(stmpl.getModule()), DictionaryField::getId);
 		if(composite != null && Composite.RELATION_ADD_TYPE.equals(composite.getAddType())) {
 			stmpl.setRelationName(composite.getName());
 		}
 		if(columns != null) {
 			columns.forEach(column->{
 				if(column.getSpecialField() == null) {
-					DictionaryField field = dictService.getField(stmpl.getModule(), column.getFieldId());
+					DictionaryField field = fieldMap.get(column.getFieldId());
 					if(field != null) {
 						column.setFieldKey(field.getFullKey());
 					}else {
@@ -734,7 +739,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 		if(criterias != null) {
 			criterias.forEach(criteria->{
-				DictionaryField field = dictService.getField(stmpl.getModule(), criteria.getFieldId());
+				DictionaryField field = fieldMap.get(criteria.getFieldId());
 				if(field != null) {
 					if(supportFieldInputType(criteria.getInputType(), field.getType())) {
 						criteria.setFieldKey(field.getFullKey());
