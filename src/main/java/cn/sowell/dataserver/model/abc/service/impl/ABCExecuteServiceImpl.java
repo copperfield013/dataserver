@@ -12,6 +12,8 @@ import org.apache.log4j.Logger;
 import org.springframework.stereotype.Service;
 
 import com.abc.application.BizFusionContext;
+import com.abc.auth.pojo.UserInfo;
+import com.abc.auth.service.ServiceFactory;
 import com.abc.dto.ErrorInfomation;
 import com.abc.extface.dto.RecordHistory;
 import com.abc.mapping.entity.Entity;
@@ -142,7 +144,12 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	}
 
 	private String toUserName(String usergroupId) {
-		return "户户户";
+		UserInfo user = ServiceFactory.getUserInfoService().getUserInfo(usergroupId);
+		if(user != null) {
+			return user.getUserName();
+		}else {
+			return "未知用户";
+		}
 	}
 	
 	@Override

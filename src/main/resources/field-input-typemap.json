@@ -4,7 +4,9 @@
 		"text"		: ["text", "none"],
 		"select"	: ["text", "select", "multiselect", "none"],
 		"date"		: ["date", "daterange", "none"],
-		"label"		: ["label"]
+		"label"		: ["label"],
+		"datetime"	: ["text", "datetime"],
+		"time"		: ["text", "time"]
 	},
 	"inputTypeTitleMap"	: {
 		"text"		: "文本框",
@@ -13,6 +15,8 @@
 		"date"		: "日期选择",
 		"label"		: "标签选择",
 		"daterange"	: "日期范围",
+		"datetime"	: "日期时间",
+		"time"		: "时间",
 		"none"		: "无"
 	}
 }
