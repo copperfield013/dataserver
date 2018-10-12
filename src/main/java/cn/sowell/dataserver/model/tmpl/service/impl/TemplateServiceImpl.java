@@ -989,6 +989,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 						}
 						nGroup.setTitle(group.getTitle());
 						nGroup.setOrder(group.getOrder());
+						nGroup.setUnallowedCreate(group.getUnallowedCreate());
 						nGroup.setUnmodifiable(group.getUnmodifiable());
 						nGroup.setUpdateTime(newTmpl.getUpdateTime());
 						newTmpl.getGroups().add(nGroup);

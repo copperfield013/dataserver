@@ -45,6 +45,8 @@ public class TemplateDetailFieldGroup {
 	@Transient
 	private String additionRelationLabelAccess;
 	
+	@Column(name="c_unallowed_create")
+	private Integer unallowedCreate;
 	
 	/*@ManyToOne
 	@JoinColumn(name = "composite_id",insertable = false, updatable = false)
@@ -156,6 +158,14 @@ public class TemplateDetailFieldGroup {
 
 	public void setAdditionRelationLabelAccess(String additionRelationLabelAccess) {
 		this.additionRelationLabelAccess = additionRelationLabelAccess;
+	}
+
+	public Integer getUnallowedCreate() {
+		return unallowedCreate;
+	}
+
+	public void setUnallowedCreate(Integer unallowedCreate) {
+		this.unallowedCreate = unallowedCreate;
 	}
 
 }

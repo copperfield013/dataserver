@@ -56,6 +56,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 						TemplateDetailFieldGroup originGroup = originGroupMap.get(group.getId());
 						toDeleteGroupId.remove(group.getId());
 						originGroup.setTitle(group.getTitle());
+						originGroup.setUnallowedCreate(group.getUnallowedCreate());
 						originGroup.setOrder(group.getOrder());
 						originGroup.setSelectionTemplateId(group.getSelectionTemplateId());
 						originGroup.setUpdateTime(now);
