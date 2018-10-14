@@ -24,6 +24,7 @@ public class CriteriaConverterFactoryImpl implements CriteriaConverterFactory
 		converters.add(new LabelIncludeAllConverter());
 		converters.add(new LabelNotIncludeAnyConverter());
 		converters.add(new DateRangeInCriteriaConverter());
+		converters.add(new RangeInCriteriaConverter());
 		converters.add(new RelationExistCriteriaConverter());
 	}
 	
