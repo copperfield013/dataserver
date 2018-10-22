@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 
 @Entity
@@ -40,6 +42,7 @@ public class TemplateListCriteria {
 	private Long compositeId;
 	
 	@Transient
+	@JSONField(serialize=false)
 	private DictionaryComposite composite;
 	
 	//@Column(name="c_field_key")
@@ -74,12 +77,15 @@ public class TemplateListCriteria {
 	private String placeholder;
 	
 	@Column(name="create_time")
+	@JSONField(serialize=false)
 	private Date createTime;
 	
 	@Column(name="update_time")
+	@JSONField(serialize=false)
 	private Date updateTime;
 	
 	@Column(name="create_user_id")
+	@JSONField(serialize=false)
 	private Long createUserId;
 
 	@Transient

@@ -33,7 +33,7 @@ public class ListTemplateEntityView extends EntityView{
 
 	
 	@Override
-	protected List<EntityColumn> getColumns() {
+	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
 		if(listTemplate.getColumns() != null) {
 			int i = 0;
@@ -97,6 +97,11 @@ public class ListTemplateEntityView extends EntityView{
 								return row.getCell(getIndex());
 							}
 							return null;
+						}
+
+						@Override
+						public Long getColumnId() {
+							return tColumn.getId();
 						}
 					};
 					columns.add(i++, column);

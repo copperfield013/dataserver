@@ -29,7 +29,7 @@ public class EntityView {
 	}
 	
 	private List<EntityColumn> columns;
-	protected List<EntityColumn> getColumns() {
+	public List<EntityColumn> getColumns() {
 		return columns;
 	}
 	
@@ -168,6 +168,7 @@ public class EntityView {
 		String getFieldInputType();
 		String getTitle();
 		EntityCell getCell(int rowIndex);
+		Long getColumnId();
 	}
 	
 	public static interface EntityRow{

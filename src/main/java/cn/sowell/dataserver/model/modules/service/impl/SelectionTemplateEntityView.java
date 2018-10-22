@@ -29,7 +29,7 @@ public class SelectionTemplateEntityView extends EntityView{
 
 	
 	@Override
-	protected List<EntityColumn> getColumns() {
+	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
 		if(selectionTemplate.getColumns() != null) {
 			int i = 0;
@@ -93,6 +93,11 @@ public class SelectionTemplateEntityView extends EntityView{
 								return row.getCell(getIndex());
 							}
 							return null;
+						}
+
+						@Override
+						public Long getColumnId() {
+							return tColumn.getId();
 						}
 					};
 					columns.add(i++, column);

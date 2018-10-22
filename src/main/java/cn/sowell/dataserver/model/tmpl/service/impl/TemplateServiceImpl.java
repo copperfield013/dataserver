@@ -313,14 +313,16 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			Map<Long, List<TemplateDetailField>> groupFieldsMap) {
 		FusionContextConfig config = fFactory.getModuleConfig(dtmpl.getModule());
 		FusionContextConfigResolver resolver = config.getConfigResolver();
-		dtmpl.setGroups(fieldGroups);
 		if(fieldGroups != null) {
+			dtmpl.setGroups(fieldGroups);
 			Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(dictService.getAllComposites(dtmpl.getModule()), DictionaryComposite::getId);
 			Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(dtmpl.getModule()), DictionaryField::getId);
 			boolean moduleEntityWritable = mService.getModuleEntityWritable(dtmpl.getModule());
 			fieldGroups.forEach(fieldGroup->{
 				List<TemplateDetailField> groupFields = groupFieldsMap.get(fieldGroup.getId());
-				fieldGroup.setFields(groupFields);
+				if(groupFields != null) {
+					fieldGroup.setFields(groupFields);
+				}
 				if(fieldGroup.getCompositeId() != null) {
 					DictionaryComposite composite = compositeMap.get(fieldGroup.getCompositeId());
 					fieldGroup.setComposite(composite);
