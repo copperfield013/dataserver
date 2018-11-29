@@ -1,6 +1,5 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -18,8 +17,7 @@ import org.springframework.util.Assert;
 import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
 import com.abc.mapping.node.NodeOpsType;
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -110,8 +108,8 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	
 	@Override
-	public List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
-		ArrayList<Criteria> cs = new ArrayList<Criteria>();
+	public EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
+		EntityCriteriaFactory criteriaFactory = new EntityCriteriaFactory(context);
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
@@ -123,15 +121,10 @@ public class ModulesServiceImpl implements ModulesService{
 				}else if(nCriteria.getCompositeId() != null) {
 					nCriteria.setComposite(dictService.getComposite(moduleName, nCriteria.getCompositeId()));
 				}
-				converter.invokeAddCriteria(context, nCriteria, cs);
+				converter.invokeAddCriteria(context, criteriaFactory, nCriteria);
 			}
 		});
-		if(cs.isEmpty()) {
-			CriteriaFactory cf = new CriteriaFactory(context);
-			Criteria c = cf.createIsNotNullQueryCriteria("唯一编码");
-			cs.add(c);
-		}
-		return cs;
+		return criteriaFactory;
 	}
 	
 	
@@ -209,8 +202,9 @@ public class ModulesServiceImpl implements ModulesService{
 	public EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> nCriterias,
 			ExportDataPageInfo ePageInfo, UserIdentifier user) {
 		PageInfo pageInfo = ePageInfo.getPageInfo();
-		List<Criteria> cs = toCriterias(nCriterias, ltmpl.getModule(), fFactory.getModuleConfig(ltmpl.getModule()).getCurrentContext(user));
-		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cs, ePageInfo, user);
+		BizFusionContext context = fFactory.getModuleConfig(ltmpl.getModule()).getCurrentContext(user);
+		EntityCriteriaFactory cf = appendCriterias(nCriterias, ltmpl.getModule(), context);
+		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cf.getCriterias(), ePageInfo, user);
 		int dataCount = pageInfo.getPageSize();
 		int startPageNo = pageInfo.getPageNo();
 		int totalCount = proxy.getTotalCount();

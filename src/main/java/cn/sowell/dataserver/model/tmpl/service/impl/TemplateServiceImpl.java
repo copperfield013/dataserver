@@ -121,7 +121,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(ltmpl != null && checkModuleUsable(ltmpl.getModule())) {
 					List<TemplateListColumn> columns = lDao.getColumnsByTmplId(ltmplId);
 					Set<TemplateListCriteria> criterias = lDao.getCriteriaByTmplId(ltmplId);
-					handlerListTemplate(ltmpl, columns, criterias);
+					handlerListTemplate(ltmpl, columns, criterias, getModuleTemplateReferData(ltmpl.getModule()));
 					ltmplMap.put(ltmplId, ltmpl);
 					getListTemplateRelatedGroups(ltmplId).forEach(group->{
 						handlerTmplGroup(group, null);
@@ -145,8 +145,9 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 
 	private void handlerListTemplate(TemplateListTemplate ltmpl, List<TemplateListColumn> columns,
-			Set<TemplateListCriteria> criterias) {
-		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(ltmpl.getModule()), DictionaryField::getId);
+			Set<TemplateListCriteria> criterias, ModuleTemplateReferData referData) {
+		Map<Long, DictionaryField> fieldMap = referData.getFieldMap();
+		Map<Long, DictionaryComposite> compositeMap = referData.getCompositeMap();
 		if(columns != null) {
 			columns.forEach(column->{
 				if(column.getSpecialField() == null) {
@@ -165,7 +166,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(criteria.getFieldId() != null) {
 					DictionaryField field = fieldMap.get(criteria.getFieldId());
 					if(field != null) {
-						if(supportFieldInputType(criteria.getInputType(), field.getType())) {
+						if(supportFieldInputType(criteria.getInputType(), field.getType(), referData.getFieldInputTypeMap())) {
 							criteria.setFieldKey(field.getFullKey());
 							//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
 							//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
@@ -174,7 +175,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					}
 					criteria.setFieldUnavailable();
 				}else if(criteria.getCompositeId() != null) {
-					criteria.setComposite(dictService.getComposite(ltmpl.getModule(), criteria.getCompositeId()));
+					criteria.setComposite(compositeMap.get(criteria.getCompositeId()));
 				}
 			});
 			ltmpl.setCriterias(criterias);
@@ -183,8 +184,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 
 	
 	
-	private boolean supportFieldInputType(String criteriaInputType, String fieldType) {
-		Map<String, Set<String>> fieldInputTypeMap = dictService.getFieldInputTypeMap();
+	private boolean supportFieldInputType(String criteriaInputType, String fieldType, Map<String, Set<String>> fieldInputTypeMap) {
 		Set<String> fieldInputTypeSet = fieldInputTypeMap.get(fieldType);
 		if(fieldInputTypeSet != null) {
 			return fieldInputTypeSet.contains(criteriaInputType);
@@ -200,10 +200,14 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				Map<Long, List<TemplateListColumn>> columnsMap = lDao.queryColumnsMap();
 				Map<Long, Set<TemplateListCriteria>> criteriasMap = lDao.queryCriteriasMap();
 				ltmpls = ltmpls.stream().filter(ltmpl->checkModuleUsable(ltmpl.getModule())).collect(Collectors.toList());
-				ltmpls.forEach(ltmpl->{
-					List<TemplateListColumn> columns = columnsMap.get(ltmpl.getId());
-					Set<TemplateListCriteria> criterias = criteriasMap.get(ltmpl.getId());
-					handlerListTemplate(ltmpl, columns, criterias);
+				Map<String, List<TemplateListTemplate>> moduleTmplMap = CollectionUtils.toListMap(ltmpls, TemplateListTemplate::getModule);
+				moduleTmplMap.forEach((module, moduleLtmpls)->{
+					ModuleTemplateReferData referData = getModuleTemplateReferData(module);
+					for (TemplateListTemplate ltmpl : moduleLtmpls) {
+						List<TemplateListColumn> columns = columnsMap.get(ltmpl.getId());
+						Set<TemplateListCriteria> criterias = criteriasMap.get(ltmpl.getId());
+						handlerListTemplate(ltmpl, columns, criterias, referData);
+					}
 				});
 				ltmplMap = CollectionUtils.toMap(ltmpls, ltmpl->ltmpl.getId());
 				logger.debug(ltmplMap);
@@ -222,7 +226,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(dtmpl != null && checkModuleUsable(dtmpl.getModule())) {
 					List<TemplateDetailFieldGroup> fieldGroups = dDao.getTemplateGroups(dtmplId);
 					Map<Long, List<TemplateDetailField>> groupFieldsMap = dDao.getTemplateFieldsMap(CollectionUtils.toSet(fieldGroups, group->group.getId()));
-					handlerDetailTemplate(dtmpl, fieldGroups, groupFieldsMap);
+					handlerDetailTemplate(dtmpl, fieldGroups, groupFieldsMap, getModuleTemplateReferData(dtmpl.getModule()));
 					dtmplMap.put(dtmplId, dtmpl);
 					getDetailTemplateRelatedGroups(dtmplId).forEach(group->{
 						handlerTmplGroup(group, null);
@@ -237,6 +241,16 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	
+	private ModuleTemplateReferData getModuleTemplateReferData(String module) {
+		ModuleTemplateReferData referData = new ModuleTemplateReferData();
+		referData.setCompositeMap(FormatUtils.coalesce(CollectionUtils.toMap(dictService.getAllComposites(module), DictionaryComposite::getId), new HashMap<>()));
+		referData.setFieldMap(FormatUtils.coalesce(CollectionUtils.toMap(dictService.getAllFields(module), DictionaryField::getId), new HashMap<>()));
+		referData.setEntityWritable(mService.getModuleEntityWritable(module));
+		referData.setFusionContextConfig(fFactory.getModuleConfig(module));
+		referData.setFieldInputTypeMap(dictService.getFieldInputTypeMap());
+		return referData;
+	}
+
 	private String getFieldAccess(DictionaryField field, boolean moduleEntityWritable) {
 		Assert.notNull(field);
 		String fAccess = field.getFieldAccess();
@@ -282,9 +296,9 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 	}
 	
-	private String getAdditionRelationLabelAccess(DictionaryComposite composite, String moduleName) {
+	private String getAdditionRelationLabelAccess(DictionaryComposite composite, boolean moduleEntityWritable) {
 		final String READ = NodeOpsType.READ.getName();
-		if(!mService.getModuleEntityWritable(moduleName)) {
+		if(!moduleEntityWritable) {
 			return READ;
 		}
 		if(READ.equals(composite.getAccess()) || NodeOpsType.SUPPLEMENT.getName().equals(composite.getAccess())) {
@@ -294,9 +308,9 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 	}
 
-	private String getRelationLabelAccess(DictionaryComposite composite, String moduleName) {
+	private String getRelationLabelAccess(DictionaryComposite composite, boolean moduleEntityWritable) {
 		final String READ = NodeOpsType.READ.getName();
-		if(!mService.getModuleEntityWritable(moduleName)) {
+		if(!moduleEntityWritable) {
 			return READ;
 		}
 		if(READ.equals(composite.getAccess()) 
@@ -309,15 +323,55 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	
+	static class ModuleTemplateReferData{
+		private Map<Long, DictionaryComposite> compositeMap;
+		private Map<Long, DictionaryField> fieldMap;
+		private boolean entityWritable;
+		private FusionContextConfig fusionContextConfig;
+		private Map<String, Set<String>> fieldInputTypeMap;
+		public Map<Long, DictionaryComposite> getCompositeMap() {
+			return this.compositeMap;
+		}
+		public Map<String, Set<String>> getFieldInputTypeMap() {
+			return this.fieldInputTypeMap;
+		}
+		public Map<Long, DictionaryField> getFieldMap() {
+			return this.fieldMap;
+		}
+		public boolean getEntityWriatble() {
+			return this.entityWritable;
+		}
+		public FusionContextConfig getFusionContextConfig() {
+			return this.fusionContextConfig;
+		}
+		public void setCompositeMap(Map<Long, DictionaryComposite> compositeMap) {
+			this.compositeMap = compositeMap;
+		}
+		public void setFieldMap(Map<Long, DictionaryField> fieldMap) {
+			this.fieldMap = fieldMap;
+		}
+		public void setEntityWritable(boolean entityWritable) {
+			this.entityWritable = entityWritable;
+		}
+		public void setFusionContextConfig(FusionContextConfig fusionContextConfig) {
+			this.fusionContextConfig = fusionContextConfig;
+		}
+		public void setFieldInputTypeMap(Map<String, Set<String>> fieldInputTypeMap) {
+			this.fieldInputTypeMap = fieldInputTypeMap;
+		}
+		
+		
+	}
+	
 	private void handlerDetailTemplate(TemplateDetailTemplate dtmpl, List<TemplateDetailFieldGroup> fieldGroups,
-			Map<Long, List<TemplateDetailField>> groupFieldsMap) {
-		FusionContextConfig config = fFactory.getModuleConfig(dtmpl.getModule());
+			Map<Long, List<TemplateDetailField>> groupFieldsMap, ModuleTemplateReferData referData) {
+		FusionContextConfig config = referData.getFusionContextConfig();
 		FusionContextConfigResolver resolver = config.getConfigResolver();
 		if(fieldGroups != null) {
 			dtmpl.setGroups(fieldGroups);
-			Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(dictService.getAllComposites(dtmpl.getModule()), DictionaryComposite::getId);
-			Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(dtmpl.getModule()), DictionaryField::getId);
-			boolean moduleEntityWritable = mService.getModuleEntityWritable(dtmpl.getModule());
+			Map<Long, DictionaryComposite> compositeMap = referData.getCompositeMap();
+			Map<Long, DictionaryField> fieldMap = referData.getFieldMap();
+			boolean moduleEntityWritable = referData.getEntityWriatble();
 			fieldGroups.forEach(fieldGroup->{
 				List<TemplateDetailField> groupFields = groupFieldsMap.get(fieldGroup.getId());
 				if(groupFields != null) {
@@ -327,8 +381,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					DictionaryComposite composite = compositeMap.get(fieldGroup.getCompositeId());
 					fieldGroup.setComposite(composite);
 					if(composite != null) {
-						fieldGroup.setRelationLabelAccess(getRelationLabelAccess(composite, dtmpl.getModule()));
-						fieldGroup.setAdditionRelationLabelAccess(getAdditionRelationLabelAccess(composite, dtmpl.getModule()));
+						fieldGroup.setRelationLabelAccess(getRelationLabelAccess(composite, referData.getEntityWriatble()));
+						fieldGroup.setAdditionRelationLabelAccess(getAdditionRelationLabelAccess(composite, referData.getEntityWriatble()));
 					}
 				}
 				if(groupFields != null) {
@@ -379,9 +433,13 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 							CollectionUtils.toListMap(dDao.queryFieldGroups(), group->group.getTmplId());
 				Map<Long, List<TemplateDetailField>> groupFieldsMap = 
 							CollectionUtils.toListMap(dDao.queryTemplateFields(), field->field.getGroupId());
-				dtmpls.forEach(dtmpl->{
-					List<TemplateDetailFieldGroup> fieldGroups = tmplFieldGroupsMap.get(dtmpl.getId());
-					handlerDetailTemplate(dtmpl, fieldGroups, groupFieldsMap);
+				Map<String, List<TemplateDetailTemplate>> moduleTmplMap = CollectionUtils.toListMap(dtmpls, TemplateDetailTemplate::getModule);
+				moduleTmplMap.forEach((module, moduleDtmpls)->{
+					ModuleTemplateReferData referData = getModuleTemplateReferData(module);
+					for (TemplateDetailTemplate dtmpl : moduleDtmpls) {
+						List<TemplateDetailFieldGroup> fieldGroups = tmplFieldGroupsMap.get(dtmpl.getId());
+						handlerDetailTemplate(dtmpl, fieldGroups, groupFieldsMap, referData);
+					}
 				});
 				dtmplMap = CollectionUtils.toMap(dtmpls, dtmpl->dtmpl.getId());
 				logger.debug(dtmplMap);
@@ -708,7 +766,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				stmpls.forEach(ltmpl->{
 					List<TemplateSelectionColumn> columns = columnsMap.get(ltmpl.getId());
 					Set<TemplateSelectionCriteria> criterias = criteriasMap.get(ltmpl.getId());
-					handlerSelectionTemplate(ltmpl, columns, criterias);
+					handlerSelectionTemplate(ltmpl, columns, criterias, getModuleTemplateReferData(ltmpl.getModule()));
 				});
 				stmplMap = CollectionUtils.toMap(stmpls, ltmpl->ltmpl.getId());
 				logger.debug(ltmplMap);
@@ -719,10 +777,10 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	private void handlerSelectionTemplate(TemplateSelectionTemplate stmpl, List<TemplateSelectionColumn> columns,
-			Set<TemplateSelectionCriteria> criterias) {
+			Set<TemplateSelectionCriteria> criterias, ModuleTemplateReferData referData) {
 		Assert.notNull(stmpl.getCompositeId());
-		DictionaryComposite composite = dictService.getComposite(stmpl.getModule(), stmpl.getCompositeId());
-		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(stmpl.getModule()), DictionaryField::getId);
+		DictionaryComposite composite = referData.getCompositeMap().get(stmpl.getCompositeId());
+		Map<Long, DictionaryField> fieldMap = referData.getFieldMap();
 		if(composite != null && Composite.RELATION_ADD_TYPE.equals(composite.getAddType())) {
 			stmpl.setRelationName(composite.getName());
 		}
@@ -743,7 +801,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			criterias.forEach(criteria->{
 				DictionaryField field = fieldMap.get(criteria.getFieldId());
 				if(field != null) {
-					if(supportFieldInputType(criteria.getInputType(), field.getType())) {
+					if(supportFieldInputType(criteria.getInputType(), field.getType(), referData.getFieldInputTypeMap())) {
 						criteria.setFieldKey(field.getFullKey());
 						//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
 						//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
@@ -764,7 +822,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(stmpl != null && checkModuleUsable(stmpl.getModule())) {
 					List<TemplateSelectionColumn> columns = sDao.getColumnsByTmplId(tmplId);
 					Set<TemplateSelectionCriteria> criterias = sDao.getCriteriaByTmplId(tmplId);
-					handlerSelectionTemplate(stmpl, columns, criterias);
+					handlerSelectionTemplate(stmpl, columns, criterias, getModuleTemplateReferData(stmpl.getModule()));
 					stmplMap.put(tmplId, stmpl);
 					logger.debug("列表模板[" + tmplId + "]缓存数据重新加载完成, 值为" + stmpl);
 				}else {
@@ -859,6 +917,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		String targetModuleName = newTmpl.getModule();
 		Set<TemplateListCriteria> criterias = ltmpl.getCriterias();
 		if(criterias != null) {
+			Map<String, Set<String>> fieldInputTypeMap = dictService.getFieldInputTypeMap();
 			for (TemplateListCriteria criteria : criterias) {
 				TemplateListCriteria nCriteria = new TemplateListCriteria();
 				if(criteria.getComposite() == null) {
@@ -877,7 +936,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 								}
 								nCriteria.setRelationLabel(criteria.getRelationLabel());
 							}
-							if(supportFieldInputType(criteria.getInputType(), field.getType())) {
+							if(supportFieldInputType(criteria.getInputType(), field.getType(), fieldInputTypeMap)) {
 								nCriteria.setInputType(criteria.getInputType());
 							}else {
 								nCriteria.setInputType("text");
@@ -1091,6 +1150,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		String targetModuleName = newTmpl.getModule();
 		Set<TemplateSelectionCriteria> criterias = stmpl.getCriterias();
 		if(criterias != null) {
+			Map<String, Set<String>> fieldInputTypeMap = dictService.getFieldInputTypeMap();
 			for (TemplateSelectionCriteria criteria : criterias) {
 				TemplateSelectionCriteria nCriteria = new TemplateSelectionCriteria();
 				//字段条件
@@ -1108,7 +1168,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 							}
 							nCriteria.setRelationLabel(criteria.getRelationLabel());
 						}
-						if(supportFieldInputType(criteria.getInputType(), field.getType())) {
+						if(supportFieldInputType(criteria.getInputType(), field.getType(), fieldInputTypeMap)) {
 							nCriteria.setInputType(criteria.getInputType());
 						}else {
 							nCriteria.setInputType("text");

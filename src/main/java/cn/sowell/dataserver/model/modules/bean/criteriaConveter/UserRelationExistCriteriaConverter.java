@@ -1,15 +1,11 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import java.util.List;
-
 import javax.annotation.Resource;
 
 import com.abc.application.BizFusionContext;
 import com.abc.application.FusionContext;
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
-import com.abc.query.criteria.QueryCriteria;
-import com.beust.jcommander.internal.Lists;
+import com.abc.rrc.query.criteria.CommonSymbol;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
@@ -30,10 +26,10 @@ public class UserRelationExistCriteriaConverter implements CriteriaConverter{
 	}
 
 	@Override
-	public void invokeAddCriteria(BizFusionContext fusionContext, NormalCriteria nCriteria, List<Criteria> cs) {
+	public void invokeAddCriteria(BizFusionContext fusionContext, EntityCriteriaFactory criteriaFactory,
+			NormalCriteria nCriteria) {
 		if(nCriteria.getComposite() != null && TextUtils.hasText(nCriteria.getValue())) {
 			String compositeName = nCriteria.getComposite().getName();
-			CriteriaFactory cFactory = new CriteriaFactory(fusionContext);
 			
 			String mappingName = fusionContext.getABCNode().getRelation(compositeName).getFullTitle();
 			BizFusionContext relationFusionContext = new BizFusionContext();
@@ -41,14 +37,15 @@ public class UserRelationExistCriteriaConverter implements CriteriaConverter{
 			relationFusionContext.setSource(FusionContext.SOURCE_COMMON);
 			relationFusionContext.setToEntityRange(FusionContext.ENTITY_CONTENT_RANGE_INTERSECTION);
 			
-			CriteriaFactory relationCriteriaFactory = new CriteriaFactory(relationFusionContext);
+			EntityCriteriaFactory relationCriteriaFactory = new EntityCriteriaFactory(relationFusionContext);
 			String userCode = getUserCode();
-			QueryCriteria userCodeCriteria = relationCriteriaFactory.createQueryCriteria(ABCNodeProxy.CODE_PROPERTY_NAME, userCode);
 			
-			cs.add(cFactory.createRelationCriteria(compositeName, nCriteria.getValue(), Lists.newArrayList(userCodeCriteria)));
+			relationCriteriaFactory.addCriteria(ABCNodeProxy.CODE_PROPERTY_NAME, userCode, CommonSymbol.EQUAL);
+			criteriaFactory.addRelationCriteria(compositeName, nCriteria.getValue(), relationCriteriaFactory.getCriterias());
 			
 		}
 	}
+	
 
 	private String getUserCode() {
 		if(userCodeSupplier != null) {

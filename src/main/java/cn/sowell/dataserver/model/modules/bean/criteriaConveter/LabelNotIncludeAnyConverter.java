@@ -2,8 +2,8 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import java.util.Set;
 
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IncludeSymbol;
 
 public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
 	
@@ -11,17 +11,17 @@ public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
 		super(new String[] {"l1n", "ms1n"});
 	}
 	
+	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value) {
+	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
 		Set<String> valueSet = getValueSet(value);
-		return relationCriteriaFactory.createNotIncludeQueryCriteria(fieldNameInRelation, valueSet);
+		cFactory.addIncludeCriteria(fieldName, valueSet, IncludeSymbol.NOT_INCLUDES);
 	}
-
+	
 	@Override
-	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {
+	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
 		Set<String> valueSet = getValueSet(value);
-		return cFactory.createNotIncludeQueryCriteria(fieldName, valueSet);
+		relationEntityFactory.addIncludeCriteria(suffix, valueSet, IncludeSymbol.NOT_INCLUDES);
 	}
 
 }

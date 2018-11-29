@@ -19,9 +19,9 @@ import com.abc.extface.dto.RecordHistory;
 import com.abc.mapping.entity.Entity;
 import com.abc.panel.Discoverer;
 import com.abc.panel.PanelFactory;
-import com.abc.query.criteria.Criteria;
-import com.abc.query.entity.impl.EntitySortedPagedQuery;
 import com.abc.record.HistoryTracker;
+import com.abc.rrc.query.entity.impl.EntitySortedPagedQuery;
+import com.abc.rrc.query.queryrecord.criteria.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -75,7 +75,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		
 		Discoverer discoverer = PanelFactory.getDiscoverer(context);
 		
-		EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(criterias, "编辑时间");
+		EntitySortedPagedQuery sortedPagedQuery = discoverer.discoverQuick(criterias, "编辑时间");
 		sortedPagedQuery.setPageSize(pageInfo.getPageSize());
 		pageInfo.setCount(sortedPagedQuery.getAllCount());
 		if(Integer.valueOf(0).equals(pageInfo.getCount())) {

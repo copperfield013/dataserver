@@ -3,8 +3,8 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IncludeSymbol;
 
 public class LabelIncludeAnyConverter extends MultiSupportComparatorCriteriaConverter{
 
@@ -16,13 +16,6 @@ public class LabelIncludeAnyConverter extends MultiSupportComparatorCriteriaConv
 		super(comparatorNames);
 	}
 	
-	
-	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value) {
-		Set<String> valueSet = getValueSet(value);
-		return relationCriteriaFactory.createIncludeQueryCriteria(fieldNameInRelation, valueSet);
-	}
 
 	protected Set<String> getValueSet(String value) {
 		Set<String> valueSet = new HashSet<>();
@@ -34,10 +27,18 @@ public class LabelIncludeAnyConverter extends MultiSupportComparatorCriteriaConv
 		return valueSet;
 	}
 
+	
 	@Override
-	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
 		Set<String> valueSet = getValueSet(value);
-		return cFactory.createIncludeQueryCriteria(fieldName, valueSet);
+		cFactory.addIncludeCriteria(fieldName, valueSet, IncludeSymbol.INCLUDES);
 	}
+	
+	@Override
+	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
+		Set<String> valueSet = getValueSet(value);
+		relationEntityFactory.addIncludeCriteria(suffix, valueSet, IncludeSymbol.INCLUDES);
+	}
+	
 
 }

@@ -2,10 +2,8 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import org.apache.commons.lang.StringUtils;
 
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
-
-import cn.sowell.copframe.utils.TextUtils;
+import com.abc.rrc.query.criteria.BetweenSymbol;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 public class RangeInCriteriaConverter extends ComparatorCriteriaConverter {
 
@@ -30,25 +28,18 @@ public class RangeInCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value) {
+	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
 		String[] rangeStr = getRange(value);
 		if(rangeStr[0] != null || rangeStr[1] != null) {
-			return relationCriteriaFactory.createOpenBetweenQueryCriteria(fieldNameInRelation, rangeStr[0], rangeStr[1]);
-		}else {
-			return null;
-		}
+			cFactory.addBetweenCriteria(fieldName, rangeStr[0], rangeStr[1], BetweenSymbol.BETWEEN);
+		}	
 	}
 	
-
-
 	@Override
-	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {
+	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
 		String[] rangeStr = getRange(value);
 		if(rangeStr[0] != null || rangeStr[1] != null) {
-			return cFactory.createOpenBetweenQueryCriteria(fieldName, rangeStr[0], rangeStr[1]);
-		}else {
-			return null;
+			relationEntityFactory.addBetweenCriteria(suffix, rangeStr[0], rangeStr[1], BetweenSymbol.BETWEEN);
 		}
 	}
 

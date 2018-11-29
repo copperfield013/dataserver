@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.abc.mapping.entity.Entity;
-import com.abc.query.criteria.Criteria;
+import com.abc.rrc.query.queryrecord.criteria.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;

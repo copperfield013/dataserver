@@ -9,7 +9,7 @@ import java.util.Set;
 import org.springframework.beans.MutablePropertyValues;
 
 import com.abc.application.BizFusionContext;
-import com.abc.query.criteria.Criteria;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
@@ -84,8 +84,6 @@ public interface ModulesService {
 	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
 			Map<Long, TemplateListCriteria> criteriaMap);
 
-	List<Criteria> toCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context);
-
 	Map<String, CEntityPropertyParser> getEntityParsers(String moduleName, String relationName, Set<String> codes,
 			UserIdentifier user);
 
@@ -100,6 +98,8 @@ public interface ModulesService {
 			UserIdentifier currentUser);
 
 	EntityHistoryItem getLastHistoryItem(String moduleName, String code, UserIdentifier user);
+
+	EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context);
 
 
 

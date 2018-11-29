@@ -1,15 +1,10 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-
 import org.springframework.util.Assert;
 
 import com.abc.application.BizFusionContext;
 import com.abc.application.FusionContext;
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -25,7 +20,7 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 	public boolean shouldHasValue() {
 		return true;
 	}
-	protected abstract Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value);
+	protected abstract void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value);
 	
 	@Override
 	public boolean support(NormalCriteria nCriteria) {
@@ -36,11 +31,9 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 	
 
 	@Override
-	public void invokeAddCriteria(BizFusionContext fusionContext, NormalCriteria nCriteria, List<Criteria> cs) {
-		Assert.notNull(fusionContext, "fusionContext不能为null");
-		CriteriaFactory criteriaFactory = new CriteriaFactory(fusionContext);
+	public void invokeAddCriteria(BizFusionContext fusionContext, EntityCriteriaFactory criteriaFactory, NormalCriteria nCriteria) {
+		Assert.notNull(criteriaFactory, "criteriaFactory不能为null");
 		DictionaryComposite composite = nCriteria.getComposite();
-		Criteria criteria = null;
 		if(composite != null && composite.getRelationSubdomain() != null) {
 			String compositeName = composite.getName();
 			String suffix = nCriteria.getFieldName().substring(compositeName.length() + 1);
@@ -49,42 +42,19 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 			relationFusionContext.setMappingName(mappingName);
 			relationFusionContext.setSource(FusionContext.SOURCE_COMMON);
 			relationFusionContext.setToEntityRange(FusionContext.ENTITY_CONTENT_RANGE_INTERSECTION);
-			Collection<Criteria> relCriterias = getRelationCriterias(new CriteriaFactory(relationFusionContext), suffix, nCriteria.getValue());
-			if(relCriterias != null) {
-				criteria = criteriaFactory.createRelationCriteria(compositeName, nCriteria.getRelationLabel(), relCriterias);
+			
+			EntityCriteriaFactory relationEntityFactory = new EntityCriteriaFactory(relationFusionContext);
+			appendRelationCriterias(relationEntityFactory, suffix, nCriteria.getValue());
+			if(relationEntityFactory.getCriterias() != null) {
+				criteriaFactory.addRelationCriteria(compositeName, nCriteria.getRelationLabel(), relationEntityFactory.getCriterias());
 			}
 		}else {
-			criteria = getNormalCriteria(criteriaFactory, nCriteria.getFieldName(), nCriteria.getValue());
+			addNormalCriteria(criteriaFactory, nCriteria.getFieldName(), nCriteria.getValue());
 		}
-		if(criteria != null) {
-			cs.add(criteria);
-		}
-	}
-	protected Collection<Criteria> getRelationCriterias(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value){
-		Criteria criteria = getRelationCriteria(relationCriteriaFactory, fieldNameInRelation, value);
-		if(criteria != null) {
-			return wrap(criteria);
-		}
-		return null;
 	}
 	
-
-	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value) {
-		return null;
+	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
+		
 	}
-	protected Collection<Criteria> wrap(Criteria... criterias) {
-		ArrayList<Criteria> cs = new ArrayList<>();
-		for (Criteria c : criterias) {
-			if(c != null) {
-				cs.add(c);
-			}
-		}
-		return cs;
-	}
-
-	
-	
 
 }

@@ -1,7 +1,7 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import com.abc.query.criteria.Criteria;
-import com.abc.query.criteria.CriteriaFactory;
+import com.abc.rrc.query.criteria.CommonSymbol;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 public class TextLeftLikeCriteriaConverter extends ComparatorCriteriaConverter {
 
@@ -12,14 +12,13 @@ public class TextLeftLikeCriteriaConverter extends ComparatorCriteriaConverter {
 
 	
 	@Override
-	protected Criteria getRelationCriteria(CriteriaFactory relationCriteriaFactory, String fieldNameInRelation,
-			String value) {
-		return relationCriteriaFactory.createLeftLikeQueryCriteria(fieldNameInRelation, value);
+	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+		cFactory.addCriteria(fieldName, value, CommonSymbol.LEFT_LIKE);
 	}
-
+	
 	@Override
-	protected Criteria getNormalCriteria(CriteriaFactory cFactory, String fieldName, String value) {
-		return cFactory.createLeftLikeQueryCriteria(fieldName, value);
+	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
+		relationEntityFactory.addCriteria(suffix, value, CommonSymbol.LEFT_LIKE);
 	}
 
 }

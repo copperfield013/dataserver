@@ -14,7 +14,7 @@ import org.springframework.util.Assert;
 
 import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
-import com.abc.query.criteria.Criteria;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.CollectionUtils;
@@ -230,11 +230,11 @@ public class ViewDataServiceImpl implements ViewDataService{
 		}else {
 			context = fFactory.getModuleConfig(criteria.getModule()).getCurrentContext(user);
 		}
-		List<Criteria> criterias = mService.toCriterias(nCriterias, 
+		EntityCriteriaFactory criteriaFactory = mService.appendCriterias(nCriterias, 
 				criteria.getModule(), 
 				context
 				); 
-		param.setCriterias(criterias);
+		param.setCriterias(criteriaFactory.getCriterias());
 		List<Entity> list = abcService.queryModuleEntities(param);
 		return list;
 	}

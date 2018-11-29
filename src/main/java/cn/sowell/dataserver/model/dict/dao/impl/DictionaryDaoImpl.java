@@ -82,7 +82,7 @@ public class DictionaryDaoImpl implements DictionaryDao{
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<DictionaryOption> getAllOptions() {
-		String hql = "from DictionaryOption";
+		String hql = "from DictionaryOption o order by o.order asc";
 		Query query = sFactory.getCurrentSession().createQuery(hql);
 		return query.list();
 	}
