@@ -20,7 +20,7 @@ public class LabelIncludeAllConverter extends LabelIncludeAnyConverter{
 		valueSet.forEach(label->{
 			NormalCriteria nc = nCriteria.clone();
 			nc.setValue(label);
-			super.invokeAddCriteria(fusionContext, criteriaFactory, nCriteria);
+			super.invokeAddCriteria(fusionContext, criteriaFactory, nc);
 		});
 	}
 	
