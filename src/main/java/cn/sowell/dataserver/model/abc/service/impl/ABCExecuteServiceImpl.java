@@ -184,7 +184,7 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	public String fuseEntity(String module, Map<String, Object> map, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(module);
 		String code = (String) map.remove(config.getCodeAttributeName());
-		map.remove(ABCNodeProxy.CODE_PROPERTY_NAME);
+		map.remove(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL);
 		if(TextUtils.hasText(code)) {
 			delete(module, code, user);
 		}

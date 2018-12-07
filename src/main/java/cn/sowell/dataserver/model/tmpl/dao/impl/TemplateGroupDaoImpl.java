@@ -18,6 +18,7 @@ import cn.sowell.copframe.dao.deferedQuery.DeferedParamSnippet;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.utils.QueryUtils;
 
@@ -170,6 +171,23 @@ public class TemplateGroupDaoImpl implements TemplateGroupDao{
 		query.setLong("ltmplId", ltmplId);
 		query.setLong("targetLtmplId", targetLtmplId);
 		query.executeUpdate();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroupAction> queryActions() {
+		String hql = "from TemplateGroupAction a order by a.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		return query.list();
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroupAction> queryActions(Long groupId) {
+		String hql = "from TemplateGroupAction a where a.groupId = :groupId order by a.order asc";
+		Query query = sFactory.getCurrentSession().createQuery(hql);
+		query.setLong("groupId", groupId);
+		return query.list();
 	}
 	
 }

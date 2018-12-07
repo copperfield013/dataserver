@@ -40,7 +40,7 @@ public class UserRelationExistCriteriaConverter implements CriteriaConverter{
 			EntityCriteriaFactory relationCriteriaFactory = new EntityCriteriaFactory(relationFusionContext);
 			String userCode = getUserCode();
 			
-			relationCriteriaFactory.addCriteria(ABCNodeProxy.CODE_PROPERTY_NAME, userCode, CommonSymbol.EQUAL);
+			relationCriteriaFactory.addCriteria(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, userCode, CommonSymbol.EQUAL);
 			criteriaFactory.addRelationCriteria(compositeName, nCriteria.getValue(), relationCriteriaFactory.getCriterias());
 			
 		}

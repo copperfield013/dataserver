@@ -9,6 +9,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
@@ -120,5 +121,11 @@ public interface TemplateService {
 	Long copyListTemplate(Long ltmplId, String targetModuleName);
 
 	Long copyTemplateGroup(Long tmplGroupId, String targetModuleName, UserIdentifier user);
+
+	List<TemplateActionTemplate> queryActionTemplates(String moduleName);
+
+	Map<Long, Set<TemplateGroup>> getActionTemplateRelatedGroupsMap(Set<Long> atmplIds);
+
+	TemplateActionTemplate getActionTemplate(Long atmplId);
 
 }

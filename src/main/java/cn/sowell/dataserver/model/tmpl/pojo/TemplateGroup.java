@@ -70,6 +70,9 @@ public class TemplateGroup {
 	
 	@Transient
 	private List<TemplateGroupPremise> premises = new ArrayList<>();
+	
+	@Transient
+	private List<TemplateGroupAction> actions = new ArrayList<>();
 
 	public Long getId() {
 		return id;
@@ -207,6 +210,14 @@ public class TemplateGroup {
 
 	public void setHideExportButton(Integer hideExportButton) {
 		this.hideExportButton = hideExportButton;
+	}
+
+	public List<TemplateGroupAction> getActions() {
+		return actions;
+	}
+
+	public void setActions(List<TemplateGroupAction> actions) {
+		this.actions = actions;
 	}
 
 

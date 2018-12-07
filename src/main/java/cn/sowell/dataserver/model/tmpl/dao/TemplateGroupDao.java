@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 
 public interface TemplateGroupDao {
@@ -25,5 +26,9 @@ public interface TemplateGroupDao {
 	void updateAllGroupsDetailTemplate(Long dtmplId, Long targetDtmplId);
 
 	void updateAllGroupsListTemplate(Long ltmplId, Long targetLtmplId);
+
+	List<TemplateGroupAction> queryActions();
+
+	List<TemplateGroupAction> queryActions(Long groupId);
 
 }
