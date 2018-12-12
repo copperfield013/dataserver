@@ -17,11 +17,31 @@ public class TemplateGroupAction {
 	@Column(name="c_title")
 	private String title;
 	
+	/**
+	 * 面向列表还是详情
+	 */
 	@Column(name="c_face")
 	private String face;
 	
+	public static final String ACTION_FACE_LIST = "list";
+	public static final String ACTION_FACE_DETAIL = "detail";
+	
+	/**
+	 * 
+	 */
 	@Column(name="c_type")
 	private String type;
+	
+	/**
+	 * 多选
+	 */
+	@Column(name="c_multiple")
+	private Integer multiple;
+	
+	public static final Integer ACTION_MULTIPLE_SINGLE = 0;
+	public static final Integer ACTION_MULTIPLE_NORMAL = 1;
+	public static final Integer ACTION_MULTIPLE_TRANSACTION = 2;
+	
 
 	@Column(name="c_order")
 	private Integer order;
@@ -87,5 +107,13 @@ public class TemplateGroupAction {
 
 	public void setOrder(Integer order) {
 		this.order = order;
+	}
+
+	public Integer getMultiple() {
+		return multiple;
+	}
+
+	public void setMultiple(Integer multiple) {
+		this.multiple = multiple;
 	}
 }

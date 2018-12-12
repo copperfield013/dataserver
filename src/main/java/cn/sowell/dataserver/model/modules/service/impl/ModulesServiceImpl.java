@@ -189,6 +189,11 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
+	public void removeEntities(String moduleName, Set<String> codes, UserIdentifier user) {
+		abcService.remove(moduleName, codes, user);
+	}
+	
+	@Override
 	public String mergeEntity(String module, Map<String, Object> map, UserIdentifier user) {
 		return abcService.mergeEntity(module, map, user);
 	}

@@ -101,6 +101,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	
 	Map<Long, TemplateGroup> tmplGroupMap;
 	
+	Map<Long, TemplateGroupAction> groupActionMap = new HashMap<>();
+	
 	Map<Long, TemplateDetailTemplate> dtmplMap;
 	
 	Map<Long, TemplateListTemplate> ltmplMap;
@@ -571,6 +573,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	Set<Consumer<TemplateGroup>> consumers = new LinkedHashSet<>();
+
+	
 	@Override
 	public void bindTemplateGroupReloadEvent(Consumer<TemplateGroup> consumer) {
 		consumers.add(consumer);
@@ -607,6 +611,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 		if(actions != null) {
 			group.setActions(actions);
+			this.groupActionMap .putAll(CollectionUtils.toMap(actions, TemplateGroupAction::getId));
 		}
 	}
 
@@ -622,6 +627,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		if(group.getId() != null) {
 			//修改模板组合
 			List<TemplateGroupPremise> originPremises = gDao.queryPremises(group.getId());
+			List<TemplateGroupAction> originActions = gDao.queryActions(group.getId());
 			
 			nDao.update(group);
 			
@@ -635,6 +641,19 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 						premise.setGroupId(group.getId());
 					})
 				.doUpdate(new HashSet<>(originPremises ), new HashSet<>(group.getPremises()));
+			
+			
+			NormalDaoSetUpdateStrategy.build(
+					TemplateGroupAction.class, nDao, 
+					TemplateGroupAction::getId, 
+					(oAction, action)->{
+						oAction.setTitle(action.getTitle());
+						oAction.setMultiple(action.getMultiple());
+				}, action->{
+						action.setGroupId(group.getId());
+				})
+				.doUpdate(new HashSet<>(originActions), new HashSet<>(group.getActions()));
+			
 			TransactionAspectSupport.currentTransactionStatus().flush();
 			nDao.clear();
 			reloadTemplateGroup(group.getId());
@@ -649,6 +668,12 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				group.getPremises().forEach(premise->{
 					premise.setGroupId(groupId);
 					nDao.save(premise);
+				});
+			}
+			if(group.getActions() != null) {
+				group.getActions().forEach(action->{
+					action.setGroupId(groupId);
+					nDao.save(action);
 				});
 			}
 			reloadTemplateGroup(groupId);
@@ -1456,7 +1481,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	
 	void reloadActionTemplate(Long atmplId) {
 		if(atmplMap != null) {
-			synchronized (dtmplMap) {
+			synchronized (atmplMap) {
 				logger.debug("重新加载操作模板[id=" + atmplId + "]缓存数据...");
 				TemplateActionTemplate atmpl = nDao.get(TemplateActionTemplate.class, atmplId);
 				if(atmpl != null && checkModuleUsable(atmpl.getModule())) {
@@ -1467,14 +1492,38 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					getActionTemplateRelatedGroups(atmplId).forEach(group->{
 						handlerTmplGroup(group, null, null);
 					});
-					logger.debug("列表模板[" + atmplId + "]缓存数据重新加载完成, 值为" + atmplId);
+					logger.debug("操作模板[" + atmplId + "]缓存数据重新加载完成, 值为" + atmplId);
 				}else {
-					dtmplMap.remove(atmplId);
+					atmplMap.remove(atmplId);
 					logger.debug("从缓存数据中移除列表模板[id=" + atmplId + "]");
 				}
 			}
 		}
 	}
 	
+	@Override
+	public void removeActionTemplate(Long tmplId) {
+		TemplateActionTemplate atmpl = new TemplateActionTemplate();
+		atmpl.setId(tmplId);
+		nDao.remove(atmpl);
+		reloadActionTemplate(tmplId);
+	}
+	
+	@Override
+	public List<TemplateActionTemplate> getModuleActionTemplates(String moduleName) {
+		return getActionTemplateMap().values().stream()
+				.filter(atmpl->moduleName.equals(atmpl.getModule())).collect(Collectors.toList());
+	}
+	
+	
+	@Override
+	public TemplateGroupAction getTempateGroupAction(Long actionId) {
+		return getGroupActionMap().get(actionId);
+	}
+
+	private Map<Long, TemplateGroupAction> getGroupActionMap() {
+		getTemplateGroupMap();
+		return this.groupActionMap;
+	}
 
 }

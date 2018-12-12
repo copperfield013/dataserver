@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -173,6 +174,14 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	public void delete(String moduleName, String code, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
 		config.removeEntity(code, user);
+	}
+	
+	@Override
+	public void remove(String moduleName, Set<String> codes, UserIdentifier user) {
+		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
+		for (String code : codes) {
+			config.removeEntity(code, user);
+		}
 	}
 	
 	@Override

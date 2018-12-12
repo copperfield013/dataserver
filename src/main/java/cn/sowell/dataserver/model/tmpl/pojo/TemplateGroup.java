@@ -62,6 +62,12 @@ public class TemplateGroup {
 	@Column(name="c_hide_export_btn")
 	private Integer hideExportButton;
 	
+	@Column(name="c_hide_query_btn")
+	private Integer hideQueryButton;
+	
+	@Column(name="c_hide_delete_btn")
+	private Integer hideDeleteButton;
+	
 	@Column(name="create_time")
 	private Date createTime;
 	
@@ -218,6 +224,22 @@ public class TemplateGroup {
 
 	public void setActions(List<TemplateGroupAction> actions) {
 		this.actions = actions;
+	}
+
+	public Integer getHideQueryButton() {
+		return hideQueryButton;
+	}
+
+	public void setHideQueryButton(Integer hideQueryButton) {
+		this.hideQueryButton = hideQueryButton;
+	}
+
+	public Integer getHideDeleteButton() {
+		return hideDeleteButton;
+	}
+
+	public void setHideDeleteButton(Integer hideDeleteButton) {
+		this.hideDeleteButton = hideDeleteButton;
 	}
 
 

@@ -101,6 +101,8 @@ public interface ModulesService {
 
 	EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context);
 
+	void removeEntities(String moduleName, Set<String> codes, UserIdentifier user);
+
 
 
 	

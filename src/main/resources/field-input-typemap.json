@@ -7,7 +7,12 @@
 		"label"		: ["label"],
 		"datetime"	: ["text", "datetime"],
 		"time"		: ["text", "time"],
-		"yearmonth"	: ["text", "yearmonth", "ymrange", "none"]
+		"yearmonth"	: ["text", "yearmonth", "ymrange", "none"],
+		"int"	: ["text", "int", "none"],
+		"decimal"	: ["text", "decimal", "none"],
+		"preselect"	: ["text", "preselect", "select", "none"],
+		"caseelect"	: ["text", "caseelect", "none"],
+		"multiselect"	: ["text", "multiselect", "none"]
 	},
 	"inputTypeTitleMap"	: {
 		"text"		: "文本框",
@@ -19,6 +24,10 @@
 		"daterange"	: "日期范围",
 		"datetime"	: "日期时间",
 		"ymrange"	: "年月范围",
+		"decimal"	: "小数输入",
+		"int"		: "整数输入",
+		"preselect"	: "单选可编辑下拉框",
+		"caseelect"	: "级联下拉框",
 		"time"		: "时间",
 		"range"		: "范围",
 		"none"		: "无"

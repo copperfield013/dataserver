@@ -18,6 +18,7 @@ public class EqualsCriteriaConverter extends ComparatorCriteriaConverter{
 		comparators.add("t4");
 		comparators.add("s1");
 		comparators.add("d1");
+		comparators.add("n1");
 	}
 	
 	@Override

@@ -12,6 +12,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
@@ -127,5 +128,11 @@ public interface TemplateService {
 	Map<Long, Set<TemplateGroup>> getActionTemplateRelatedGroupsMap(Set<Long> atmplIds);
 
 	TemplateActionTemplate getActionTemplate(Long atmplId);
+
+	void removeActionTemplate(Long tmplId);
+
+	List<TemplateActionTemplate> getModuleActionTemplates(String module);
+
+	TemplateGroupAction getTempateGroupAction(Long actionId);
 
 }

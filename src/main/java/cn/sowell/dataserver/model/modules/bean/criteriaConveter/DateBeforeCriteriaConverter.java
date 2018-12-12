@@ -3,12 +3,12 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 import com.abc.rrc.query.criteria.BetweenSymbol;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
-public class DateBeforeCriteriaConverter extends ComparatorCriteriaConverter {
+public class DateBeforeCriteriaConverter extends MultiSupportComparatorCriteriaConverter {
 
-	@Override
-	public String getComparator() {
-		return "d2";
+	public DateBeforeCriteriaConverter() {
+		super(new String[]{"d2", "n2"});
 	}
+	
 
 	@Override
 	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {

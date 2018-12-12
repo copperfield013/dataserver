@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.abc.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.abc.mapping.entity.Entity;
 import com.abc.rrc.query.queryrecord.criteria.Criteria;
@@ -55,6 +56,14 @@ public interface ABCExecuteService {
 	 * @param code
 	 */
 	void delete(String moduleName, String code, UserIdentifier user);
+	
+	/**
+	 * 批量删除
+	 * @param moduleName
+	 * @param codes
+	 * @param user
+	 */
+	void remove(String moduleName, Set<String> codes, UserIdentifier user);
 
 	/**
 	 * 保存或者修改数据库中的实体对象
@@ -89,6 +98,8 @@ public interface ABCExecuteService {
 
 	RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, String code,
 			UserIdentifier user);
+
+
 
 
 
