@@ -46,6 +46,8 @@ import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.SelectionTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntityField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
@@ -1383,11 +1385,17 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				Map<Long, List<TemplateActionField>> groupFieldsMap = 
 							CollectionUtils.toListMap(aDao.queryTemplateFields(), field->field.getGroupId());
 				Map<String, List<TemplateActionTemplate>> moduleTmplMap = CollectionUtils.toListMap(atmpls, TemplateActionTemplate::getModule);
+				List<TemplateActionArrayEntity> arrayEntities = aDao.queryArrayEntities();
+				List<TemplateActionArrayEntityField> eFields = aDao.queryArrayEntityFields();
+				
+				Map<Long, List<TemplateActionArrayEntity>> entitiesMap = CollectionUtils.toListMap(arrayEntities , TemplateActionArrayEntity::getTmplFieldGroupId);
+				Map<Long, List<TemplateActionArrayEntityField>> arrayEntityFieldsMap = CollectionUtils.toListMap(eFields, TemplateActionArrayEntityField::getActionArrayEntityId);
 				moduleTmplMap.forEach((module, moduleAtmpls)->{
 					ModuleTemplateReferData referData = getModuleTemplateReferData(module);
 					for (TemplateActionTemplate atmpl : moduleAtmpls) {
 						List<TemplateActionFieldGroup> fieldGroups = tmplFieldGroupsMap.get(atmpl.getId());
-						handlerActionTemplate(atmpl, fieldGroups, groupFieldsMap, referData);
+						HandlerActionTemplateParam data = new HandlerActionTemplateParam(fieldGroups, groupFieldsMap, entitiesMap, arrayEntityFieldsMap);
+						handlerActionTemplate(atmpl, data, referData);
 					}
 				});
 				atmplMap = CollectionUtils.toMap(atmpls, atmpl->atmpl.getId());
@@ -1397,18 +1405,45 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 			return atmplMap;
 		}
 	}
-
-	private void handlerActionTemplate(TemplateActionTemplate atmpl, List<TemplateActionFieldGroup> fieldGroups,
-			Map<Long, List<TemplateActionField>> groupFieldsMap, ModuleTemplateReferData referData) {
+	
+	private static class HandlerActionTemplateParam{
+		private List<TemplateActionFieldGroup> fieldGroups;
+		private Map<Long, List<TemplateActionField>> groupFieldsMap;
+		private Map<Long, List<TemplateActionArrayEntity>> entitiesMap;
+		private Map<Long, List<TemplateActionArrayEntityField>> arrayEntityFieldsMap;
+		public HandlerActionTemplateParam(List<TemplateActionFieldGroup> fieldGroups,
+				Map<Long, List<TemplateActionField>> groupFieldsMap, Map<Long, List<TemplateActionArrayEntity>> entitiesMap,
+				Map<Long, List<TemplateActionArrayEntityField>> arrayEntityFieldsMap) {
+			super();
+			this.fieldGroups = fieldGroups;
+			this.groupFieldsMap = groupFieldsMap;
+			this.entitiesMap = entitiesMap;
+			this.arrayEntityFieldsMap = arrayEntityFieldsMap;
+		}
+		public List<TemplateActionFieldGroup> getFieldGroups() {
+			return fieldGroups;
+		}
+		public Map<Long, List<TemplateActionField>> getGroupFieldsMap() {
+			return groupFieldsMap;
+		}
+		public Map<Long, List<TemplateActionArrayEntityField>> getArrayEntityFieldsMap() {
+			return arrayEntityFieldsMap;
+		}
+		public Map<Long, List<TemplateActionArrayEntity>> getEntitiesMap() {
+			return entitiesMap;
+		}
+	}
+	
+	private void handlerActionTemplate(TemplateActionTemplate atmpl, HandlerActionTemplateParam atmplParam, ModuleTemplateReferData referData) {
 		FusionContextConfig config = referData.getFusionContextConfig();
 		FusionContextConfigResolver resolver = config.getConfigResolver();
-		if(fieldGroups != null) {
-			atmpl.setGroups(fieldGroups);
+		if(atmplParam.getFieldGroups() != null) {
+			atmpl.setGroups(atmplParam.getFieldGroups());
 			Map<Long, DictionaryComposite> compositeMap = referData.getCompositeMap();
 			Map<Long, DictionaryField> fieldMap = referData.getFieldMap();
 			boolean moduleEntityWritable = referData.getEntityWriatble();
-			fieldGroups.forEach(fieldGroup->{
-				List<TemplateActionField> groupFields = groupFieldsMap.get(fieldGroup.getId());
+			for (TemplateActionFieldGroup fieldGroup : atmplParam.getFieldGroups()) {
+				List<TemplateActionField> groupFields = atmplParam.getGroupFieldsMap().get(fieldGroup.getId());
 				if(groupFields != null) {
 					fieldGroup.setFields(groupFields);
 				}
@@ -1451,7 +1486,33 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 						}
 					}
 				}
-			});
+				
+				List<TemplateActionArrayEntity> entities = atmplParam.getEntitiesMap().get(fieldGroup.getId());
+				
+				if(entities != null) {
+					entities.forEach(entity->{
+						List<TemplateActionArrayEntityField> eFields = atmplParam.getArrayEntityFieldsMap().get(entity.getId());
+						if(eFields != null) {
+							entity.setFields(eFields);
+							for (TemplateActionArrayEntityField eField : eFields) {
+								for (TemplateActionField field : fieldGroup.getFields()) {
+									if(field.getId().equals(eField.getTmplFieldId())){
+										field.getArrayEntityFields().add(eField);
+										eField.setFieldId(field.getFieldId());
+										break;
+									}
+										
+								}
+							}
+						}
+						
+					});
+					fieldGroup.setEntities(entities);
+				}
+				
+				
+				
+			}
 		}
 	}
 	
@@ -1487,7 +1548,11 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				if(atmpl != null && checkModuleUsable(atmpl.getModule())) {
 					List<TemplateActionFieldGroup> fieldGroups = aDao.getTemplateGroups(atmplId);
 					Map<Long, List<TemplateActionField>> groupFieldsMap = aDao.getTemplateFieldsMap(CollectionUtils.toSet(fieldGroups, group->group.getId()));
-					handlerActionTemplate(atmpl, fieldGroups, groupFieldsMap, getModuleTemplateReferData(atmpl.getModule()));
+					List<TemplateActionArrayEntity> entities = aDao.queryArrayEntities(atmplId);
+					Map<Long, List<TemplateActionArrayEntity>> groupEntitiesMap = CollectionUtils.toListMap(entities, TemplateActionArrayEntity::getTmplFieldGroupId);
+					Map<Long, List<TemplateActionArrayEntityField>> arrayEntityFieldsMap = aDao.queryArrayEntityFields(CollectionUtils.toSet(entities, TemplateActionArrayEntity::getId));
+					HandlerActionTemplateParam data = new HandlerActionTemplateParam(fieldGroups, groupFieldsMap, groupEntitiesMap, arrayEntityFieldsMap);
+					handlerActionTemplate(atmpl, data, getModuleTemplateReferData(atmpl.getModule()));
 					atmplMap.put(atmplId, atmpl);
 					getActionTemplateRelatedGroups(atmplId).forEach(group->{
 						handlerTmplGroup(group, null, null);

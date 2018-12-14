@@ -1,6 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.pojo;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -73,6 +75,10 @@ public class TemplateActionField {
 
 	@Column(name="c_validators")
 	private String validators;
+	
+	@Transient
+	@JSONField(serialize=false)
+	private List<TemplateActionArrayEntityField> arrayEntityFields = new ArrayList<>();
 	
 	
 	public Long getId() {
@@ -177,5 +183,11 @@ public class TemplateActionField {
 	}
 	public void setOptionGroupKey(String optionGroupKey) {
 		this.optionGroupKey = optionGroupKey;
+	}
+	public List<TemplateActionArrayEntityField> getArrayEntityFields() {
+		return arrayEntityFields;
+	}
+	public void setArrayEntityFields(List<TemplateActionArrayEntityField> arrayEntityFields) {
+		this.arrayEntityFields = arrayEntityFields;
 	}
 }

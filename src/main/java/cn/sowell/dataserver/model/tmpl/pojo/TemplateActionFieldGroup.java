@@ -64,6 +64,10 @@ public class TemplateActionFieldGroup {
 	@Transient
 	private List<TemplateActionField> fields = new ArrayList<TemplateActionField>();
 	
+	
+	@Transient
+	private List<TemplateActionArrayEntity> entities = new ArrayList<TemplateActionArrayEntity>();
+	
 	@JSONField(name="relationSubdomain")
 	public Set<String> getRelationSubdomain() {
 		if(composite != null) {
@@ -163,6 +167,14 @@ public class TemplateActionFieldGroup {
 
 	public void setUnallowedCreate(Integer unallowedCreate) {
 		this.unallowedCreate = unallowedCreate;
+	}
+
+	public List<TemplateActionArrayEntity> getEntities() {
+		return entities;
+	}
+
+	public void setEntities(List<TemplateActionArrayEntity> entities) {
+		this.entities = entities;
 	}
 
 }
