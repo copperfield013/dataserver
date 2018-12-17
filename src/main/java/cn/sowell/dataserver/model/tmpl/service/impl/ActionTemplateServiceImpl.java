@@ -14,8 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
 
 import cn.sowell.copframe.common.UserIdentifier;
+import cn.sowell.copframe.utils.CollectionUtils;
+import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.datacenter.entityResolver.ImportCompositeField;
+import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
+import cn.sowell.datacenter.entityResolver.impl.ArrayItemPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.RelationEntityProxy;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntityField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
@@ -42,7 +52,8 @@ public class ActionTemplateServiceImpl implements ActionTemplateService{
 		int sucs = 0;
 		for (String code : codes) {
 			try {
-				Map<String, Object> fieldValueMap = generateFieldValueMap(atmpl);
+				ModuleEntityPropertyParser entity = mService.getEntity(atmpl.getModule(), code, null, currentUser);
+				Map<String, Object> fieldValueMap = generateFieldValueMap(entity, atmpl);
 				fieldValueMap.put(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, code);
 				mService.mergeEntity(atmpl.getModule(), fieldValueMap, currentUser);
 				if(!isTransaction) {
@@ -65,20 +76,59 @@ public class ActionTemplateServiceImpl implements ActionTemplateService{
 	}
 
 
-	private Map<String, Object> generateFieldValueMap(TemplateActionTemplate atmpl) {
+	private Map<String, Object> generateFieldValueMap(ModuleEntityPropertyParser existEntity, TemplateActionTemplate atmpl) {
 		List<TemplateActionFieldGroup> groups = atmpl.getGroups();
 		Map<String, Object> entityMap = new HashMap<String, Object>();
 		if(groups != null) {
 			for (TemplateActionFieldGroup group : groups) {
-				List<TemplateActionField> fields = group.getFields();
-				if(fields != null) {
-					for (TemplateActionField field : fields) {
-						if(field.getFieldAvailable()) {
-							if(!Integer.valueOf(1).equals(group.getIsArray())) {
-								entityMap.put(field.getFieldName(), field.getViewValue());
-							}else {
-								//TODO: 一对多的字段
-								
+				//普通字段
+				if(!Integer.valueOf(1).equals(group.getIsArray())) {
+					List<TemplateActionField> actFields = group.getFields();
+					for (TemplateActionField aField : actFields) {
+						if(aField.getFieldAvailable()) {
+							entityMap.put(aField.getFieldName(), aField.getViewValue());
+						}
+					}
+				}else {
+					//一对多的字段
+					List<TemplateActionArrayEntity> entities = group.getEntities();
+					if(entities != null && !entities.isEmpty()) {
+						DictionaryComposite composite = group.getComposite();
+						if(composite != null) {
+							boolean isRelation = DictionaryComposite.RELATION_ADD_TYPE.equals(composite.getAddType());
+							Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(composite.getFields(), DictionaryField::getId);
+							int compositeEntityIndex = 0;
+							if(existEntity != null) {
+								List<ArrayItemPropertyParser> existArrayEntities = existEntity.getCompositeArray(composite.getName());
+								//放入原本存在的数组字段
+								for (ArrayItemPropertyParser existArrayEntity : existArrayEntities) {
+									entityMap.put(existArrayEntity.getCodeName(), existArrayEntity.getCode());
+									if(isRelation) {
+										String relationLabelKey = composite.getName() + "[" + existArrayEntity.getItemIndex() + "]." + RelationEntityProxy.LABEL_KEY;
+										entityMap.put(relationLabelKey, existEntity.getFormatedProperty(relationLabelKey));
+									}
+								}
+								compositeEntityIndex = existArrayEntities.size();
+							}
+							//将操作模板中的数组字段放入
+							for (TemplateActionArrayEntity arrayEntity : entities) {
+								if(arrayEntity.getRelationLabel() != null) {
+									entityMap.put(composite.getName() + "[" + compositeEntityIndex + "]." + RelationEntityProxy.LABEL_KEY, arrayEntity.getRelationLabel());
+									if(TextUtils.hasText(arrayEntity.getRelationEntityCode())) {
+										entityMap.put(composite.getName() + "[" + compositeEntityIndex + "]." + ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, arrayEntity.getRelationEntityCode());
+									}
+								}
+								if(!isRelation || !TextUtils.hasText(arrayEntity.getRelationEntityCode())) {
+									List<TemplateActionArrayEntityField> eFields = arrayEntity.getFields();
+									for (TemplateActionArrayEntityField eField : eFields) {
+										DictionaryField field = fieldMap.get(eField.getFieldId());
+										if(field != null) {
+											String fieldName = field.getFieldPattern().replaceFirst(ImportCompositeField.REPLACE_INDEX, String.valueOf(compositeEntityIndex));
+											entityMap.put(fieldName, eField.getValue());
+										}
+									}
+								}
+								compositeEntityIndex++;
 							}
 						}
 					}
@@ -92,7 +142,7 @@ public class ActionTemplateServiceImpl implements ActionTemplateService{
 	@Override
 	public void coverActionFields(TemplateGroupAction groupAction, Map<String, Object> map) {
 		TemplateActionTemplate atmpl = tService.getActionTemplate(groupAction.getAtmplId());
-		map.putAll(generateFieldValueMap(atmpl));
+		map.putAll(generateFieldValueMap(null, atmpl));
 	}
 
 }

@@ -222,6 +222,7 @@ public class TemplateActionUpdateStrategy implements TemplateUpdateStrategy<Temp
 					throw new RuntimeException("找不到fieldId为[" + field.getFieldId() + "]的字段");
 				}
 			}
+			handlerActionEntities(group, null);
 		}
 		return tmplId;
 	}
