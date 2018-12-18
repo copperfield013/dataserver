@@ -11,6 +11,6 @@ public interface ActionTemplateService {
 
 	int doAction(TemplateActionTemplate atmpl, Set<String> codes, boolean isTransaction, UserIdentifier currentUser);
 
-	void coverActionFields(TemplateGroupAction groupAction, Map<String, Object> map);
+	Map<String, Object> coverActionFields(TemplateGroupAction groupAction, Map<String, Object> map);
 
 }

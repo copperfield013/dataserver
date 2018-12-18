@@ -11,6 +11,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 @Entity
 @Table(name="t_sa_tmpl_action_arrayentity")
 public class TemplateActionArrayEntity {
@@ -34,6 +36,10 @@ public class TemplateActionArrayEntity {
 	@Transient
 	private List<TemplateActionArrayEntityField> fields = new ArrayList<>();
 
+	@Transient
+	@JSONField(serialize=false)
+	private ArrayEntityProxy arrayEntityProxy;
+	
 	public Long getId() {
 		return id;
 	}
@@ -81,5 +87,13 @@ public class TemplateActionArrayEntity {
 
 	public void setFields(List<TemplateActionArrayEntityField> fields) {
 		this.fields = fields;
+	}
+
+	public ArrayEntityProxy getArrayEntityProxy() {
+		return this.arrayEntityProxy;
+	}
+
+	public void setArrayEntityProxy(ArrayEntityProxy arrayEntityProxy) {
+		this.arrayEntityProxy = arrayEntityProxy;
 	}
 }

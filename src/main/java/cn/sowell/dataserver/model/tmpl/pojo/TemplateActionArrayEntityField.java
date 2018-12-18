@@ -8,6 +8,10 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
+import cn.sowell.copframe.utils.FormatUtils;
+
 @Entity
 @Table(name="t_sa_tmpl_action_arrayentity_field")
 public class TemplateActionArrayEntityField {
@@ -28,6 +32,13 @@ public class TemplateActionArrayEntityField {
 
 	@Transient
 	private Long fieldId;
+	
+	@Transient
+	private String fieldName;
+	
+	@Transient
+	@JSONField(serialize=false)
+	private TemplateActionArrayEntity arrayEntity;
 	
 	
 	public Long getId() {
@@ -55,6 +66,10 @@ public class TemplateActionArrayEntityField {
 	}
 
 	public String getValue() {
+		ArrayEntityProxy proxy = arrayEntity.getArrayEntityProxy();
+		if(proxy != null) {
+			return FormatUtils.toString(proxy.getFieldValue(this.getFieldName()));
+		}
 		return value;
 	}
 
@@ -68,5 +83,21 @@ public class TemplateActionArrayEntityField {
 
 	public void setFieldId(Long fieldId) {
 		this.fieldId = fieldId;
+	}
+
+	public TemplateActionArrayEntity getArrayEntity() {
+		return arrayEntity;
+	}
+
+	public void setArrayEntity(TemplateActionArrayEntity arrayEntity) {
+		this.arrayEntity = arrayEntity;
+	}
+
+	public String getFieldName() {
+		return fieldName;
+	}
+
+	public void setFieldName(String fieldName) {
+		this.fieldName = fieldName;
 	}
 }

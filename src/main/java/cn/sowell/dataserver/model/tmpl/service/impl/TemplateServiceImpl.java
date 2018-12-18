@@ -35,6 +35,7 @@ import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
 import cn.sowell.datacenter.entityResolver.config.UnconfiuredFusionException;
+import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -46,6 +47,7 @@ import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.SelectionTemplateDao;
 import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.ArrayEntityProxy;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntityField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionField;
@@ -101,6 +103,9 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	@Resource
 	FusionContextConfigFactory fFactory;
 	
+	@Resource
+	ABCExecuteService abcService;
+	
 	Map<Long, TemplateGroup> tmplGroupMap;
 	
 	Map<Long, TemplateGroupAction> groupActionMap = new HashMap<>();
@@ -112,6 +117,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	Map<Long, TemplateSelectionTemplate> stmplMap;
 	
 	Map<Long, TemplateActionTemplate> atmplMap;
+	
+	
 	
 	//关联到列表模板的模板组合id集合
 	//Map<Long, Set<Long>> ltmplGroupIdMap;
@@ -1491,6 +1498,10 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 				
 				if(entities != null) {
 					entities.forEach(entity->{
+						if(TextUtils.hasText(entity.getRelationEntityCode())) {
+							ArrayEntityProxy arrayEntityProxy = createArrayEntityProxy(atmpl.getModule(), fieldGroup.getComposite().getName(), entity.getRelationEntityCode());
+							entity.setArrayEntityProxy(arrayEntityProxy);
+						}
 						List<TemplateActionArrayEntityField> eFields = atmplParam.getArrayEntityFieldsMap().get(entity.getId());
 						if(eFields != null) {
 							entity.setFields(eFields);
@@ -1499,13 +1510,14 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 									if(field.getId().equals(eField.getTmplFieldId())){
 										field.getArrayEntityFields().add(eField);
 										eField.setFieldId(field.getFieldId());
+										eField.setFieldName(field.getFieldName());
+										eField.setArrayEntity(entity);
 										break;
 									}
 										
 								}
 							}
 						}
-						
 					});
 					fieldGroup.setEntities(entities);
 				}
@@ -1516,6 +1528,13 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 	}
 	
+	
+	
+	private ArrayEntityProxy createArrayEntityProxy(String moduleName, String relationName,
+			String relationEntityCode) {
+		return new ArrayEntityProxy(abcService, moduleName, relationName, relationEntityCode);
+	}
+
 	@Override
 	public Map<Long, Set<TemplateGroup>> getActionTemplateRelatedGroupsMap(Set<Long> atmplIds) {
 		Map<Long, Set<TemplateGroup>> map = new HashMap<>();
