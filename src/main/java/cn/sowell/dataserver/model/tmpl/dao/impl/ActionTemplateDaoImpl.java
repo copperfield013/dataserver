@@ -104,11 +104,15 @@ public class ActionTemplateDaoImpl implements ActionTemplateDao{
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map<Long, List<TemplateActionArrayEntityField>> queryArrayEntityFields(Set<Long> entityIds) {
-		String hql = "from TemplateActionArrayEntityField f where f.actionArrayEntityId in (:entityIds)";
-		Query query = sFactory.getCurrentSession().createQuery(hql);
-		query.setParameterList("entityIds", entityIds);
-		List<TemplateActionArrayEntityField> list = query.list();
-		return CollectionUtils.toListMap(list, TemplateActionArrayEntityField::getActionArrayEntityId);
+		if(entityIds != null && !entityIds.isEmpty()) {
+			String hql = "from TemplateActionArrayEntityField f where f.actionArrayEntityId in (:entityIds)";
+			Query query = sFactory.getCurrentSession().createQuery(hql);
+			query.setParameterList("entityIds", entityIds);
+			List<TemplateActionArrayEntityField> list = query.list();
+			return CollectionUtils.toListMap(list, TemplateActionArrayEntityField::getActionArrayEntityId);
+		}else {
+			return new HashMap<>();
+		}
 	}
 	
 
