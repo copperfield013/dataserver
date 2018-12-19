@@ -214,7 +214,6 @@ public class TemplateActionUpdateStrategy implements TemplateUpdateStrategy<Temp
 			Long groupId = nDao.save(group);
 			for (TemplateActionField field : group.getFields()) {
 				if(fieldMap.containsKey(field.getFieldId())){
-					field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
 					field.setGroupId(groupId);
 					field.setUpdateTime(now);
 					nDao.save(field);

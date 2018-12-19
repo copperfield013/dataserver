@@ -739,6 +739,16 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					ltmplMap = null;
 				}
 			}
+			if(atmplMap != null) {
+				synchronized (atmplMap) {
+					atmplMap = null;
+				}
+			}
+			if(stmplMap != null) {
+				synchronized (stmplMap) {
+					stmplMap = null;
+				}
+			}
 			if(tmplGroupMap != null) {
 				synchronized (tmplGroupMap) {
 					tmplGroupMap = null;
@@ -1321,6 +1331,78 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		}
 	}
 	
+	/**
+	 * 根据目标模块名和
+	 * @param targetModuleName
+	 * @param fields
+	 * @param group
+	 * @return
+	 */
+	private DictionaryComposite analyzeModuleMapComposite(String targetModuleName, List<TemplateActionField> tfields,
+			TemplateActionFieldGroup group) {
+		Assert.notEmpty(tfields);
+		//获得目标模块下的所有字段
+		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(targetModuleName), f->f.getId());
+		Set<DictionaryComposite> composites = new LinkedHashSet<>();
+		Set<TemplateActionField> toRemoves = new HashSet<>();
+		for (TemplateActionField tfield : tfields) {
+			DictionaryField field = fieldMap.get(tfield.getFieldId());
+			if(field != null) {
+				composites.add(field.getComposite());
+			}else {
+				//field不存在，则删除该字段
+				toRemoves.add(tfield);
+			}
+		}
+		for (TemplateActionField toRemove : toRemoves) {
+			tfields.remove(toRemove);
+		}
+		
+		if(composites.isEmpty()) {
+			//所有的字段都没有composite，那么肯定有问题
+			throw new RuntimeException("要复制的字段组[" + group.getTitle() + "]的composite都为空");
+		}else if(composites.size() == 1) {
+			//字段都是在同一个composite里，直接返回该composite
+			return composites.iterator().next();
+		}
+		//字段属于多个composite，则要判断字段
+		Set<DictionaryComposite> arrayComposite = composites.stream().filter(composite->Integer.valueOf(1).equals(composite.getIsArray())).collect(Collectors.toSet());
+		if(arrayComposite.size() == 0) {
+			//全部都是非数组composite，返回空
+			return null;
+		}else {
+			//选出field最多的composite，其他的field去除
+			Map<DictionaryComposite, Integer> compositeFieldCount = new HashMap<>();
+			for (TemplateActionField tfield : tfields) {
+				DictionaryField field = fieldMap.get(tfield.getFieldId());
+				if(compositeFieldCount.containsKey(field.getComposite())) {
+					compositeFieldCount.put(field.getComposite(), compositeFieldCount.get(field.getComposite()) + 1);
+				}else {
+					compositeFieldCount.put(field.getComposite(), 1);
+				}
+			}
+			DictionaryComposite maxComposite = null;
+			int max = 0;
+			for (Entry<DictionaryComposite, Integer> entry : compositeFieldCount.entrySet()) {
+				if(entry.getValue() > max) {
+					max = entry.getValue();
+					maxComposite = entry.getKey();
+				}
+			}
+			Iterator<TemplateActionField> itr = tfields.iterator();
+			//移除弱势群体
+			while(itr.hasNext()) {
+				TemplateActionField tfield = itr.next();
+				DictionaryField field = fieldMap.get(tfield.getFieldId());
+				if(field.getComposite() != maxComposite) {
+					itr.remove();
+				}
+			}
+			return maxComposite;
+		}
+	}
+	
+	
 	@Override
 	public Long copyTemplateGroup(Long tmplGroupId, String targetModuleName, UserIdentifier user) {
 		Assert.notNull(tmplGroupId);
@@ -1358,12 +1440,34 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 								}
 							}
 						}
+						
+						List<TemplateGroupAction> actions = tmplGroup.getActions();
+						Map<Long, Long> atmplIdMap = new HashMap<>();
+						if(actions != null && !actions.isEmpty()) {
+							for (TemplateGroupAction action : actions) {
+								TemplateGroupAction nAction = new TemplateGroupAction();
+								if(!atmplIdMap.containsKey(action.getAtmplId())) {
+									Long newAtmplId = copyActionTemplate(action.getAtmplId(), targetModuleName);
+									atmplIdMap.put(action.getAtmplId(), newAtmplId);
+								}
+								nAction.setAtmplId(atmplIdMap.get(action.getAtmplId()));
+								nAction.setFace(action.getFace());
+								nAction.setMultiple(action.getMultiple());
+								nAction.setOrder(action.getOrder());
+								nAction.setTitle(action.getTitle());
+								nAction.setType(action.getType());
+								newGroup.getActions().add(nAction);
+							}
+						}
+						
 						newGroup.setTitle("(复制自" + sourceModule.getTitle() + "-" + tmplGroup.getTitle() + ")");
 						newGroup.setModule(targetModuleName);
 						newGroup.setDisabled(tmplGroup.getDisabled());
 						newGroup.setHideCreateButton(tmplGroup.getHideCreateButton());
 						newGroup.setHideExportButton(tmplGroup.getHideExportButton());
 						newGroup.setHideImportButton(tmplGroup.getHideImportButton());
+						newGroup.setHideQueryButton(tmplGroup.getHideQueryButton());
+						newGroup.setHideDeleteButton(tmplGroup.getHideDeleteButton());
 						newGroup.setListTemplateId(newListTmplId);
 						newGroup.setDetailTemplateId(newDetailTmplId);
 						return saveGroup(newGroup, user);
@@ -1560,7 +1664,7 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 	}
 	
 	void reloadActionTemplate(Long atmplId) {
-		if(atmplMap != null) {
+		if(atmplId != null && atmplMap != null) {
 			synchronized (atmplMap) {
 				logger.debug("重新加载操作模板[id=" + atmplId + "]缓存数据...");
 				TemplateActionTemplate atmpl = nDao.get(TemplateActionTemplate.class, atmplId);
@@ -1579,6 +1683,17 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					logger.debug("操作模板[" + atmplId + "]缓存数据重新加载完成, 值为" + atmplId);
 				}else {
 					atmplMap.remove(atmplId);
+					//移除缓存中引用该操作模板的模板组合
+					getTemplateGroupMap().values().forEach(group->{
+						List<TemplateGroupAction> actions = group.getActions();
+						Iterator<TemplateGroupAction> itr = actions.iterator();
+						while(itr.hasNext()) {
+							TemplateGroupAction action = itr.next();
+							if(atmplId.equals(action.getAtmplId())) {
+								itr.remove();
+							}
+						}
+					});
 					logger.debug("从缓存数据中移除列表模板[id=" + atmplId + "]");
 				}
 			}
@@ -1610,4 +1725,110 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 		return this.groupActionMap;
 	}
 
+	@Override
+	public Long copyActionTemplate(Long atmplId, String targetModuleName) {
+		Assert.notNull(atmplId);
+		Assert.hasText(targetModuleName);
+		TemplateActionTemplate atmpl = getActionTemplate(atmplId);
+		ModuleMeta sourceModule = mService.getModule(atmpl.getModule());
+		if(atmpl != null) {
+			FusionContextConfig config = fFactory.getModuleConfig(targetModuleName);
+			if(config != null) {
+				TemplateActionTemplate newTmpl = new TemplateActionTemplate();
+				//复制
+				newTmpl.setModule(targetModuleName);
+				newTmpl.setTitle("(复制自" + sourceModule.getTitle() + "-" + atmpl.getTitle() + ")");
+				newTmpl.setCreateTime(new Date());
+				newTmpl.setUpdateTime(newTmpl.getCreateTime());
+				List<TemplateActionFieldGroup> groups = atmpl.getGroups();
+				if(groups != null) {
+					//遍历所有字段组
+					for (TemplateActionFieldGroup group : groups) {
+						TemplateActionFieldGroup nGroup = new TemplateActionFieldGroup();
+						Map<TemplateActionField, List<TemplateActionArrayEntityField>> fieldEntityFieldListMap = new HashMap<>();
+						if(group.getFields() != null) {
+							//遍历字段组内的所有字段
+							for (TemplateActionField field : group.getFields()) {
+								//只有字段是可用的情况下才复制该字段
+								if(field.getFieldAvailable()) {
+									//映射获得目标模块对应的字段
+									DictionaryField targetField = dictService.mapModuleField(targetModuleName, dictService.getField(atmpl.getModule(), field.getFieldId()));
+									if(targetField != null) {
+										TemplateActionField nField = new TemplateActionField();
+										fieldEntityFieldListMap.put(nField, field.getArrayEntityFields());
+										nField.setFieldId(targetField.getId());
+										nField.setFieldName(targetField.getFullKey());
+										nField.setTitle(field.getTitle());
+										nField.setOrder(field.getOrder());
+										nField.setColNum(field.getColNum());
+										nField.setUnmodifiable(field.getUnmodifiable());
+										nField.setViewValue(field.getViewValue());
+										nField.setType(field.getType());
+										nField.setValidators(field.getValidators());
+										nField.setOptionGroupId(field.getOptionGroupId());
+										nGroup.getFields().add(nField);
+									}
+								}
+							}
+						}
+						if(group.getEntities() != null) {
+							for (TemplateActionArrayEntity entity : group.getEntities()) {
+								TemplateActionArrayEntity nEntity = new TemplateActionArrayEntity();
+								nEntity.setIndex(entity.getIndex());
+								nEntity.setRelationEntityCode(entity.getRelationEntityCode());
+								nEntity.setRelationLabel(entity.getRelationLabel());
+								nGroup.getEntities().add(nEntity);
+							}
+							if(nGroup.getFields() != null) {
+								for (TemplateActionField nField : nGroup.getFields()) {
+									List<TemplateActionArrayEntityField> entityFields = fieldEntityFieldListMap.get(nField);
+									if(entityFields != null) {
+										for (TemplateActionArrayEntityField entityField : entityFields) {
+											TemplateActionArrayEntityField nEntityField = new TemplateActionArrayEntityField();
+											nEntityField.setValue(entityField.getValue());
+											nEntityField.setFieldId(nField.getFieldId());
+											nField.getArrayEntityFields().add(nEntityField);
+										}
+									}
+								}
+							}
+						}
+						if(group.getComposite() != null) {
+							try {
+								//如果字段组的composite不为空的话，那么就要根据新模板中已经匹配好的fields推断出其对应的composite
+								DictionaryComposite targetGroupComposite = analyzeModuleMapComposite(targetModuleName, nGroup.getFields(), group);
+								if(targetGroupComposite != null) {
+									nGroup.setIsArray(targetGroupComposite.getIsArray());
+									nGroup.setCompositeId(targetGroupComposite.getId());
+								}
+								if(group.getSelectionTemplateId() != null) {
+									//复制并创建一个新的选择模板
+									Long stmplId = copySeletionTemplate(targetGroupComposite, group.getSelectionTemplateId());
+									if(stmplId != null) {
+										nGroup.setSelectionTemplateId(stmplId);
+									}
+								}
+							} catch (Exception e) {
+								logger.error("解析字段组[" + group.getTitle() + "]的composite时发生错误，将不复制该字段组", e);
+								continue;
+							}
+						}
+						nGroup.setTitle(group.getTitle());
+						nGroup.setOrder(group.getOrder());
+						nGroup.setUnallowedCreate(group.getUnallowedCreate());
+						nGroup.setUnmodifiable(group.getUnmodifiable());
+						nGroup.setUpdateTime(newTmpl.getUpdateTime());
+						newTmpl.getGroups().add(nGroup);
+					}
+				}
+				Long newTmplId = tmplUpdateStrategyFactory.getStrategy(newTmpl).create(newTmpl);
+				if(newTmplId != null) {
+					reloadActionTemplate(newTmplId);
+				}
+				return newTmplId;
+			}
+		}
+		return null;
+	}
+	
 }

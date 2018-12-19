@@ -135,4 +135,6 @@ public interface TemplateService {
 
 	TemplateGroupAction getTempateGroupAction(Long actionId);
 
+	Long copyActionTemplate(Long atmplId, String targetModuleName);
+
 }
