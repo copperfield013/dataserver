@@ -657,6 +657,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 					TemplateGroupAction::getId, 
 					(oAction, action)->{
 						oAction.setTitle(action.getTitle());
+						oAction.setIconClass(action.getIconClass());
+						oAction.setOutgoing(action.getOutgoing());
 						oAction.setMultiple(action.getMultiple());
 				}, action->{
 						action.setGroupId(group.getId());
@@ -1455,6 +1457,8 @@ public class TemplateServiceImpl implements TemplateService, InitializingBean{
 								nAction.setMultiple(action.getMultiple());
 								nAction.setOrder(action.getOrder());
 								nAction.setTitle(action.getTitle());
+								nAction.setIconClass(action.getIconClass());
+								nAction.setOutgoing(action.getOutgoing());
 								nAction.setType(action.getType());
 								newGroup.getActions().add(nAction);
 							}

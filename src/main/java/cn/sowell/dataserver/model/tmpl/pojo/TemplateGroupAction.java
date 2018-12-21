@@ -42,7 +42,12 @@ public class TemplateGroupAction {
 	public static final Integer ACTION_MULTIPLE_NORMAL = 1;
 	public static final Integer ACTION_MULTIPLE_TRANSACTION = 2;
 	
-
+	@Column(name="c_icon_class")
+	private String iconClass;
+	
+	@Column(name="c_outgoing")
+	private Integer outgoing;
+	
 	@Column(name="c_order")
 	private Integer order;
 	
@@ -115,5 +120,21 @@ public class TemplateGroupAction {
 
 	public void setMultiple(Integer multiple) {
 		this.multiple = multiple;
+	}
+
+	public String getIconClass() {
+		return iconClass;
+	}
+
+	public void setIconClass(String iconClass) {
+		this.iconClass = iconClass;
+	}
+
+	public Integer getOutgoing() {
+		return outgoing;
+	}
+
+	public void setOutgoing(Integer outgoing) {
+		this.outgoing = outgoing;
 	}
 }

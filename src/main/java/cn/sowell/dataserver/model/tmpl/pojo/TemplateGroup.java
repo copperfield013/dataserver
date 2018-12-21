@@ -68,6 +68,9 @@ public class TemplateGroup {
 	@Column(name="c_hide_delete_btn")
 	private Integer hideDeleteButton;
 	
+	@Column(name="c_hide_save_btn")
+	private Integer hideSaveButton;
+	
 	@Column(name="create_time")
 	private Date createTime;
 	
@@ -240,6 +243,14 @@ public class TemplateGroup {
 
 	public void setHideDeleteButton(Integer hideDeleteButton) {
 		this.hideDeleteButton = hideDeleteButton;
+	}
+
+	public Integer getHideSaveButton() {
+		return hideSaveButton;
+	}
+
+	public void setHideSaveButton(Integer hideSaveButton) {
+		this.hideSaveButton = hideSaveButton;
 	}
 
 
