@@ -13,12 +13,12 @@ public class TextLeftLikeCriteriaConverter extends ComparatorCriteriaConverter {
 	
 	@Override
 	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
-		cFactory.addCriteria(fieldName, value, CommonSymbol.LEFT_LIKE);
+		cFactory.addCriteria(fieldName, value, CommonSymbol.LIKE_LEFT);
 	}
 	
 	@Override
 	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
-		relationEntityFactory.addCriteria(suffix, value, CommonSymbol.LEFT_LIKE);
+		relationEntityFactory.addCriteria(suffix, value, CommonSymbol.LIKE_LEFT);
 	}
 
 }

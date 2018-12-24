@@ -4,14 +4,14 @@
 	
 	<groupId>cn.sowell.datacenter</groupId>
 	<artifactId>dataserver</artifactId>
-	<version>0.50</version>
+	<version>0.51</version>
 	<packaging>jar</packaging>
 	
 	<name>dataserver</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.entityResolver>2.36</version.entityResolver>
+		<version.entityResolver>2.37</version.entityResolver>
 		<version.spring>4.3.4.RELEASE</version.spring>
 		<version.cxf>3.2.4</version.cxf>
 		<version.hibernate>5.0.7.Final</version.hibernate>

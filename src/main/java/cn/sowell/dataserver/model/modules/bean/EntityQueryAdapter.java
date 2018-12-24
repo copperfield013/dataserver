@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.entity.impl.EntitySortedPagedQuery;
+import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.Assert;

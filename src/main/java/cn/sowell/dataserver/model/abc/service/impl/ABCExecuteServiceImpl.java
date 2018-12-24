@@ -21,7 +21,7 @@ import com.abc.mapping.entity.Entity;
 import com.abc.panel.Discoverer;
 import com.abc.panel.PanelFactory;
 import com.abc.record.HistoryTracker;
-import com.abc.rrc.query.entity.impl.EntitySortedPagedQuery;
+import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 import com.abc.rrc.query.queryrecord.criteria.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
