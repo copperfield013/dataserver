@@ -1,5 +1,7 @@
 package cn.sowell.dataserver.model.dict.pojo;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -14,7 +16,12 @@ import cn.sowell.datacenter.entityResolver.Field;
 
 @Entity
 @Table(name="v_sa_dictionary_field")
-public class DictionaryField implements Field{
+public class DictionaryField implements Field, Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7637356299198423065L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@JSONField(name="id")

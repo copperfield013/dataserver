@@ -1,5 +1,6 @@
 package cn.sowell.dataserver.model.dict.pojo;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -17,7 +18,12 @@ import cn.sowell.datacenter.entityResolver.Composite;
 
 @Entity
 @Table(name="v_sa_dictionary_composite")
-public class DictionaryComposite implements Composite{
+public class DictionaryComposite implements Composite, Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5613014342320606232L;
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@JSONField(name="c_id")

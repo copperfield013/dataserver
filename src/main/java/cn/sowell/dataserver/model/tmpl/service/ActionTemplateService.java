@@ -4,10 +4,11 @@ import java.util.Map;
 import java.util.Set;
 
 import cn.sowell.copframe.common.UserIdentifier;
+import cn.sowell.dataserver.model.tmpl.duplicator.ModuleTemplateDuplicator;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 
-public interface ActionTemplateService {
+public interface ActionTemplateService extends OpenTemplateService<TemplateActionTemplate>, RelateToTemplateGroup, ModuleTemplateDuplicator{
 
 	int doAction(TemplateActionTemplate atmpl, Set<String> codes, boolean isTransaction, UserIdentifier currentUser);
 

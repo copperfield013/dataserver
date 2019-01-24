@@ -5,14 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.Resource;
-
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import cn.sowell.copframe.dao.deferedQuery.HibernateRefrectResultTransformer;
+import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.dataserver.model.tmpl.dao.ActionTemplateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
@@ -22,64 +22,33 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 
 @Repository
-public class ActionTemplateDaoImpl implements ActionTemplateDao{
+public class ActionTemplateDaoImpl extends AbstractDetailTemplateDao<TemplateActionTemplate, TemplateActionFieldGroup, TemplateActionField> implements ActionTemplateDao{
 
-	@Resource
-	SessionFactory sFactory;
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<TemplateActionTemplate> queryTemplates() {
-		String hql = "from TemplateActionTemplate t order by t.updateTime desc";
-		Query query = sFactory.getCurrentSession().createQuery(hql);
-		return query.list();
+	@Autowired
+	public ActionTemplateDaoImpl(@Autowired NormalOperateDao nDao, @Autowired SessionFactory sFactory) {
+		super(nDao, sFactory);
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<TemplateActionFieldGroup> queryFieldGroups() {
-		String hql = "from TemplateActionFieldGroup g order by g.order asc";
-		Query query = sFactory.getCurrentSession().createQuery(hql);
-		return query.list();
+	public Class<TemplateActionTemplate> getTemplateClass() {
+		return TemplateActionTemplate.class;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<TemplateActionField> queryTemplateFields() {
-		String hql = "from TemplateActionField f order by f.order asc";
-		Query query = sFactory.getCurrentSession().createQuery(hql);
-		return query.list();
+	public Class<TemplateActionFieldGroup> getFieldGroupClass() {
+		return TemplateActionFieldGroup.class;
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
-	public List<TemplateActionFieldGroup> getTemplateGroups(Long atmplId) {
-		String hql = "from TemplateActionFieldGroup g where g.tmplId = :tmplId order by g.order asc";
-		Query query = sFactory.getCurrentSession().createQuery(hql);
-		query.setLong("tmplId", atmplId);
-		return query.list();
-	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public Map<Long, List<TemplateActionField>> getTemplateFieldsMap(Set<Long> groupIdSet) {
-		if(groupIdSet != null && !groupIdSet.isEmpty()){
-			String hql = "from TemplateActionField f where f.groupId in (:groupIds) order by f.order asc";
-			Query query = sFactory.getCurrentSession().createQuery(hql);
-			
-			query.setParameterList("groupIds", groupIdSet);
-			List<TemplateActionField> fieldList = query.list();
-			return CollectionUtils.toListMap(fieldList, field->field.getGroupId());
-		}else{
-			return new HashMap<Long, List<TemplateActionField>>();
-		}
+	public Class<TemplateActionField> getFieldClass() {
+		return TemplateActionField.class;
 	}
 	
 	@SuppressWarnings("unchecked")
 	@Override
 	public List<TemplateActionArrayEntity> queryArrayEntities() {
 		String hql = "from TemplateActionArrayEntity e order by e.index asc";
-		return sFactory.getCurrentSession().createQuery(hql).list();
+		return getSessionFactory().getCurrentSession().createQuery(hql).list();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -88,7 +57,7 @@ public class ActionTemplateDaoImpl implements ActionTemplateDao{
 		String sql = "select e.* from t_sa_tmpl_action_arrayentity e "
 				+ "left join t_sa_tmpl_action_fieldgroup g on g.id = e.tmpl_field_group_id "
 				+ "where g.tmpl_id = :atmplId";
-		SQLQuery query = sFactory.getCurrentSession().createSQLQuery(sql);
+		SQLQuery query = getSessionFactory().getCurrentSession().createSQLQuery(sql);
 		query.setLong("atmplId", atmplId);
 		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateActionArrayEntity.class));
 		return query.list();
@@ -98,7 +67,7 @@ public class ActionTemplateDaoImpl implements ActionTemplateDao{
 	@Override
 	public List<TemplateActionArrayEntityField> queryArrayEntityFields() {
 		String hql = "from TemplateActionArrayEntityField f";
-		return sFactory.getCurrentSession().createQuery(hql).list();
+		return getSessionFactory().getCurrentSession().createQuery(hql).list();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -106,7 +75,7 @@ public class ActionTemplateDaoImpl implements ActionTemplateDao{
 	public Map<Long, List<TemplateActionArrayEntityField>> queryArrayEntityFields(Set<Long> entityIds) {
 		if(entityIds != null && !entityIds.isEmpty()) {
 			String hql = "from TemplateActionArrayEntityField f where f.actionArrayEntityId in (:entityIds)";
-			Query query = sFactory.getCurrentSession().createQuery(hql);
+			Query query = getSessionFactory().getCurrentSession().createQuery(hql);
 			query.setParameterList("entityIds", entityIds);
 			List<TemplateActionArrayEntityField> list = query.list();
 			return CollectionUtils.toListMap(list, TemplateActionArrayEntityField::getActionArrayEntityId);
@@ -114,6 +83,8 @@ public class ActionTemplateDaoImpl implements ActionTemplateDao{
 			return new HashMap<>();
 		}
 	}
+
+	
 	
 
 }

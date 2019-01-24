@@ -35,4 +35,8 @@ public interface DictionaryDao {
 	Map<Long, DictionaryRelationLabels> getRelationSubdomainMap(Set<Long> compositeIds);
 
 	List<DictionaryOption> queryOptions(Long optGroupId);
+
+	List<DictionaryComposite> getAllComposites();
+
+	List<DictionaryComposite> getAllComposites(Set<String> moduleNames);
 }

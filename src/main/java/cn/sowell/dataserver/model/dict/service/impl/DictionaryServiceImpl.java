@@ -21,6 +21,7 @@ import com.abc.auth.constant.AuthConstant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.beust.jcommander.internal.Maps;
 
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
@@ -76,26 +77,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		return moduleCompositesMap.get(module, m->{
 			try {
 				List<DictionaryComposite> composites = dictDao.getAllComposites(m);
-				handerWithConfig(module, composites);
-				Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
-				Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
-				compositeFieldMap.forEach((cId, fields)->fields.forEach(field->{
-					field.setComposite(compositeMap.get(cId));
-					setFieldPattern(field);
-				}));
-				Map<Long, DictionaryRelationLabels> relationSubdomainMap = 
-						dictDao.getRelationSubdomainMap(
-								CollectionUtils.toSet(composites.stream().filter(
-										c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
-										).collect(Collectors.toSet()), c->c.getId()));
-				composites.forEach(composite->{
-					composite.setFields(FormatUtils.coalesce(compositeFieldMap.get(composite.getId()), new ArrayList<DictionaryField>()));
-					if(relationSubdomainMap.containsKey(composite.getId())) {
-						DictionaryRelationLabels labels = relationSubdomainMap.get(composite.getId());
-						composite.setRelationSubdomain(labels.getLabels());
-						composite.setRelationLabelAccess(labels.getAccess());
-					}
-				});
+				handlerComposite(composites,null, null);
 				return composites;
 			} catch (Exception e) {
 				logger.error("初始化模块[" + m + "]的字段数据时发生错误", e);
@@ -103,6 +85,61 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 			}
 		});
 	}
+	
+	@Override
+	public Map<String, List<DictionaryComposite>> getAllCompositesMap(Set<String> moduleNames) {
+		return moduleCompositesMap.getAll(()->{
+			try {
+				Set<String> uncontainedModuleNames = moduleNames.stream().filter(moduleName->!moduleCompositesMap.contains(moduleName)).collect(Collectors.toSet());
+				if(!uncontainedModuleNames.isEmpty()) {
+					List<DictionaryComposite> composites = dictDao.getAllComposites(uncontainedModuleNames);
+					Map<Long, List<DictionaryField>> allCompositeFieldMap = dictDao.getAllFields(CollectionUtils.toSet(composites, DictionaryComposite::getId));
+					Map<Long, DictionaryRelationLabels> allRelationSubdomainMaps = 
+							dictDao.getRelationSubdomainMap(
+									CollectionUtils.toSet(composites.stream().filter(
+											c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
+											).collect(Collectors.toSet()), c->c.getId()));;
+											handlerComposite(composites, allCompositeFieldMap, allRelationSubdomainMaps);
+					return CollectionUtils.toListMap(composites, DictionaryComposite::getModule);
+				}else {
+					return Maps.newHashMap();
+				}
+			} catch (Exception e) {
+				logger.error("初始化模块[" + moduleNames + "]的字段数据时发生错误", e);
+				return null;
+			}
+		});
+	}
+	
+	private void handlerComposite(
+			List<DictionaryComposite> composites, 
+			Map<Long, List<DictionaryField>> allCompositeFieldsMap,
+			Map<Long, DictionaryRelationLabels> allRelationSubdomainMaps){
+		handerWithConfig(composites);
+		Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
+		//Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
+	
+		allCompositeFieldsMap.forEach((cId, fields)->fields.forEach(field->{
+			if(compositeMap.containsKey(cId)) {
+				field.setComposite(compositeMap.get(cId));
+				setFieldPattern(field);
+			}
+		}));
+		/*Map<Long, DictionaryRelationLabels> relationSubdomainMap = 
+				dictDao.getRelationSubdomainMap(
+						CollectionUtils.toSet(composites.stream().filter(
+								c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
+								).collect(Collectors.toSet()), c->c.getId()));*/
+		composites.forEach(composite->{
+			composite.setFields(FormatUtils.coalesce(allCompositeFieldsMap.get(composite.getId()), new ArrayList<DictionaryField>()));
+			if(allRelationSubdomainMaps.containsKey(composite.getId())) {
+				DictionaryRelationLabels labels = allRelationSubdomainMaps.get(composite.getId());
+				composite.setRelationSubdomain(labels.getLabels());
+				composite.setRelationLabelAccess(labels.getAccess());
+			}
+		});
+	}
+	
 	
 	@Override
 	public Set<String> getCompositeClasses(String moduleName, Long compositeId){
@@ -149,7 +186,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	FusionContextConfigFactory fFactory;
 	
 	
-	private void handerWithConfig(String module, List<DictionaryComposite> composites) {
+	private void handerWithConfig(List<DictionaryComposite> composites) {
 		for (DictionaryComposite composite : composites) {
 			if(Composite.RELATION_ADD_TYPE.equals(composite.getAddType())) {
 				if(composite.getName() != null) {
@@ -157,7 +194,6 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 				}
 			}
 		}
-		
 		/*FusionContextConfig config = fFactory.getModuleConfigDependended(module);
 		if(config.getConfigResolver() == null) {
 			config.loadResolver(null);
@@ -175,6 +211,28 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		});
 	}
 	
+	@Override
+	public synchronized Map<String, List<DictionaryField>> getAllFields(Set<String> moduleNames) {
+		Map<String, List<DictionaryField>> map = moduleFieldsMap.getAll(()->{
+			Set<String> uncontainedModuleNames = moduleNames.stream().filter(moduleName->!moduleFieldsMap.contains(moduleName)).collect(Collectors.toSet());
+			Map<String, List<DictionaryField>> fieldsMap = new HashMap<>();
+			if(!uncontainedModuleNames.isEmpty()) {
+				Map<String, List<DictionaryComposite>> compositesMap = getAllCompositesMap(moduleNames);
+				compositesMap.forEach((moduleName, composites)->{
+					List<DictionaryField> fields= new ArrayList<>();
+					composites.forEach(composite->{
+						fields.addAll(composite.getFields());
+					});
+					fieldsMap.put(moduleName, fields);
+				});
+			}
+			return fieldsMap;
+		});
+		return map;
+	}
+	
+	
+
 	
 
 	@Override
@@ -199,6 +257,36 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		}
 		return new LinkedHashSet<FieldParserDescription>(fieldDescsMap.get(module));
 	}
+	
+	@Override
+	public synchronized Map<String, Set<FieldParserDescription>> getFieldDescriptions(Set<String> moduleNames) {
+		Set<String> unloadedModuleNames = new HashSet<>();
+		moduleNames.forEach(moduleName->{
+			if(!fieldDescsMap.containsKey(moduleName)) {
+				unloadedModuleNames.add(moduleName);
+			}
+		});
+		if(!unloadedModuleNames.isEmpty()) {
+			Map<String, Set<FieldParserDescription>> fieldDescs = getLastFieldDescs(unloadedModuleNames);
+			fieldDescsMap.putAll(fieldDescs);
+		}
+		Map<String, Set<FieldParserDescription>> map = new HashMap<>();
+		moduleNames.forEach(moduleName->{
+			map.put(moduleName, fieldDescsMap.get(moduleName));
+		});
+		return map;
+	}
+
+	private Map<String, Set<FieldParserDescription>> getLastFieldDescs(Set<String> unloadedModuleNames) {
+		Map<String, Set<FieldParserDescription>> map = new HashMap<>();
+		Map<String, List<DictionaryField>> fieldsMap = getAllFields(unloadedModuleNames);
+		fieldsMap.forEach(
+			(moduleName, fields)->
+				map.put(moduleName, CollectionUtils.toSet(fields, FieldParserDescription::new)));
+		return Collections.synchronizedMap(map);
+	}
+
+	
 
 	private Set<FieldParserDescription> getLastFieldDescs(String module){
 		Set<FieldParserDescription> fieldDescs = CollectionUtils.toSet(getAllFields(module), field->new FieldParserDescription(field));

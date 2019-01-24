@@ -4,14 +4,14 @@
 	
 	<groupId>cn.sowell.datacenter</groupId>
 	<artifactId>dataserver</artifactId>
-	<version>0.56</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 	
 	<name>dataserver</name>
 	<url>http://maven.apache.org</url>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<version.entityResolver>2.42</version.entityResolver>
+		<version.entityResolver>2.43</version.entityResolver>
 		<version.spring>4.3.4.RELEASE</version.spring>
 		<version.cxf>3.2.4</version.cxf>
 		<version.hibernate>5.0.7.Final</version.hibernate>
@@ -28,6 +28,7 @@
 			<artifactId>cpf-webcore</artifactId>
 			<version>0.2</version>
 		</dependency>
+		
 		<!-- Spring -->
 		<dependency>
 			<groupId>org.springframework</groupId>
@@ -120,6 +121,16 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.29</version>
 		</dependency>
+
+		<!-- https://mvnrepository.com/artifact/org.antlr/antlr4 -->
+		<dependency>
+		    <groupId>org.antlr</groupId>
+		    <artifactId>antlr4</artifactId>
+		    <version>4.7.2</version>
+		</dependency>
+
+
+		
 	</dependencies>
 	<distributionManagement>
         <repository>

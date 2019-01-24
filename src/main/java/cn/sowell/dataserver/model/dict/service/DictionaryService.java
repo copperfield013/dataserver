@@ -65,6 +65,9 @@ public interface DictionaryService {
 	
 	DictionaryComposite mapModuleComposite(String targetModuleName, DictionaryComposite composite);
 
+	Map<String, List<DictionaryComposite>> getAllCompositesMap(Set<String> moduleNames);
+
+	Map<String, List<DictionaryField>> getAllFields(Set<String> moduleNames);
 
 
 }

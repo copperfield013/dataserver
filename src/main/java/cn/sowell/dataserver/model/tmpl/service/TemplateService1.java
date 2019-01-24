@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import org.springframework.beans.factory.InitializingBean;
 
 import cn.sowell.copframe.common.UserIdentifier;
-import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.Cachable;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
@@ -16,7 +16,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
-public interface TemplateService {
+public interface TemplateService1 {
 
 	List<TemplateDetailTemplate> queryDetailTemplates(String module);
 
@@ -32,7 +32,7 @@ public interface TemplateService {
 	 * 创建或者更新详情模板
 	 * @param data
 	 */
-	public <T extends AbstractTemplate> Long mergeTemplate(T template);
+	public <T extends Cachable> Long mergeTemplate(T template);
 
 	List<TemplateListTemplate> queryListTemplateList(String module, UserIdentifier user);
 

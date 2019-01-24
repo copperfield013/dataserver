@@ -35,7 +35,8 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 
 @Service
 public class ViewDataServiceImpl implements ViewDataService{
@@ -47,7 +48,10 @@ public class ViewDataServiceImpl implements ViewDataService{
 	ModulesService mService;
 	
 	@Resource
-	TemplateService tService;
+	TemplateGroupService tmplGroupService;
+	
+	@Resource
+	ListTemplateService ltmplService;
 	
 	@Resource
 	DictionaryService dService;
@@ -67,11 +71,8 @@ public class ViewDataServiceImpl implements ViewDataService{
 			TemplateGroup tmplGroup = null;
 			if(lCriteria.getListTemplateId() == null) {
 				if(lCriteria.getTemplateGroupId() != null) {
-					tmplGroup = tService.getTemplateGroup(lCriteria.getTemplateGroupId());
+					tmplGroup = tmplGroupService.getTemplate(lCriteria.getTemplateGroupId());
 					Assert.notNull("根据[id=" + lCriteria.getTemplateGroupId() + "]无法找到对应的模板组合");
-				}else {
-					tmplGroup = tService.getTemplateGroup(moduleName, lCriteria.getTemplateGroupKey());
-					Assert.hasText("根据[key=" + lCriteria.getTemplateGroupKey() + "]无法找到对应的模板组合");
 				}
 				//添加模板组合的默认字段条件
 				if(tmplGroup.getPremises() != null) {
@@ -89,7 +90,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 				lCriteria.setListTemplateId(tmplGroup.getListTemplateId());
 			}
 			Assert.notNull(lCriteria.getListTemplateId(), "ListTemplateEntiryViewCriteria的listTemplateId不能为空");
-			TemplateListTemplate ltmpl = tService.getListTemplate(lCriteria.getListTemplateId());
+			TemplateListTemplate ltmpl = ltmplService.getTemplate(lCriteria.getListTemplateId());
 			Map<Long, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(ltmpl.getColumns(), col->col.getFieldId()));
 			ListTemplateEntityView lview = new ListTemplateEntityView(ltmpl, fieldMap);
 			view = lview;

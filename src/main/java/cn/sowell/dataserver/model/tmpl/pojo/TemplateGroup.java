@@ -1,30 +1,17 @@
 package cn.sowell.dataserver.model.tmpl.pojo;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 @Entity
 @Table(name="t_sa_tmpl_group")
-public class TemplateGroup {
+public class TemplateGroup extends Cachable{
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
-	
-	@Column(name="c_title")
-	private String title;
-	
-	@Column(name="c_module")
-	private String module;
 	
 	@Column(name="list_tmpl_id")
 	private Long listTemplateId;
@@ -43,15 +30,20 @@ public class TemplateGroup {
 	@Column(name="c_key", updatable=false)
 	private String key;
 	
-	@Column(name="c_authority")
-	private String authority;
-	
 	@Column(name="c_disabled")
 	private Integer disabled;
 	
-	@Column(name="create_user_code")
-	private String createUserCode;
+	@Column(name="imp_dict_filter_id")
+	private Long importDictionaryFilterId;
 	
+	@Transient
+	private TemplateGroupDictionaryFilter importDictionaryFilter;
+	
+	@Column(name="exp_dict_filter_id")
+	private Long exportDictionaryFilterId;
+	
+	@Transient
+	private TemplateGroupDictionaryFilter exportDictionaryFilter;
 	
 	@Column(name="c_hide_create_btn")
 	private Integer hideCreateButton;
@@ -71,41 +63,12 @@ public class TemplateGroup {
 	@Column(name="c_hide_save_btn")
 	private Integer hideSaveButton;
 	
-	@Column(name="create_time")
-	private Date createTime;
-	
-	@Column(name="update_time")
-	private Date updateTime;
-	
 	@Transient
 	private List<TemplateGroupPremise> premises = new ArrayList<>();
 	
 	@Transient
 	private List<TemplateGroupAction> actions = new ArrayList<>();
 
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getModule() {
-		return module;
-	}
-
-	public void setModule(String module) {
-		this.module = module;
-	}
 
 	public Long getListTemplateId() {
 		return listTemplateId;
@@ -140,14 +103,6 @@ public class TemplateGroup {
 	}
 
 
-	public String getAuthority() {
-		return authority;
-	}
-
-	public void setAuthority(String authority) {
-		this.authority = authority;
-	}
-
 	public Integer getDisabled() {
 		return disabled;
 	}
@@ -156,22 +111,6 @@ public class TemplateGroup {
 		this.disabled = disabled;
 	}
 
-
-	public Date getCreateTime() {
-		return createTime;
-	}
-
-	public void setCreateTime(Date createTime) {
-		this.createTime = createTime;
-	}
-
-	public Date getUpdateTime() {
-		return updateTime;
-	}
-
-	public void setUpdateTime(Date updateTime) {
-		this.updateTime = updateTime;
-	}
 
 	public String getKey() {
 		return key;
@@ -187,14 +126,6 @@ public class TemplateGroup {
 
 	public void setPremises(List<TemplateGroupPremise> premises) {
 		this.premises = premises;
-	}
-
-	public String getCreateUserCode() {
-		return createUserCode;
-	}
-
-	public void setCreateUserCode(String createUserCode) {
-		this.createUserCode = createUserCode;
 	}
 
 	public Integer getHideCreateButton() {
@@ -254,5 +185,36 @@ public class TemplateGroup {
 	}
 
 
+	public Long getExportDictionaryFilterId() {
+		return exportDictionaryFilterId;
+	}
+
+	public void setExportDictionaryFilterId(Long exportDictionaryFilterId) {
+		this.exportDictionaryFilterId = exportDictionaryFilterId;
+	}
+
+	public Long getImportDictionaryFilterId() {
+		return importDictionaryFilterId;
+	}
+
+	public void setImportDictionaryFilterId(Long importDictionaryFilterId) {
+		this.importDictionaryFilterId = importDictionaryFilterId;
+	}
+
+	public TemplateGroupDictionaryFilter getImportDictionaryFilter() {
+		return importDictionaryFilter;
+	}
+
+	public void setImportDictionaryFilter(TemplateGroupDictionaryFilter importDictionaryFilter) {
+		this.importDictionaryFilter = importDictionaryFilter;
+	}
+
+	public TemplateGroupDictionaryFilter getExportDictionaryFilter() {
+		return exportDictionaryFilter;
+	}
+
+	public void setExportDictionaryFilter(TemplateGroupDictionaryFilter exportDictionaryFilter) {
+		this.exportDictionaryFilter = exportDictionaryFilter;
+	}
 	
 }

@@ -1,8 +1,6 @@
 package cn.sowell.dataserver.model.tmpl.dao.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,18 +10,29 @@ import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.hibernate.type.StandardBasicTypes;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import cn.sowell.copframe.dao.deferedQuery.DeferedParamSnippet;
+import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.dataserver.model.cachable.dao.impl.AbsctractCachableDao;
 import cn.sowell.dataserver.model.tmpl.dao.TemplateGroupDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupDictionaryFilter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.utils.QueryUtils;
 
 @Repository
-public class TemplateGroupDaoImpl implements TemplateGroupDao{
+public class TemplateGroupDaoImpl 
+	extends AbsctractCachableDao<TemplateGroup> 
+	implements TemplateGroupDao{
+
+	@Autowired
+	protected TemplateGroupDaoImpl(@Autowired NormalOperateDao nDao, @Autowired SessionFactory sFactory) {
+		super(nDao, sFactory);
+	}
 
 	@Resource
 	SessionFactory sFactory;
@@ -68,27 +77,6 @@ public class TemplateGroupDaoImpl implements TemplateGroupDao{
 	}
 	
 
-	@Override
-	public TemplateGroup getGroup(Long groupId) {
-		GroupQueryCriteria criteria = new GroupQueryCriteria();
-		criteria.setGroupIds(new HashSet<Long>(Arrays.asList(groupId)));
-		List<TemplateGroup> list = queryGroups(criteria);
-		if(list != null) {
-			return list.get(0);
-		}
-		return null;
-	}
-	
-	@Override
-	public TemplateGroup getTemplateGroup(String module, String templateGroupKey) {
-		GroupQueryCriteria criteria = new GroupQueryCriteria();
-		criteria.setGroupKey(templateGroupKey);
-		List<TemplateGroup> list = queryGroups(criteria);
-		if(list != null && !list.isEmpty()) {
-			return list.get(0);
-		}
-		return null;
-	}
 	@Override
 	public List<TemplateGroup> getTemplateGroups(Set<String> moduleNames) {
 		if(moduleNames != null && !moduleNames.isEmpty()) {
@@ -189,5 +177,25 @@ public class TemplateGroupDaoImpl implements TemplateGroupDao{
 		query.setLong("groupId", groupId);
 		return query.list();
 	}
+
+	@Override
+	public List<TemplateGroup> queryAll() {
+		return queryGroups();
+	}
+
+	@Override
+	public TemplateGroup get(long cachableId) {
+		return getNormalOperateDao().get(TemplateGroup.class, cachableId);
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateGroupDictionaryFilter> queryGroupDictionaryFilters() {
+		String hql = "from TemplateGroupDictionaryFilter f";
+		Query query = getSessionFactory().getCurrentSession().createQuery(hql);
+		return query.list();
+	}
+	
+	
 	
 }

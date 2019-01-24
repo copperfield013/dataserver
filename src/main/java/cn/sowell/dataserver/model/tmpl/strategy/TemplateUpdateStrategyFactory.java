@@ -7,7 +7,7 @@ import javax.annotation.Resource;
 
 import org.springframework.context.ApplicationContext;
 
-import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.Cachable;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
@@ -24,7 +24,7 @@ public class TemplateUpdateStrategyFactory {
 		this(null);
 	}
 	
-	public <T extends AbstractTemplate> TemplateUpdateStrategyFactory(Map<Class<T>, Class<TemplateUpdateStrategy<T>>> classMap) {
+	public <T extends Cachable> TemplateUpdateStrategyFactory(Map<Class<T>, Class<TemplateUpdateStrategy<T>>> classMap) {
 		if(classMap != null) {
 			classMap.forEach((tmplClass, strategyClass)->{
 				add(tmplClass, strategyClass, true);
@@ -45,7 +45,7 @@ public class TemplateUpdateStrategyFactory {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <T extends AbstractTemplate> TemplateUpdateStrategy<T> getStrategy(T template) {
+	public <T extends Cachable> TemplateUpdateStrategy<T> getStrategy(T template) {
 		if(strategyMap.containsKey(template.getClass())) {
 			TemplateUpdateStrategyParameter param = strategyMap.get(template.getClass());
 			if(!param.isSingleton || param.strategy == null) {

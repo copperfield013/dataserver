@@ -2,8 +2,8 @@ package cn.sowell.dataserver.model.tmpl.strategy;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -11,12 +11,12 @@ import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateService1;
 
 public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<TemplateListTemplate> {
 
 	@Resource
-	TemplateService tService;
+	TemplateService1 tService;
 	
 	@Resource
 	NormalOperateDao nDao;
@@ -77,7 +77,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 					criteria.setUpdateTime(now);
 					criteria.setTemplateId(origin.getId());
 				})
-			.doUpdate(origin.getCriterias(), template.getCriterias());
+			.doUpdate(new LinkedHashSet<>(origin.getCriterias()), new LinkedHashSet<>(template.getCriterias()));
 		}else{
 			throw new RuntimeException("列表模板[id=" + template.getId() + "]不存在");
 		}
@@ -98,7 +98,7 @@ public class TemplateListUpdateStrategy implements TemplateUpdateStrategy<Templa
 				column.setUpdateTime(now);
 				nDao.save(column);
 			}
-			Set<TemplateListCriteria> criterias = template.getCriterias();
+			List<TemplateListCriteria> criterias = template.getCriterias();
 			for (TemplateListCriteria criteria : criterias) {
 				criteria.setTemplateId(tmplId);
 				criteria.setCreateTime(now);

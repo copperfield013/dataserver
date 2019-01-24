@@ -9,7 +9,7 @@ import javax.persistence.Transient;
 
 @Entity
 @Table(name="t_sa_tmpl_action_template")
-public class TemplateActionTemplate extends AbstractTemplate{
+public class TemplateActionTemplate extends AbstractDetailTemplate<TemplateActionFieldGroup, TemplateActionField>{
 	
 	
 	@Transient

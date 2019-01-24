@@ -14,7 +14,7 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateService1;
 
 public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<TemplateDetailTemplate>{
 
@@ -22,7 +22,7 @@ public class TemplateDetailUpdateStrategy implements TemplateUpdateStrategy<Temp
 	NormalOperateDao nDao;
 	
 	@Resource
-	TemplateService tService;
+	TemplateService1 tService;
 	
 	@Resource
 	DictionaryDao dictDao;

@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,23 +31,33 @@ import cn.sowell.datacenter.entityResolver.impl.RelationEntityProxy;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
+import cn.sowell.dataserver.model.tmpl.duplicator.impl.ActionTemplateDuplicator;
+import cn.sowell.dataserver.model.tmpl.manager.ActionTemplateManager;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntityField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.service.ActionTemplateService;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 
 @Service
-public class ActionTemplateServiceImpl implements ActionTemplateService{
+public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<TemplateActionTemplate, ActionTemplateManager> implements ActionTemplateService{
+
+	@Resource
+	ActionTemplateDuplicator duplicator;
+	
+	@Autowired
+	protected ActionTemplateServiceImpl(
+			@Autowired ActionTemplateManager manager, 
+			@Autowired TemplateGroupService tmplGroupService) {
+		super(manager, tmplGroupService);
+	}
 
 	@Resource
 	ModulesService mService;
-	
-	@Resource
-	TemplateService tService;
 	
 	static Logger logger = Logger.getLogger(ActionTemplateServiceImpl.class);
 	
@@ -204,12 +215,36 @@ public class ActionTemplateServiceImpl implements ActionTemplateService{
 
 	@Override
 	public Map<String, Object> coverActionFields(TemplateGroupAction groupAction, Map<String, Object> map) {
-		TemplateActionTemplate atmpl = tService.getActionTemplate(groupAction.getAtmplId());
+		TemplateActionTemplate atmpl = getTemplate(groupAction.getAtmplId());
 		Map<String, Object> entityMap = extendsFieldValueMap(null, map, atmpl);
 		if(TextUtils.hasText((String) map.get(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL))) {
 			entityMap.put(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, map.get(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL));
 		}
 		return entityMap;
+	}
+
+
+	@Override
+	public void switchAllRelatedGroups(Long tmplId, Long targetTmplId) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	public Long copy(Long atmplId, String targetModuleName) {
+		Long newTmplId = duplicator.copy(atmplId, targetModuleName);
+		return newTmplId;
+	}
+
+
+	@Override
+	protected boolean isRelatedGroup(Long tmplId, TemplateGroup tmplGroup) {
+		List<TemplateGroupAction> groupActions = tmplGroup.getActions();
+		if(groupActions != null) {
+			return groupActions.stream().anyMatch(groupAction->tmplId.equals(groupAction.getAtmplId()));
+		}
+		return false;
 	}
 
 }

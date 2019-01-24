@@ -9,11 +9,15 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
+import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.stereotype.Repository;
+
+import com.beust.jcommander.internal.Lists;
 
 import cn.sowell.copframe.dao.deferedQuery.ColumnMapResultTransformer;
 import cn.sowell.copframe.dao.deferedQuery.DeferedParamQuery;
@@ -43,6 +47,27 @@ public class DictionaryDaoImpl implements DictionaryDao{
 		Query query = dQuery.createQuery(sFactory.getCurrentSession(), false, null);
 		return query.list();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DictionaryComposite> getAllComposites(Set<String> moduleNames) {
+		if(moduleNames != null && !moduleNames.isEmpty()) {
+			Criteria criteria = sFactory.getCurrentSession().createCriteria(DictionaryComposite.class);
+			criteria.add(Restrictions.in("module", moduleNames));
+			return criteria.list();
+		}else {
+			return Lists.newArrayList();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<DictionaryComposite> getAllComposites() {
+		Criteria criteria = sFactory.getCurrentSession().createCriteria(DictionaryComposite.class);
+		criteria.add(Restrictions.isNotNull("module"));
+		return criteria.list();
+	}
+	
 
 	@SuppressWarnings("unchecked")
 	@Override

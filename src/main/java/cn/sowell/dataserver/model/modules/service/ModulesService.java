@@ -87,13 +87,7 @@ public interface ModulesService {
 	Map<String, CEntityPropertyParser> getEntityParsers(String moduleName, String relationName, Set<String> codes,
 			UserIdentifier user);
 
-	/**
-	 * 模块内的实体是否可以编辑
-	 * @param moduleName
-	 * @return
-	 */
-	boolean getModuleEntityWritable(String moduleName);
-
+	
 	ModuleEntityPropertyParser getHistoryEntityParser(String moduleName, String code, Long historyId,
 			UserIdentifier currentUser);
 
@@ -103,8 +97,7 @@ public interface ModulesService {
 
 	void removeEntities(String moduleName, Set<String> codes, UserIdentifier user);
 
+	boolean getModuleEntityWritable(String moduleName);
 
-
-	
 
 }

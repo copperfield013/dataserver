@@ -17,7 +17,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntityField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionTemplate;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateService1;
 
 public class TemplateActionUpdateStrategy implements TemplateUpdateStrategy<TemplateActionTemplate>{
 
@@ -25,7 +25,7 @@ public class TemplateActionUpdateStrategy implements TemplateUpdateStrategy<Temp
 	NormalOperateDao nDao;
 	
 	@Resource
-	TemplateService tService;
+	TemplateService1 tService;
 	
 	@Resource
 	DictionaryDao dictDao;

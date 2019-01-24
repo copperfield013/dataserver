@@ -1,8 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.strategy;
 
-import cn.sowell.dataserver.model.tmpl.pojo.AbstractTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.Cachable;
 
-public interface TemplateUpdateStrategy<T extends AbstractTemplate> {
+public interface TemplateUpdateStrategy<T extends Cachable> {
 
 	void update(T template);
 

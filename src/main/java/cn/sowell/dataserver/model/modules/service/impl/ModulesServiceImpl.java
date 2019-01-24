@@ -16,7 +16,6 @@ import org.springframework.util.Assert;
 
 import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
-import com.abc.mapping.node.NodeOpsType;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
@@ -30,7 +29,6 @@ import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
-import cn.sowell.datacenter.entityResolver.impl.ABCNodeFusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -46,7 +44,6 @@ import cn.sowell.dataserver.model.modules.service.ModulesService;
 import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
-import cn.sowell.dataserver.model.tmpl.service.TemplateService;
 
 @Service
 public class ModulesServiceImpl implements ModulesService{
@@ -56,9 +53,6 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Resource
 	FusionContextConfigFactory fFactory;
-	
-	@Resource
-	TemplateService tService;
 	
 	@Resource
 	DictionaryService dictService;
@@ -262,24 +256,21 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public boolean getModuleEntityWritable(String moduleName) {
-		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
-		if(resolver instanceof ABCNodeFusionContextConfigResolver) {
-			NodeOpsType nodeAccess = ((ABCNodeFusionContextConfigResolver) resolver).getABCNodeAccess();
-			if(NodeOpsType.READ.equals(nodeAccess)) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	@Override
 	public EntityHistoryItem getLastHistoryItem(String moduleName, String code, UserIdentifier user) {
 		List<EntityHistoryItem> histories = abcService.queryHistory(moduleName, code, 1, 1, user);
 		if(histories != null && !histories.isEmpty()) {
 			return histories.get(0);
 		}
 		return null;
+	}
+	
+	@Override
+	public boolean getModuleEntityWritable(String moduleName) {
+		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
+		if(resolver != null) {
+			return resolver.isEntityWritable();
+		}
+		return false;
 	}
 	
 	
