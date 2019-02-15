@@ -1,4 +1,4 @@
-package cn.sowell.dataserver.model.modules.service.impl;
+package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,23 +11,19 @@ import com.abc.util.ValueType;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
-public class ListTemplateEntityView extends EntityView{
-	private TemplateListTemplate listTemplate;
+public class SelectionTemplateEntityView extends EntityView{
+	private TemplateSelectionTemplate selectionTemplate;
 
 	private Map<Long, DictionaryField> fieldMap;
 	
-	public TemplateListTemplate getListTemplate() {
-		return listTemplate;
-	}
-
-	public ListTemplateEntityView(TemplateListTemplate listTemplate, Map<Long, DictionaryField> fieldMap) {
+	public SelectionTemplateEntityView(TemplateSelectionTemplate selectionTemplate, Map<Long, DictionaryField> fieldMap) {
 		super();
-		Assert.notNull(listTemplate);
+		Assert.notNull(selectionTemplate);
 		Assert.notNull(fieldMap);
-		this.listTemplate = listTemplate;
+		this.selectionTemplate = selectionTemplate;
 		this.fieldMap = fieldMap;
 	}
 
@@ -35,9 +31,9 @@ public class ListTemplateEntityView extends EntityView{
 	@Override
 	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
-		if(listTemplate.getColumns() != null) {
+		if(selectionTemplate.getColumns() != null) {
 			int i = 0;
-			for (TemplateListColumn tColumn : listTemplate.getColumns()) {
+			for (TemplateSelectionColumn tColumn : selectionTemplate.getColumns()) {
 				if(!TextUtils.hasText(tColumn.getSpecialField())) {
 					
 					final int index = i;
@@ -110,6 +106,11 @@ public class ListTemplateEntityView extends EntityView{
 			
 		}
 		return columns;
+	}
+
+
+	public TemplateSelectionTemplate getSelectionTemplate() {
+		return selectionTemplate;
 	}
 
 }

@@ -73,17 +73,15 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public synchronized List<DictionaryComposite> getAllComposites(String module) {
-		return moduleCompositesMap.get(module, m->{
-			try {
-				List<DictionaryComposite> composites = dictDao.getAllComposites(m);
-				handlerComposite(composites,null, null);
-				return composites;
-			} catch (Exception e) {
-				logger.error("初始化模块[" + m + "]的字段数据时发生错误", e);
-				return null;
-			}
-		});
+	public synchronized List<DictionaryComposite> getAllComposites(String moduleName) {
+		Set<String> set = new HashSet<>();
+		set.add(moduleName);
+		Map<String, List<DictionaryComposite>> map = getAllCompositesMap(set);
+		List<DictionaryComposite> ret = null;
+		if(map != null) {
+			ret = map.get(moduleName);
+		}
+		return FormatUtils.coalesce(ret, new ArrayList<>());
 	}
 	
 	@Override
@@ -99,7 +97,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 									CollectionUtils.toSet(composites.stream().filter(
 											c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
 											).collect(Collectors.toSet()), c->c.getId()));;
-											handlerComposite(composites, allCompositeFieldMap, allRelationSubdomainMaps);
+					handlerComposite(composites, allCompositeFieldMap, allRelationSubdomainMaps);
 					return CollectionUtils.toListMap(composites, DictionaryComposite::getModule);
 				}else {
 					return Maps.newHashMap();

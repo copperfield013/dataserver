@@ -1,4 +1,4 @@
-package cn.sowell.dataserver.model.modules.service.impl;
+package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.HashMap;
 import java.util.Map;

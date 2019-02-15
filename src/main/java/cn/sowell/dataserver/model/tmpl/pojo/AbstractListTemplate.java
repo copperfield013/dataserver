@@ -8,7 +8,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.Transient;
 
 @MappedSuperclass
-public class AbstractListTemplate<COL, CRI> extends Cachable{
+public class AbstractListTemplate<COL extends AbstractListColumn, CRI extends AbstractListCriteria> extends Cachable{
 	@Column(name="c_def_pagesize")
 	private Integer defaultPageSize;
 	

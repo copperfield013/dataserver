@@ -1,8 +1,6 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
-import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +8,6 @@ import java.util.Set;
 
 import javax.annotation.Resource;
 
-import org.springframework.beans.MutablePropertyValues;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -21,29 +18,24 @@ import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
-import cn.sowell.copframe.utils.FormatUtils;
-import cn.sowell.copframe.utils.TextUtils;
-import cn.sowell.copframe.utils.date.FrameDateFormat;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
-import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
-import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverter;
-import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverterFactory;
 import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
 import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 
 @Service
 public class ModulesServiceImpl implements ModulesService{
@@ -55,71 +47,7 @@ public class ModulesServiceImpl implements ModulesService{
 	FusionContextConfigFactory fFactory;
 	
 	@Resource
-	DictionaryService dictService;
-	
-	@Resource
-	FrameDateFormat dateFormat;
-	
-	@Resource
-	CriteriaConverterFactory criteriaConverterFactory;
-	
-	@Override
-	public Map<Long, NormalCriteria> getCriteriasFromRequest(
-			MutablePropertyValues pvs, Map<Long, TemplateListCriteria> criteriaMap) {
-		 Map<Long, NormalCriteria> map = new HashMap<Long, NormalCriteria>();
-		 pvs.getPropertyValueList().forEach(pv->{
-			 Long criteriaId = FormatUtils.toLong(pv.getName());
-			 if(criteriaId != null){
-				 TemplateListCriteria criteria = criteriaMap.get(criteriaId);
-				 if(criteria != null){
-					 NormalCriteria ncriteria = new NormalCriteria();
-					 //TODO: 需要将fieldKey转换成attributeName
-					 ncriteria.setFieldId(criteria.getFieldId());
-					 ncriteria.setCompositeId(criteria.getCompositeId());
-					 ncriteria.setFieldName(criteria.getFieldKey());
-					 ncriteria.setComparator(criteria.getComparator());
-					 ncriteria.setValue(FormatUtils.toString(pv.getValue()));
-					 ncriteria.setRelationLabel(criteria.getRelationLabel());
-					 map.put(criteriaId, ncriteria);
-				 }
-			 }
-		 });
-		 criteriaMap.forEach((criteriaId, criteria)->{
-			 if(TextUtils.hasText(criteria.getDefaultValue()) && !map.containsKey(criteriaId)){
-				 NormalCriteria nCriteria = new NormalCriteria();
-				 //TODO: 需要将fieldKey转换成attributeName
-				 nCriteria.setFieldId(criteria.getFieldId());
-				 nCriteria.setFieldName(criteria.getFieldKey());
-				 nCriteria.setComparator(criteria.getComparator());
-				 nCriteria.setValue(criteria.getDefaultValue());
-				 nCriteria.setRelationLabel(criteria.getRelationLabel());
-				 map.put(criteriaId, nCriteria);
-			 }
-		 });;
-		return map;
-	}
-	
-	
-	
-	@Override
-	public EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
-		EntityCriteriaFactory criteriaFactory = new EntityCriteriaFactory(context);
-		nCriterias.forEach(nCriteria->{
-			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
-			if(converter != null) {
-				if(nCriteria.getFieldName() != null) {
-					String attributeName = nCriteria.getFieldName();
-					if(attributeName.contains(".")) {
-						nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
-					}
-				}else if(nCriteria.getCompositeId() != null) {
-					nCriteria.setComposite(dictService.getComposite(moduleName, nCriteria.getCompositeId()));
-				}
-				converter.invokeAddCriteria(context, criteriaFactory, nCriteria);
-			}
-		});
-		return criteriaFactory;
-	}
+	ListCriteriaFactory lcriteriaFactory;
 	
 	
 	@Override
@@ -144,6 +72,15 @@ public class ModulesServiceImpl implements ModulesService{
 				return module.getName();
 			}
 		};
+	}
+	
+	@Override
+	public ModuleMeta getStatModule(String moduleName) {
+		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
+		if(config != null && config.isStatistic()) {
+			return getModule(moduleName);
+		}
+		return null;
 	}
 	
 	
@@ -202,7 +139,7 @@ public class ModulesServiceImpl implements ModulesService{
 			ExportDataPageInfo ePageInfo, UserIdentifier user) {
 		PageInfo pageInfo = ePageInfo.getPageInfo();
 		BizFusionContext context = fFactory.getModuleConfig(ltmpl.getModule()).getCurrentContext(user);
-		EntityCriteriaFactory cf = appendCriterias(nCriterias, ltmpl.getModule(), context);
+		EntityCriteriaFactory cf = lcriteriaFactory.appendCriterias(nCriterias, ltmpl.getModule(), context);
 		EntityPagingQueryProxy proxy = abcService.getModuleQueryProxy(ltmpl.getModule(), cf.getCriterias(), ePageInfo, user);
 		int dataCount = pageInfo.getPageSize();
 		int startPageNo = pageInfo.getPageNo();

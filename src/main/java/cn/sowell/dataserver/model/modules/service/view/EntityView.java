@@ -1,4 +1,4 @@
-package cn.sowell.dataserver.model.modules.service.impl;
+package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +25,7 @@ public class EntityView {
 	
 	private ModuleMeta module;
 	
-	EntityView() {
+	public EntityView() {
 	}
 	
 	private List<EntityColumn> columns;
@@ -33,16 +33,16 @@ public class EntityView {
 		return columns;
 	}
 	
-	void setEntities(List<Entity> entities) {
+	public void setEntities(List<Entity> entities) {
 		this.entities = entities;
 	}
 	
 	
-	void setCriteria(EntityViewCriteria criteria) {
+	public void setCriteria(EntityViewCriteria criteria) {
 		this.criteria = criteria;
 	}
 	
-	void setModule(ModuleMeta module) {
+	public void setModule(ModuleMeta module) {
 		this.module = module;
 	}
 	
@@ -66,7 +66,7 @@ public class EntityView {
 		return criteriaOptionMap;
 	}
 
-	void setCriteriaOptionMap(Map<Long, List<OptionItem>> criteriaOptionMap) {
+	public void setCriteriaOptionMap(Map<Long, List<OptionItem>> criteriaOptionMap) {
 		this.criteriaOptionMap = criteriaOptionMap;
 	}
 
@@ -74,7 +74,7 @@ public class EntityView {
 		return criteriaLabelMap;
 	}
 
-	void setCriteriaLabelMap(Map<String, Label> criteriaLabelMap) {
+	public void setCriteriaLabelMap(Map<String, Label> criteriaLabelMap) {
 		this.criteriaLabelMap = criteriaLabelMap;
 	}
 	

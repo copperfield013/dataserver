@@ -1,15 +1,9 @@
 package cn.sowell.dataserver.model.modules.service;
 
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.springframework.beans.MutablePropertyValues;
-
-import com.abc.application.BizFusionContext;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
@@ -20,7 +14,6 @@ import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 
 public interface ModulesService {
@@ -34,6 +27,13 @@ public interface ModulesService {
 	 */
 	ModuleMeta getModule(String moduleName);
 
+	/**
+	 * 
+	 * @param moduleName
+	 * @return
+	 */
+	ModuleMeta getStatModule(String moduleName);
+	
 	/**
 	 * 根据模块和id以及历史时间获得该时间的实体数据
 	 * @param module
@@ -81,8 +81,7 @@ public interface ModulesService {
 	EntityPagingIterator queryIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> criteria,
 			ExportDataPageInfo ePageInfo, UserIdentifier userIdentifier);
 
-	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
-			Map<Long, TemplateListCriteria> criteriaMap);
+	
 
 	Map<String, CEntityPropertyParser> getEntityParsers(String moduleName, String relationName, Set<String> codes,
 			UserIdentifier user);
@@ -93,11 +92,8 @@ public interface ModulesService {
 
 	EntityHistoryItem getLastHistoryItem(String moduleName, String code, UserIdentifier user);
 
-	EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context);
-
 	void removeEntities(String moduleName, Set<String> codes, UserIdentifier user);
 
 	boolean getModuleEntityWritable(String moduleName);
-
 
 }

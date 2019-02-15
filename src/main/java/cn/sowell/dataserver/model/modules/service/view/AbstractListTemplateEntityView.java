@@ -1,8 +1,11 @@
-package cn.sowell.dataserver.model.modules.service.impl;
+package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
@@ -11,19 +14,29 @@ import com.abc.util.ValueType;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
 
-public class SelectionTemplateEntityView extends EntityView{
-	private TemplateSelectionTemplate selectionTemplate;
+public abstract class AbstractListTemplateEntityView<
+		T extends AbstractListTemplate<COL, CRI>, 
+		COL extends AbstractListColumn, 
+		CRI extends AbstractListCriteria> extends EntityView{
+	private T listTemplate;
 
 	private Map<Long, DictionaryField> fieldMap;
 	
-	public SelectionTemplateEntityView(TemplateSelectionTemplate selectionTemplate, Map<Long, DictionaryField> fieldMap) {
+	private Set<Long> disabledColumns = new HashSet<>();
+
+	public T getListTemplate() {
+		return listTemplate;
+	}
+
+	public AbstractListTemplateEntityView(T listTemplate, Map<Long, DictionaryField> fieldMap) {
 		super();
-		Assert.notNull(selectionTemplate);
+		Assert.notNull(listTemplate);
 		Assert.notNull(fieldMap);
-		this.selectionTemplate = selectionTemplate;
+		this.listTemplate = listTemplate;
 		this.fieldMap = fieldMap;
 	}
 
@@ -31,10 +44,10 @@ public class SelectionTemplateEntityView extends EntityView{
 	@Override
 	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
-		if(selectionTemplate.getColumns() != null) {
+		if(listTemplate.getColumns() != null) {
 			int i = 0;
-			for (TemplateSelectionColumn tColumn : selectionTemplate.getColumns()) {
-				if(!TextUtils.hasText(tColumn.getSpecialField())) {
+			for (COL tColumn : listTemplate.getColumns()) {
+				if(!disabledColumns.contains(tColumn.getId()) && !TextUtils.hasText(tColumn.getSpecialField())) {
 					
 					final int index = i;
 					EntityColumn column = new EntityColumn() {
@@ -108,9 +121,15 @@ public class SelectionTemplateEntityView extends EntityView{
 		return columns;
 	}
 
-
-	public TemplateSelectionTemplate getSelectionTemplate() {
-		return selectionTemplate;
+	public Set<Long> getDisabledColumns() {
+		return disabledColumns;
 	}
+	
+	public List<COL> getEnabledColumns(){
+		return listTemplate.getColumns().stream()
+				.filter((col)->!disabledColumns.contains(col.getId()))
+				.collect(Collectors.toList());
+	}
+	
 
 }

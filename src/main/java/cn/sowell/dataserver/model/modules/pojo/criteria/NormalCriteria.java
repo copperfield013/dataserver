@@ -1,6 +1,7 @@
 package cn.sowell.dataserver.model.modules.pojo.criteria;
 
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
 
 public class NormalCriteria implements Cloneable{
 	private Long fieldId;
@@ -10,6 +11,13 @@ public class NormalCriteria implements Cloneable{
 	private String value;
 	private String relationLabel;
 	private DictionaryComposite composite;
+	
+	/**
+	 * 统计条件用的过滤时机，
+	 * @value {@link TemplateStatCriteria#FILTER_OCCASION_BEFORE}
+	 * 		{@link TemplateStatCriteria#FILTER_OCCASION_AFTER}
+	 */
+	private Integer filterOccasion;
 	
 	public NormalCriteria() {
 		super();
@@ -71,4 +79,12 @@ public class NormalCriteria implements Cloneable{
 	public void setCompositeId(Long compositeId) {
 		this.compositeId = compositeId;
 	}
+
+	public Integer getFilterOccasion() {
+		return filterOccasion;
+	}
+	public void setFilterOccasion(Integer filterOccasion) {
+		this.filterOccasion = filterOccasion;
+	}
+
 }

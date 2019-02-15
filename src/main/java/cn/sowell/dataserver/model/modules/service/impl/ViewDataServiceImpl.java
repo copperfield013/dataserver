@@ -28,13 +28,20 @@ import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
 import cn.sowell.dataserver.model.modules.service.ViewDataService;
-import cn.sowell.dataserver.model.modules.service.impl.EntityViewCriteria.CriteriaEntry;
+import cn.sowell.dataserver.model.modules.service.view.EntityView;
+import cn.sowell.dataserver.model.modules.service.view.EntityViewCriteria;
+import cn.sowell.dataserver.model.modules.service.view.EntityViewCriteria.CriteriaEntry;
+import cn.sowell.dataserver.model.modules.service.view.ListTemplateEntityView;
+import cn.sowell.dataserver.model.modules.service.view.ListTemplateEntityViewCriteria;
+import cn.sowell.dataserver.model.modules.service.view.SelectionTemplateEntityView;
+import cn.sowell.dataserver.model.modules.service.view.SelectionTemplateEntityViewCriteria;
 import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
+import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 
@@ -58,6 +65,9 @@ public class ViewDataServiceImpl implements ViewDataService{
 	
 	@Resource
 	FusionContextConfigFactory fFactory;
+	
+	@Resource
+	ListCriteriaFactory lcriteriaFactory;
 	
 	@Override
 	public EntityView query(EntityViewCriteria criteria) {
@@ -231,7 +241,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		}else {
 			context = fFactory.getModuleConfig(criteria.getModule()).getCurrentContext(user);
 		}
-		EntityCriteriaFactory criteriaFactory = mService.appendCriterias(nCriterias, 
+		EntityCriteriaFactory criteriaFactory = lcriteriaFactory.appendCriterias(nCriterias, 
 				criteria.getModule(), 
 				context
 				); 
