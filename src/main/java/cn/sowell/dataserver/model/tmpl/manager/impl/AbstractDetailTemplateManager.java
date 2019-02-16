@@ -209,6 +209,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 						originGroup.setOrder(group.getOrder());
 						originGroup.setSelectionTemplateId(group.getSelectionTemplateId());
 						originGroup.setUpdateTime(now);
+						doUpdateFieldGroup(originGroup, group);
 						getDao().getNormalOperateDao().update(originGroup);
 						
 						Map<Long, FT> originFieldMap = CollectionUtils.toMap(originGroup.getFields(), field->field.getId());
@@ -263,4 +264,6 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 			throw new RuntimeException("找不到id为[" + template.getId() + "]的模板，无法更新");
 		}
 	}
+	
+	protected void doUpdateFieldGroup(GT originGroup, GT group) {}
 }

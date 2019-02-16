@@ -96,4 +96,6 @@ public interface ModulesService {
 
 	boolean getModuleEntityWritable(String moduleName);
 
+	ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId);
+
 }

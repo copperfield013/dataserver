@@ -19,13 +19,17 @@ import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
@@ -48,6 +52,9 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Resource
 	ListCriteriaFactory lcriteriaFactory;
+	
+	@Resource
+	DictionaryService dictService;
 	
 	
 	@Override
@@ -210,5 +217,22 @@ public class ModulesServiceImpl implements ModulesService{
 		return false;
 	}
 	
+	@Override
+	public ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId) {
+		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
+		DictionaryComposite composite = dictService.getComposite(moduleName, compositeId);
+		String compositeName = composite.getName();
+		FieldConfigure relationConfigure = resolver.getFieldConfigure(compositeName);
+		if(relationConfigure instanceof RelationFieldConfigure) {
+			Long mappingId = ((RelationFieldConfigure) relationConfigure).getRabcMappingId();
+			if(mappingId != null) {
+				FusionContextConfig config = fFactory.getAllConfigs().stream().filter((c)->mappingId.equals(c.getMappingId())).findFirst().orElse(null);
+				if(config != null) {
+					return getModule(config.getModule());
+				}
+			}
+		}
+		return null;
+	} 
 	
 }

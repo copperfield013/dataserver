@@ -36,4 +36,9 @@ public class DetailTemplateManagerImpl
 		tmplGroupManager.updateDetailTemplateRelatedGroups(dtmpl.getId());
 	}
 	
+	
+	@Override
+	protected void doUpdateFieldGroup(TemplateDetailFieldGroup originGroup, TemplateDetailFieldGroup group) {
+		originGroup.setRelationDetailTemplateId(group.getRelationDetailTemplateId());
+	}
 }
