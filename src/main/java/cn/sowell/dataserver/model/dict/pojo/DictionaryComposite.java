@@ -62,6 +62,7 @@ public class DictionaryComposite implements Composite, Serializable{
 	@Transient
 	private Set<String> relationSubdomain;
 	
+	
 	public Long getId() {
 		return id;
 	}

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryCompositeExpand;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryOption;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
@@ -68,6 +69,8 @@ public interface DictionaryService {
 	Map<String, List<DictionaryComposite>> getAllCompositesMap(Set<String> moduleNames);
 
 	Map<String, List<DictionaryField>> getAllFields(Set<String> moduleNames);
+
+	Map<Long, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Long> compositeIds);
 
 
 }

@@ -2,6 +2,8 @@ package cn.sowell.dataserver.model.modules.service.impl;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -165,7 +167,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 
 	private List<Entity> queryEntities(ListTemplateEntityViewCriteria criteria, TemplateListTemplate ltmpl) {
 		if(criteria.getListTemplateCriteria() == null) {
-			criteria.setListTemplateCriteria(new HashMap<>());
+			criteria.setListTemplateCriteria(new LinkedHashMap<>());
 		}
 		Map<Long, String> ltmplCrteriaMap = criteria.getListTemplateCriteria();
 		Map<Long, TemplateListCriteria> tCriteriaMap = CollectionUtils.toMap(ltmpl.getCriterias(), c->c.getId());
@@ -199,7 +201,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		param.setRelationName(criteria.getRelationName());
 		param.setPageInfo(criteria.getPageInfo());
 		param.setUser(user);
-		Set<NormalCriteria> nCriterias = new HashSet<NormalCriteria>();
+		Set<NormalCriteria> nCriterias = new LinkedHashSet<NormalCriteria>();
 		boolean hasRelation = TextUtils.hasText(criteria.getRelationName());
 		if(criteria.getCriteriaEntries() != null) {
 			criteria.getCriteriaEntries().forEach(entry->{

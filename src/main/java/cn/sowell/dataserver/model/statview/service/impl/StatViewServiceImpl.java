@@ -147,10 +147,10 @@ public class StatViewServiceImpl
 		});
 		
 		EntityCriteriaFactory beforeEntityCriteriaFactory = lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, context);
-		drillContext.setBeforeColl(beforeEntityCriteriaFactory.getCriterias());
+		drillContext.setBeforeCriteria(beforeEntityCriteriaFactory.getCriterias());
 		
 		EntityCriteriaFactory afterEntityCriteriaFactory = lcriteriaFactory.appendCriterias(afterCriterias, moduleName, context);
-		drillContext.setAfterColl(afterEntityCriteriaFactory.getCriterias());
+		drillContext.setAfterCriteria(afterEntityCriteriaFactory.getCriterias());
 		
 		
 		//执行查询

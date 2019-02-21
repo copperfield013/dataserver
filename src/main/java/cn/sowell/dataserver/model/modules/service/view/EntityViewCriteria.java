@@ -1,7 +1,7 @@
 package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,7 +12,7 @@ import cn.sowell.copframe.dto.page.PageInfo;
 public class EntityViewCriteria {
 	private String module;
 	private String relationName;
-	private Set<CriteriaEntry> criteriaEntries = new HashSet<>();
+	private Set<CriteriaEntry> criteriaEntries = new LinkedHashSet<>();
 	
 	private List<Long> viewFieldIds = new ArrayList<>();
 	

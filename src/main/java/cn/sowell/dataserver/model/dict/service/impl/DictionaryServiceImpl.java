@@ -40,6 +40,7 @@ import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
 import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryCompositeExpand;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryOption;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryRelationLabels;
@@ -138,6 +139,39 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 		});
 	}
 	
+	
+	@Override
+	public Map<Long, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Long> compositeIds) {
+		if(compositeIds != null) {
+			Map<Long, DictionaryCompositeExpand> expandMap = new HashMap<>();
+			Set<DictionaryComposite> composites = getAllComposites(moduleName).stream().filter(composite->compositeIds.contains(composite.getId())).collect(Collectors.toSet());
+			for (DictionaryComposite composite : composites) {
+				DictionaryCompositeExpand expand = new DictionaryCompositeExpand();
+				Set<String> classes = new LinkedHashSet<>();
+				FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
+				FieldConfigure compositeConfig = resolver.getFieldConfigure(composite.getName());
+				if(compositeConfig != null) {
+					if(compositeConfig instanceof RelationFieldConfigure) {
+						RelationFieldConfigure relationFieldConfig = (RelationFieldConfigure) compositeConfig;
+						if(AuthConstant.AUTH_RECORDTYPE_USER.equals(relationFieldConfig.getAbcNodeAbcAttr())) {
+							classes.add("user");
+						}
+						expand.setDataClasses(classes);
+						Long mappingId = relationFieldConfig.getRabcMappingId();
+						if(mappingId != null) {
+							FusionContextConfig config = fFactory.getAllConfigs().stream().filter((c)->mappingId.equals(c.getMappingId())).findFirst().orElse(null);
+							if(config != null) {
+								expand.setRabcModule(config.getModule());
+							}
+						}
+					}
+				}
+				expandMap.put(composite.getId(), expand);
+			}
+			return expandMap;
+		}
+		return null;
+	}
 	
 	@Override
 	public Set<String> getCompositeClasses(String moduleName, Long compositeId){

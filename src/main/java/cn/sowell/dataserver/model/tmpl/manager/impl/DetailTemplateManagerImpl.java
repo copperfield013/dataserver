@@ -40,5 +40,8 @@ public class DetailTemplateManagerImpl
 	@Override
 	protected void doUpdateFieldGroup(TemplateDetailFieldGroup originGroup, TemplateDetailFieldGroup group) {
 		originGroup.setRelationDetailTemplateId(group.getRelationDetailTemplateId());
+		originGroup.setRabcTemplateGroupId(group.getRabcTemplateGroupId());
+		originGroup.setRabcUncreatable(group.getRabcUncreatable());
+		originGroup.setRabcUnupdatable(group.getRabcUnupdatable());
 	}
 }
