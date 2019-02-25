@@ -5,6 +5,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 import cn.sowell.dataserver.model.tmpl.manager.ActionTemplateManager;
+import cn.sowell.dataserver.model.tmpl.manager.ArrayItemFilterManager;
 import cn.sowell.dataserver.model.tmpl.manager.DetailTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.ListTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.SelectionTemplateManager;
@@ -31,6 +32,9 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 	@Resource
 	SelectionTemplateManager stmplManager;
 	
+	@Resource
+	ArrayItemFilterManager arrayItemFilterManager;
+	
 	@Override
 	public void clearCache() {
 		tmplGroupManager.clearCache();
@@ -38,6 +42,7 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 		ltmplManager.clearCache();
 		stmplManager.clearCache();
 		atmplManager.clearCache();
+		arrayItemFilterManager.clearCache();
 	}
 	
 	@Override
@@ -47,6 +52,7 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 		stmplManager.reloadCache();
 		atmplManager.reloadCache();
 		tmplGroupManager.reloadCache();
+		arrayItemFilterManager.reloadCache();
 	}
 	
 }

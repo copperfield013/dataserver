@@ -18,6 +18,9 @@ public class TemplateDetailFieldGroup extends AbstractDetailFieldGroup<TemplateD
 	
 	@Column(name="c_rabc_unupdatable")
 	private Integer rabcUnupdatable; 
+	
+	@Column(name="arrayitem_filter_id")
+	private Long arrayItemFilterId;
 
 	public Long getRelationDetailTemplateId() {
 		return relationDetailTemplateId;
@@ -49,6 +52,14 @@ public class TemplateDetailFieldGroup extends AbstractDetailFieldGroup<TemplateD
 
 	public void setRabcUnupdatable(Integer rabcUnupdatable) {
 		this.rabcUnupdatable = rabcUnupdatable;
+	}
+
+	public Long getArrayItemFilterId() {
+		return arrayItemFilterId;
+	}
+
+	public void setArrayItemFilterId(Long arrayItemFilterId) {
+		this.arrayItemFilterId = arrayItemFilterId;
 	}
 
 
