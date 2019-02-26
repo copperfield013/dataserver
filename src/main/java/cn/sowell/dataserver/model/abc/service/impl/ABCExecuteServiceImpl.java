@@ -50,7 +50,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	FusionContextConfigFactory fFactory;
 	
 	
-	@Override
 	public EntityPagingQueryProxy getModuleQueryProxy(String moduleName, List<Criteria> cs, ExportDataPageInfo ePageInfo, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
 		BizFusionContext context = config.getCurrentContext(user);
@@ -88,7 +87,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		return entities;
 	}
 	
-	@Override
 	public List<Entity> queryModuleEntities(QueryEntityParameter param) {
 		return queryEntityList(
 				param.getModule(), 
@@ -99,7 +97,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	}
 	
 	
-	@Override
 	public ModuleEntityPropertyParser getHistoryEntityParser(QueryEntityParameter param, UserIdentifier user) {
 		BizFusionContext context = fFactory.getModuleConfig(param.getModule()).getCurrentContext(user);
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
@@ -125,7 +122,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		}
 	}
 	
-	@Override
 	public List<EntityHistoryItem> queryHistory(String moduleName, String code,
 			Integer pageNo, Integer pageSize, UserIdentifier user) {
 		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
@@ -153,7 +149,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		}
 	}
 	
-	@Override
 	public Entity getModuleEntity(String moduleName, String code, UserIdentifier user) {
 		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
@@ -161,7 +156,6 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		return result;
 	}
 	
-	@Override
 	public Entity getModuleRelationEntity(String moduleName, String relationName, String code, UserIdentifier user) {
 		BizFusionContext context = fFactory.getModuleConfig(moduleName).createRelationContext(relationName, user);
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
@@ -170,13 +164,11 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 	}
 	
 
-	@Override
 	public void delete(String moduleName, String code, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
 		config.removeEntity(code, user);
 	}
 	
-	@Override
 	public void remove(String moduleName, Set<String> codes, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
 		for (String code : codes) {
@@ -184,12 +176,10 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		}
 	}
 	
-	@Override
 	public String mergeEntity(String module, Map<String, Object> propMap, UserIdentifier user) {
 		return fFactory.getModuleResolver(module).saveEntity(propMap, null, user);
 	}	
 	
-	@Override
 	public String fuseEntity(String module, Map<String, Object> map, UserIdentifier user) {
 		FusionContextConfig config = fFactory.getModuleConfig(module);
 		String code = (String) map.remove(config.getCodeAttributeName());
@@ -200,33 +190,27 @@ public class ABCExecuteServiceImpl implements ABCExecuteService{
 		return mergeEntity(module, map, user);
 	}
 	
-	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user) {
 		return getModuleEntityParser(module, code, user, null);
 	}
 	
-	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, String code, UserIdentifier user, Object propertyGetterArgument) {
 		return getModuleEntityParser(module, getModuleEntity(module, code, user), user, propertyGetterArgument);
 	}
 	
-	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user) {
 		return getModuleEntityParser(module, entity, user, null);
 	}
 	
-	@Override
 	public ModuleEntityPropertyParser getModuleEntityParser(String module, Entity entity, UserIdentifier user, Object propertyGetterArgument) {
 		return fFactory.getModuleResolver(module).createParser(entity, user, propertyGetterArgument);
 	}
 	
-	@Override
 	public RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, Entity entity,
 			UserIdentifier user) {
 		return fFactory.getModuleResolver(moduleName).createRelationParser(entity, relationName, user);
 	}
 	
-	@Override
 	public RelationEntityPropertyParser getRelationEntityParser(String moduleName, String relationName, String code, UserIdentifier user) {
 		return getRelationEntityParser(moduleName, relationName, getModuleRelationEntity(moduleName, relationName, code, user), user);
 	}

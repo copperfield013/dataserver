@@ -28,9 +28,10 @@ import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.AbstractFusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.impl.ArrayItemPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityProxy;
+import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
+import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
-import cn.sowell.dataserver.model.modules.service.ModulesService;
 import cn.sowell.dataserver.model.tmpl.duplicator.impl.ActionTemplateDuplicator;
 import cn.sowell.dataserver.model.tmpl.manager.ActionTemplateManager;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateActionArrayEntity;
@@ -57,7 +58,7 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 	}
 
 	@Resource
-	ModulesService mService;
+	ModuleEntityService entityService;
 	
 	static Logger logger = Logger.getLogger(ActionTemplateServiceImpl.class);
 	
@@ -69,10 +70,12 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 		int sucs = 0;
 		for (String code : codes) {
 			try {
-				ModuleEntityPropertyParser entity = mService.getEntity(atmpl.getModule(), code, null, currentUser);
+				EntityQueryParameter param = new EntityQueryParameter(atmpl.getModule(), code, currentUser);
+				ModuleEntityPropertyParser entity = entityService.getEntityParser(param);
+				//ModuleEntityPropertyParser entity = mService.getEntity(atmpl.getModule(), code, null, currentUser);
 				Map<String, Object> fieldValueMap = extendsFieldValueMap(entity, null, atmpl);
 				fieldValueMap.put(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, code);
-				mService.mergeEntity(atmpl.getModule(), fieldValueMap, currentUser);
+				entityService.mergeEntity(param, fieldValueMap);
 				if(!isTransaction) {
 					//如果是非事务型，那么每修改一个实体都提交一次
 					TransactionAspectSupport.currentTransactionStatus().flush();

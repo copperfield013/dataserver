@@ -26,7 +26,8 @@ import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
-import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
+import cn.sowell.dataserver.model.abc.service.EntityParserParameter;
+import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
@@ -59,7 +60,7 @@ public class StatViewServiceImpl
 	ModulesService mService;
 	
 	@Resource
-	ABCExecuteService abcService;
+	ModuleEntityService entityService;
 	
 	@Resource
 	ListCriteriaFactory lcriteriaFactory;
@@ -163,7 +164,7 @@ public class StatViewServiceImpl
 		StatListTemplateEntityView view = new StatListTemplateEntityView(statListTemplate, fieldMap);
 		view.getDisabledColumns().addAll(criteria.getDisabledColumnIds());
 		ModuleMeta module = mService.getModule(moduleName);
-		List<? extends CEntityPropertyParser> parsers = CollectionUtils.toList(entities, entity->abcService.getModuleEntityParser(moduleName, entity, criteria.getUser()));;
+		List<? extends CEntityPropertyParser> parsers = CollectionUtils.toList(entities, entity->entityService.toEntityParser(entity, new EntityParserParameter(moduleName, criteria.getUser())));
 		
 		Set<Long> criteriaFieldIds = CollectionUtils.toSet(criterias, TemplateStatCriteria::getFieldId);
 		view.setCriteriaOptionMap(dictService.getOptionsMap(criteriaFieldIds));

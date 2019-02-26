@@ -1,67 +1,36 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
-import java.util.Date;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
-import org.springframework.util.Assert;
 
-import com.abc.application.BizFusionContext;
-import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-
-import cn.sowell.copframe.common.UserIdentifier;
-import cn.sowell.copframe.dto.page.PageInfo;
-import cn.sowell.copframe.utils.CollectionUtils;
-import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
-import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
-import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
-import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
-import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
-import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
-import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
-import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
-import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
-import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
-import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 
 @Service
 public class ModulesServiceImpl implements ModulesService{
 	
-	@Resource
-	ABCExecuteService abcService;
 	
 	@Resource
 	FusionContextConfigFactory fFactory;
 	
 	@Resource
-	ListCriteriaFactory lcriteriaFactory;
-	
-	@Resource
 	DictionaryService dictService;
 	
 	
-	@Override
+/*	@Override
 	public List<ModuleEntityPropertyParser> queryEntities(QueryEntityParameter param) {
 		List<Entity> list = abcService.queryModuleEntities(param);
 		return CollectionUtils.toList(list, entity->abcService.getModuleEntityParser(param.getModule(), entity, param.getUser()));
-	}
+	}*/
 
 	
 	@Override
@@ -90,7 +59,7 @@ public class ModulesServiceImpl implements ModulesService{
 		return null;
 	}
 	
-	
+	/*
 	@Override
 	public ModuleEntityPropertyParser getEntity(String module, String code, Date date, UserIdentifier user) {
 		if(date == null) {
@@ -206,7 +175,7 @@ public class ModulesServiceImpl implements ModulesService{
 			return histories.get(0);
 		}
 		return null;
-	}
+	}*/
 	
 	@Override
 	public boolean getModuleEntityWritable(String moduleName) {

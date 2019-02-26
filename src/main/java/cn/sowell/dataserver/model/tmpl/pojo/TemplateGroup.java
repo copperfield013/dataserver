@@ -69,7 +69,6 @@ public class TemplateGroup extends Cachable{
 	@Transient
 	private List<TemplateGroupAction> actions = new ArrayList<>();
 
-
 	public Long getListTemplateId() {
 		return listTemplateId;
 	}

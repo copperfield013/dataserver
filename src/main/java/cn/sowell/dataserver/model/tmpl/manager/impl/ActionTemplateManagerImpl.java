@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.TextUtils;
-import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
+import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
 import cn.sowell.dataserver.model.tmpl.dao.ActionTemplateDao;
@@ -31,7 +31,7 @@ public class ActionTemplateManagerImpl
 	implements ActionTemplateManager{
 
 	@Resource
-	ABCExecuteService abcService;
+	ModuleEntityService entityService;
 	
 	@Autowired
 	public ActionTemplateManagerImpl(
@@ -127,7 +127,7 @@ public class ActionTemplateManagerImpl
 	
 	private ArrayEntityProxy createArrayEntityProxy(String moduleName, String relationName,
 			String relationEntityCode) {
-		return new ArrayEntityProxy(abcService, moduleName, relationName, relationEntityCode);
+		return new ArrayEntityProxy(entityService, moduleName, relationName, relationEntityCode);
 	}
 
 }

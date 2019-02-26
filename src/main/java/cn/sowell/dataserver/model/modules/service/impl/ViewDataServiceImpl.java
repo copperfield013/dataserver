@@ -21,7 +21,9 @@ import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
-import cn.sowell.dataserver.model.abc.service.ABCExecuteService;
+import cn.sowell.dataserver.model.abc.service.EntitiesQueryParameter;
+import cn.sowell.dataserver.model.abc.service.EntityParserParameter;
+import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
@@ -35,7 +37,6 @@ import cn.sowell.dataserver.model.modules.service.view.ListTemplateEntityView;
 import cn.sowell.dataserver.model.modules.service.view.ListTemplateEntityViewCriteria;
 import cn.sowell.dataserver.model.modules.service.view.SelectionTemplateEntityView;
 import cn.sowell.dataserver.model.modules.service.view.SelectionTemplateEntityViewCriteria;
-import cn.sowell.dataserver.model.tmpl.bean.QueryEntityParameter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
@@ -48,9 +49,6 @@ import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 @Service
 public class ViewDataServiceImpl implements ViewDataService{
 
-	@Resource
-	ABCExecuteService abcService;
-	
 	@Resource
 	ModulesService mService;
 	
@@ -68,6 +66,9 @@ public class ViewDataServiceImpl implements ViewDataService{
 	
 	@Resource
 	ListCriteriaFactory lcriteriaFactory;
+	
+	@Resource
+	ModuleEntityService entityService;
 	
 	@Override
 	public EntityView query(EntityViewCriteria criteria) {
@@ -105,14 +106,18 @@ public class ViewDataServiceImpl implements ViewDataService{
 			ListTemplateEntityView lview = new ListTemplateEntityView(ltmpl, fieldMap);
 			view = lview;
 			entities = queryEntities(lCriteria, ltmpl);
-			parsers = CollectionUtils.toList(entities, entity->abcService.getModuleEntityParser(moduleName, entity, criteria.getUser()));
+			EntityParserParameter param = new EntityParserParameter(moduleName, criteria.getUser());
+			parsers = CollectionUtils.toList(entities, entity->entityService.toEntityParser(entity, param));
+			//parsers = CollectionUtils.toList(entities, entity->entityService.getModuleEntityParser(moduleName, entity, criteria.getUser()));
 		}else if(criteria instanceof SelectionTemplateEntityViewCriteria){
 			SelectionTemplateEntityViewCriteria sCriteria = (SelectionTemplateEntityViewCriteria) criteria;
 			Map<Long, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(sCriteria.getSelectionTemplate().getColumns(), col->col.getFieldId()));
 			SelectionTemplateEntityView sview = new SelectionTemplateEntityView(sCriteria.getSelectionTemplate(), fieldMap);
 			view = sview;
 			entities = queryEntities(sCriteria, sCriteria.getSelectionTemplate());
-			parsers = CollectionUtils.toList(entities, entity->abcService.getRelationEntityParser(moduleName, criteria.getRelationName(), entity, criteria.getUser()));
+			EntityParserParameter param = new EntityParserParameter(moduleName, criteria.getRelationName(), criteria.getUser(), null);
+			parsers = CollectionUtils.toList(entities, entity->entityService.toEntityParser(entity, param));
+			//parsers = CollectionUtils.toList(entities, entity->abcService.getRelationEntityParser(moduleName, criteria.getRelationName(), entity, criteria.getUser()));
 		}else {
 			view = new EntityView();
 			entities = queryEntities(criteria, criteria.getUser());
@@ -139,7 +144,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 	private List<Entity> queryEntities(SelectionTemplateEntityViewCriteria sCriteria,
 			TemplateSelectionTemplate stmpl) {
 		Map<Long, String> stmplCrteriaMap = sCriteria.getSelectionTemplateCriteria();
-		Map<Long, TemplateSelectionCriteria> tCriteriaMap = CollectionUtils.toMap(stmpl.getCriterias(), c->c.getId());
+		Map<Long, TemplateSelectionCriteria> tCriteriaMap = CollectionUtils.toMap(stmpl.getCriterias(), TemplateSelectionCriteria::getId);
 		
 		if(tCriteriaMap != null) {
 			tCriteriaMap.forEach((criteriaId, tCriteria)->{
@@ -194,8 +199,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 	}
 
 	private List<Entity> queryEntities(EntityViewCriteria criteria, UserIdentifier user) {
-		QueryEntityParameter param = new QueryEntityParameter();
-		param.setModule(criteria.getModule());
+		EntitiesQueryParameter param = new EntitiesQueryParameter(criteria.getModule(), user);
 		param.setRelationName(criteria.getRelationName());
 		param.setPageInfo(criteria.getPageInfo());
 		param.setUser(user);
@@ -245,8 +249,8 @@ public class ViewDataServiceImpl implements ViewDataService{
 				criteria.getModule(), 
 				context
 				); 
-		param.setCriterias(criteriaFactory.getCriterias());
-		List<Entity> list = abcService.queryModuleEntities(param);
+		param.setMainCriterias(criteriaFactory.getCriterias());
+		List<Entity> list = entityService.queryModuleEntities(param);
 		return list;
 	}
 

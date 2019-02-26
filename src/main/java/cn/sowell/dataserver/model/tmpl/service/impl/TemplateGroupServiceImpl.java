@@ -66,5 +66,5 @@ public class TemplateGroupServiceImpl extends AbstractTemplateService<TemplateGr
 		Long newTmplId = duplicator.copy(tmplGroupId, targetModuleName);
 		return newTmplId;
 	}
-
+	
 }
