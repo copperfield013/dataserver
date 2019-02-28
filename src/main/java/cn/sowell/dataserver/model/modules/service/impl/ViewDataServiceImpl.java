@@ -116,7 +116,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 			view = sview;
 			entities = queryEntities(sCriteria, sCriteria.getSelectionTemplate());
 			EntityParserParameter param = new EntityParserParameter(moduleName, criteria.getRelationName(), criteria.getUser(), null);
-			parsers = CollectionUtils.toList(entities, entity->entityService.toEntityParser(entity, param));
+			parsers = CollectionUtils.toList(entities, entity->entityService.toRelationParser(entity, param));
 			//parsers = CollectionUtils.toList(entities, entity->abcService.getRelationEntityParser(moduleName, criteria.getRelationName(), entity, criteria.getUser()));
 		}else {
 			view = new EntityView();

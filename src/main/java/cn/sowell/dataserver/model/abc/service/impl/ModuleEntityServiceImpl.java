@@ -77,6 +77,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		return fFactory.getModuleResolver(parameter.getModuleName()).createParser(entity, parameter.getUser(), parameter.getPropertyGetterArgument());
 	}
 	
+	@Override
 	public RelationEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter) {
 		return fFactory.getModuleResolver(parameter.getModuleName()).createRelationParser(entity, parameter.getRelationName(), parameter.getUser());
 	}
@@ -194,9 +195,9 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	public Map<String, RelationEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param,
 			String relationName) {
 		Map<String, RelationEntityPropertyParser> map = new LinkedHashMap<>();
-		if(param.getEntityCodes() != null && param.getEntityCodes().isEmpty() && relationName != null) {
+		if(param.getEntityCodes() != null && !param.getEntityCodes().isEmpty() && relationName != null) {
 			for (String code : param.getEntityCodes()) {
-				EntityQueryParameter entityQueryParam = new EntityQueryParameter(param.getModuleName(), code, param.getUser());
+				EntityQueryParameter entityQueryParam = new EntityQueryParameter(param.getModuleName(), code, param.getRelationName(), param.getUser());
 				RelationEntityPropertyParser parser = getRelationEntityParser(entityQueryParam);
 				if(parser != null) {
 					map.put(code, parser);

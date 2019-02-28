@@ -70,6 +70,8 @@ public interface ModuleEntityService {
 	
 	ModuleEntityPropertyParser toEntityParser(Entity entity, EntityParserParameter parameter);
 	
+	RelationEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter);
+	
 	/**********************************************************
 	 * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ 查询关系单体 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
 	 **********************************************************/
@@ -135,6 +137,8 @@ public interface ModuleEntityService {
 	void delete(EntityQueryParameter param);
 	
 	void remove(EntitiesQueryParameter param);
+
+	
 
 	
 
