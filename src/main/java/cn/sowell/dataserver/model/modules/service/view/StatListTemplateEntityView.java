@@ -8,7 +8,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatList;
 
 public class StatListTemplateEntityView 
-	extends AbstractListTemplateEntityView<TemplateStatList, TemplateStatColumn, TemplateStatCriteria>{
+	extends AbstractListTemplateEntityView<TemplateStatList, TemplateStatColumn, TemplateStatCriteria, EntityViewCriteria>{
 
 	public StatListTemplateEntityView(TemplateStatList listTemplate, Map<Long, DictionaryField> fieldMap) {
 		super(listTemplate, fieldMap);

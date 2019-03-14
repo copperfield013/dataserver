@@ -6,6 +6,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Resource;
+
 import cn.sowell.dataserver.model.cachable.manager.AbstractModuleCacheManager;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
@@ -16,12 +18,16 @@ import cn.sowell.dataserver.model.tmpl.manager.prepared.GlobalPreparedToListTemp
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
+import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.strategy.NormalDaoSetUpdateStrategy;
 
 public abstract class AbstractListTemplateManager<LT extends AbstractListTemplate<COL, CRI>, COL extends AbstractListColumn, CRI extends AbstractListCriteria> 
 		extends AbstractModuleCacheManager<LT, OpenListTemplateDao<LT, COL, CRI>, GlobalPreparedToListTemplate<COL, CRI>, PreparedToListTemplate<COL, CRI>> 
 		implements ModuleCachableManager<LT>{
 
+	@Resource
+	ListCriteriaFactory lcFactory;
+	
 	protected AbstractListTemplateManager(OpenListTemplateDao<LT, COL, CRI> dao,
 			ModuleCachableMetaSupportor metaSupportor) {
 		super(dao, metaSupportor);
@@ -164,22 +170,8 @@ public abstract class AbstractListTemplateManager<LT extends AbstractListTemplat
 				getDao().getListCriteriaClass(), getDao().getNormalOperateDao(), 
 				criteria->criteria.getId(), 
 				(originCriteria, criteria)->{
-					originCriteria.setTitle(criteria.getTitle());
-					originCriteria.setOrder(criteria.getOrder());
-					originCriteria.setUpdateTime(now);
-					if(criteria.getFieldAvailable()) {
-						originCriteria.setFieldId(criteria.getFieldId());
-						originCriteria.setFieldKey(criteria.getFieldKey());
-						originCriteria.setRelation(criteria.getRelation());
-						originCriteria.setQueryShow(criteria.getQueryShow());
-						originCriteria.setComparator(criteria.getComparator());
-						originCriteria.setInputType(criteria.getInputType());
-						originCriteria.setRelationLabel(criteria.getRelationLabel());
-						originCriteria.setViewOption(criteria.getViewOption());
-						originCriteria.setDefaultValue(criteria.getDefaultValue());
-						originCriteria.setPlaceholder(criteria.getPlaceholder());
-						updateCriteria(originCriteria, criteria);
-					}
+					lcFactory.coverCriteriaForUpdate(originCriteria, criteria);
+					updateCriteria(originCriteria, criteria);
 				}, criteria->{
 					criteria.setCreateTime(now);
 					criteria.setUpdateTime(now);

@@ -27,6 +27,7 @@ import cn.sowell.dataserver.model.tmpl.manager.DetailTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.DictionaryFilterManager;
 import cn.sowell.dataserver.model.tmpl.manager.ListTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
+import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.prepared.GlobalPreparedToTemplateGroup;
 import cn.sowell.dataserver.model.tmpl.manager.prepared.GlobalPreparedToTemplateGroup.PreparedToTemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
@@ -35,6 +36,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupAction;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupDictionaryFilter;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
 import cn.sowell.dataserver.model.tmpl.strategy.NormalDaoSetUpdateStrategy;
 
 @Component
@@ -47,6 +49,9 @@ public class TemplateGroupManagerImpl
 	
 	@Resource
 	DetailTemplateManager dManager;
+	
+	@Resource
+	TreeTemplateManager treeManager;
 	
 	@Resource
 	DictionaryFilterManager difilterManager;
@@ -130,6 +135,11 @@ public class TemplateGroupManagerImpl
 		Assert.notNull(dtmpl, "模板组合[id=" + group.getId() + "]的详情模板[id=" + dtmplId + "]不存在");
 		group.setListTemplateTitle(ltmpl.getTitle());
 		group.setDetailTemplateTitle(dtmpl.getTitle());
+		if(group.getTreeTemplateId() != null) {
+			TemplateTreeTemplate treeTemplate = treeManager.get(group.getTreeTemplateId());
+			Assert.notNull(treeTemplate, "树形模板[id=" + group.getTreeTemplateId() + "]不存在");
+			group.setTreeTemplateTitle(treeTemplate.getTitle());
+		}
 		if(prepare != null) {
 			if(prepare.getPremises() != null) {
 				group.setPremises(prepare.getPremises());

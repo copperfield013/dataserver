@@ -1,6 +1,6 @@
 package cn.sowell.dataserver.model.modules.service;
 
-import cn.sowell.datacenter.entityResolver.ModuleConfigStructure;
+import cn.sowell.datacenter.entityResolver.config.ModuleConfigStructure;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 
 public interface ModulesService {

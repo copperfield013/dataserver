@@ -4,6 +4,7 @@ import org.apache.commons.lang.StringUtils;
 
 import com.abc.rrc.query.criteria.BetweenSymbol;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 
 public class RangeInCriteriaConverter extends ComparatorCriteriaConverter {
 
@@ -28,7 +29,7 @@ public class RangeInCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 	
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		String[] rangeStr = getRange(value);
 		if(rangeStr[0] != null || rangeStr[1] != null) {
 			cFactory.addBetweenCriteria(fieldName, rangeStr[0], rangeStr[1], BetweenSymbol.BETWEEN);

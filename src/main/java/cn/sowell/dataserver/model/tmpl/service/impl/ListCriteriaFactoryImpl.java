@@ -2,7 +2,9 @@ package cn.sowell.dataserver.model.tmpl.service.impl;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -11,16 +13,21 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
 
-import com.abc.application.BizFusionContext;
+import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
+import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverter;
 import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverterFactory;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
@@ -92,8 +99,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 	
 	
 	@Override
-	public EntityCriteriaFactory appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, BizFusionContext context){
-		EntityCriteriaFactory criteriaFactory = new EntityCriteriaFactory(context);
+	public void appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, EntityCriteriaFactory criteriaFactory){
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
@@ -105,9 +111,81 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 				}else if(nCriteria.getCompositeId() != null) {
 					nCriteria.setComposite(dictService.getComposite(moduleName, nCriteria.getCompositeId()));
 				}
-				converter.invokeAddCriteria(context, criteriaFactory, nCriteria);
+				converter.invokeAddCriteria(criteriaFactory, nCriteria);
 			}
 		});
-		return criteriaFactory;
 	}
+	@Override
+	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName,
+			MultiAttrCriteriaFactory arrayItemCriteriaFactory) {
+		nCriterias.forEach(nCriteria->{
+			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
+			if(converter != null) {
+				if(nCriteria.getFieldName() != null) {
+					String attributeName = nCriteria.getFieldName();
+					if(attributeName.contains(".")) {
+						nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
+					}
+				}
+				converter.invokeAddCriteria(arrayItemCriteriaFactory, nCriteria);
+			}
+		});
+	}
+	
+	
+	@Override
+	public void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, Set<NormalCriteria> nCriterias) {
+		//添加模板组合的默认字段条件
+		if(premises != null) {
+			premises.forEach(premise->{
+				DictionaryField field = dictService.getField(moduleName, premise.getFieldId());
+				if(field != null) {
+					NormalCriteria nCriteria = new NormalCriteria();
+					nCriteria.setFieldId(field.getId());
+					nCriteria.setFieldName(premise.getFieldName());
+					nCriteria.setComparator("equals");
+					nCriteria.setValue(premise.getFieldValue());
+					nCriterias.add(nCriteria);
+				}
+			});
+		}
+	}
+	@Override
+	public <CRI extends AbstractListCriteria> void coverCriteriaForUpdate(CRI originCriteria, CRI criteria) {
+		originCriteria.setTitle(criteria.getTitle());
+		originCriteria.setOrder(criteria.getOrder());
+		if(criteria.getFieldAvailable()) {
+			originCriteria.setFieldId(criteria.getFieldId());
+			originCriteria.setFieldKey(criteria.getFieldKey());
+			originCriteria.setRelation(criteria.getRelation());
+			originCriteria.setQueryShow(criteria.getQueryShow());
+			originCriteria.setComparator(criteria.getComparator());
+			originCriteria.setInputType(criteria.getInputType());
+			originCriteria.setRelationLabel(criteria.getRelationLabel());
+			originCriteria.setViewOption(criteria.getViewOption());
+			originCriteria.setDefaultValue(criteria.getDefaultValue());
+			originCriteria.setPlaceholder(criteria.getPlaceholder());
+		}
+	}
+	
+	
+	@Override
+	public void appendArrayItemCriteriaParameter(EntitySortedPagedQueryFactory sortedPagedQueryFactory,
+			EntityQueryParameter queryParam) {
+		List<ArrayItemCriteria> aCriterias = queryParam.getArrayItemCriterias();
+		for (ArrayItemCriteria aCriteria : aCriterias) {
+			List<NormalCriteria> nCriterias = aCriteria.getCriterias();
+			if(aCriteria.isRelation()) {
+				EntityCriteriaFactory relationCriteriaFactory = sortedPagedQueryFactory.getSubEntityCriteriaFactory(aCriteria.getComposite().getName());
+				appendCriterias(nCriterias, aCriteria.getModuleName(), relationCriteriaFactory);
+			}else {
+				MultiAttrCriteriaFactory arrayItemCriteriaFactory = sortedPagedQueryFactory.getSubMultiAttrCriteriaFactory(aCriteria.getComposite().getName());
+				appendCriterias(nCriterias, aCriteria.getModuleName(), arrayItemCriteriaFactory);
+			}
+		}
+	}
+
+	
+	
+	
 }

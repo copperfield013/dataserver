@@ -14,8 +14,7 @@ import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
-public class SelectionTemplateEntityView extends EntityView{
-	private TemplateSelectionTemplate selectionTemplate;
+public class SelectionTemplateEntityView extends EntityView<TemplateSelectionTemplate, SelectionTemplateEntityViewCriteria>{
 
 	private Map<Long, DictionaryField> fieldMap;
 	
@@ -23,7 +22,7 @@ public class SelectionTemplateEntityView extends EntityView{
 		super();
 		Assert.notNull(selectionTemplate);
 		Assert.notNull(fieldMap);
-		this.selectionTemplate = selectionTemplate;
+		this.setListTemplate(selectionTemplate);
 		this.fieldMap = fieldMap;
 	}
 
@@ -31,6 +30,7 @@ public class SelectionTemplateEntityView extends EntityView{
 	@Override
 	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
+		TemplateSelectionTemplate selectionTemplate = getListTemplate();
 		if(selectionTemplate.getColumns() != null) {
 			int i = 0;
 			for (TemplateSelectionColumn tColumn : selectionTemplate.getColumns()) {
@@ -107,10 +107,4 @@ public class SelectionTemplateEntityView extends EntityView{
 		}
 		return columns;
 	}
-
-
-	public TemplateSelectionTemplate getSelectionTemplate() {
-		return selectionTemplate;
-	}
-
 }

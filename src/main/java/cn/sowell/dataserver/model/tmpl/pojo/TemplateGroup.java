@@ -27,6 +27,19 @@ public class TemplateGroup extends Cachable{
 	@Column(name="detail_tmpl_title")
 	private String detailTemplateTitle;
 	
+	@Column(name="tree_tmpl_id")
+	private Long treeTemplateId;
+	
+	@Column(name="c_hide_tree_toggle_btn")
+	private Integer hideTreeToggleButton;
+	
+	@Column(name="c_def_tree_view")
+	private Integer defaultTreeView;
+	
+	@Transient
+	private String treeTemplateTitle;
+	
+	
 	@Column(name="c_key", updatable=false)
 	private String key;
 	
@@ -214,6 +227,39 @@ public class TemplateGroup extends Cachable{
 
 	public void setExportDictionaryFilter(TemplateGroupDictionaryFilter exportDictionaryFilter) {
 		this.exportDictionaryFilter = exportDictionaryFilter;
+	}
+
+
+	public Long getTreeTemplateId() {
+		return treeTemplateId;
+	}
+
+	public void setTreeTemplateId(Long treeTemplateId) {
+		this.treeTemplateId = treeTemplateId;
+	}
+
+	public String getTreeTemplateTitle() {
+		return treeTemplateTitle;
+	}
+
+	public void setTreeTemplateTitle(String treeTemplateTitle) {
+		this.treeTemplateTitle = treeTemplateTitle;
+	}
+
+	public Integer getHideTreeToggleButton() {
+		return hideTreeToggleButton;
+	}
+
+	public void setHideTreeToggleButton(Integer hideTreeToggleButton) {
+		this.hideTreeToggleButton = hideTreeToggleButton;
+	}
+
+	public Integer getDefaultTreeView() {
+		return defaultTreeView;
+	}
+
+	public void setDefaultTreeView(Integer defaultTreeView) {
+		this.defaultTreeView = defaultTreeView;
 	}
 	
 }

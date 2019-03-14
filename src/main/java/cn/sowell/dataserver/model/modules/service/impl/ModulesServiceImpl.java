@@ -8,8 +8,8 @@ import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
-import cn.sowell.datacenter.entityResolver.ModuleConfigStructure;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
+import cn.sowell.datacenter.entityResolver.config.ModuleConfigStructure;
 import cn.sowell.datacenter.entityResolver.config.abst.Module;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -83,11 +83,9 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Override
 	public ModuleConfigStructure getModuleConfigStructure(String moduleName) {
-		FusionContextConfig config = fFactory.getModuleConfig(moduleName);
-		if(config != null) {
-			return config.getConfigStructure();
-		}
-		return null;
+		return fFactory.getConfigStructure(moduleName);
 	}
+	
+	
 	
 }

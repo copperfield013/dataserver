@@ -2,7 +2,6 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import java.util.Set;
 
-import com.abc.application.BizFusionContext;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
@@ -14,13 +13,13 @@ public class LabelIncludeAllConverter extends LabelIncludeAnyConverter{
 	}
 	
 	@Override
-	public void invokeAddCriteria(BizFusionContext fusionContext, EntityCriteriaFactory criteriaFactory,
+	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory,
 			NormalCriteria nCriteria) {
 		Set<String> valueSet = getValueSet(nCriteria.getValue());
 		valueSet.forEach(label->{
 			NormalCriteria nc = nCriteria.clone();
 			nc.setValue(label);
-			super.invokeAddCriteria(fusionContext, criteriaFactory, nc);
+			super.invokeAddCriteria(criteriaFactory, nc);
 		});
 	}
 	

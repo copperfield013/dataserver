@@ -10,6 +10,7 @@ import cn.sowell.dataserver.model.tmpl.manager.DetailTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.ListTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.SelectionTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
+import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
 import cn.sowell.dataserver.model.tmpl.service.CachableTemplateService;
 
 @Service
@@ -35,6 +36,9 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 	@Resource
 	ArrayItemFilterManager arrayItemFilterManager;
 	
+	@Resource
+	TreeTemplateManager treeManager;
+	
 	@Override
 	public void clearCache() {
 		tmplGroupManager.clearCache();
@@ -42,6 +46,7 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 		ltmplManager.clearCache();
 		stmplManager.clearCache();
 		atmplManager.clearCache();
+		treeManager.clearCache();
 		arrayItemFilterManager.clearCache();
 	}
 	
@@ -52,6 +57,7 @@ public class CachableTemplateServiceImpl implements CachableTemplateService{
 		stmplManager.reloadCache();
 		atmplManager.reloadCache();
 		tmplGroupManager.reloadCache();
+		treeManager.reloadCache();
 		arrayItemFilterManager.reloadCache();
 	}
 	

@@ -1,29 +1,19 @@
 package cn.sowell.dataserver.model.abc.service;
 
-import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
-import com.abc.rrc.query.queryrecord.criteria.Criteria;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 
 public class EntitiesQueryParameter extends AbstractEntityQueryParameter{
 	private Set<String> entityCodes;
-	private List<Criteria> mainCriterias;
 	private PageInfo pageInfo;
+	private Consumer<EntityCriteriaFactory> criteriaFactoryConsumer;
 	public EntitiesQueryParameter(String moduleName, UserIdentifier user) {
 		super(moduleName, user);
-	}
-	public EntitiesQueryParameter(String moduleName, UserIdentifier user, List<Criteria> mainCriterias) {
-		super(moduleName, user);
-		this.mainCriterias = mainCriterias;
-	}
-	public List<Criteria> getMainCriterias() {
-		return mainCriterias;
-	}
-	public void setMainCriterias(List<Criteria> mainCriterias) {
-		this.mainCriterias = mainCriterias;
 	}
 	public PageInfo getPageInfo() {
 		return pageInfo;
@@ -36,5 +26,11 @@ public class EntitiesQueryParameter extends AbstractEntityQueryParameter{
 	}
 	public void setEntityCodes(Set<String> entityCodes) {
 		this.entityCodes = entityCodes;
+	}
+	public Consumer<EntityCriteriaFactory> getCriteriaFactoryConsumer() {
+		return criteriaFactoryConsumer;
+	}
+	public void setCriteriaFactoryConsumer(Consumer<EntityCriteriaFactory> criteriaFactoryConsumer) {
+		this.criteriaFactoryConsumer = criteriaFactoryConsumer;
 	}
 }

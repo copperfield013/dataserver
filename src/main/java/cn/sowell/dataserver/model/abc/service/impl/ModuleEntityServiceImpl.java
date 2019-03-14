@@ -19,8 +19,13 @@ import com.abc.dto.ErrorInfomation;
 import com.abc.extface.dto.RecordHistory;
 import com.abc.mapping.entity.Entity;
 import com.abc.panel.Discoverer;
+import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
 import com.abc.record.HistoryTracker;
+import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
+import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
+import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -31,6 +36,7 @@ import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
+import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
 import cn.sowell.dataserver.model.abc.service.EntitiesQueryParameter;
 import cn.sowell.dataserver.model.abc.service.EntityParserParameter;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
@@ -56,9 +62,14 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	@Override
 	public Entity getEntity(EntityQueryParameter queryParam){
 		BizFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
+		
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
-		Entity result=discoverer.discover(queryParam.getEntityCode(), queryParam.getCriteriasMap());
-		return result;
+		//Entity result=discoverer.discover(queryParam.getEntityCode(), queryParam.getCriteriasMap());
+		
+		EntitySortedPagedQueryFactory sortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		lcriteriaFactory.appendArrayItemCriteriaParameter(sortedPagedQueryFactory, queryParam);
+		
+		return discoverer.discover(queryParam.getEntityCode(), sortedPagedQueryFactory.getSubQueryParaMap());
 	}
 	
 	@Override
@@ -142,47 +153,34 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		return new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, param.getUser(), proxy);
 	}
 	
-	/*@Override
-	public EntityPagingIterator queryExportIterator(TemplateListTemplate ltmpl, Set<NormalCriteria> nCriterias,
-			ExportDataPageInfo ePageInfo, UserIdentifier user) {
-		String moduleName = ltmpl.getModule();
-		PageInfo pageInfo = ePageInfo.getPageInfo();
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
-		EntityCriteriaFactory cf = lcriteriaFactory.appendCriterias(nCriterias, ltmpl.getModule(), context);
-		EntitiesQueryParameter param = new EntitiesQueryParameter(moduleName, user, cf.getCriterias());
-		EntityPagingQueryProxy proxy = getEntityExportQueryProxy(param, ePageInfo);
-		int dataCount = pageInfo.getPageSize();
-		int startPageNo = pageInfo.getPageNo();
-		int totalCount = proxy.getTotalCount();
-		int ignoreCount = 0;
-		if(totalCount < pageInfo.getPageSize()) {
-			dataCount = totalCount;
-			startPageNo = 1;
-		}
-		if("all".equals(ePageInfo.getScope())){
-			dataCount = proxy.getTotalCount();
-			startPageNo = 1;
-			if(ePageInfo.getRangeStart() != null){
-				ignoreCount = ePageInfo.getRangeStart() - 1;
-				if(ePageInfo.getRangeEnd() != null && ePageInfo.getRangeEnd() < dataCount){
-					dataCount = ePageInfo.getRangeEnd() - ePageInfo.getRangeStart() + 1;
-				}else{
-					dataCount -= ePageInfo.getRangeStart() - 1;
-				}
-			}else if(ePageInfo.getRangeEnd() != null && ePageInfo.getRangeEnd() < dataCount){
-				dataCount = ePageInfo.getRangeEnd();
-			}
-		}
-		return new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, user, proxy);
-	}*/
 	
 	
 	@Override
 	public EntityPagingQueryProxy getEntityExportQueryProxy(EntitiesQueryParameter param, ExportDataPageInfo ePageInfo) {
 		FusionContextConfig config = fFactory.getModuleConfig(param.getModuleName());
 		BizFusionContext context = config.getCurrentContext(param.getUser());
-		Discoverer discoverer=PanelFactory.getDiscoverer(context);
-		EntitySortedPagedQuery sortedPagedQuery = discoverer.discoverQuick(param.getMainCriterias(), "编辑时间", param.getCriteriasMap());
+		//Discoverer discoverer=PanelFactory.getDiscoverer(context);
+		//EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(param.getMainCriterias(), "编辑时间", param.getCriteriasMap());
+		
+		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
+		if(!TextUtils.hasText(param.getRelationName())) {
+			if(param.getCriteriaFactoryConsumer() != null) {
+				param.getCriteriaFactoryConsumer().accept(criteriaFactory);
+			}
+		}else {
+			EntityRelationCriteriaFactory relationFactory = criteriaFactory.getRelationCriteriaFacotry(param.getRelationName());
+			EntityUnRecursionCriteriaFactory unRecursionCriteriaFactory = relationFactory
+					.getEntityUnRecursionCriteriaFactory();
+			if(param.getCriteriaFactoryConsumer() != null) {
+				param.getCriteriaFactoryConsumer().accept(unRecursionCriteriaFactory.getRightEntityCriteriaFactory());
+			}
+		}
+		criteriaFactory.addSortedColumn("编辑时间");
+		
+		EntitySortedPagedQuery sortedPagedQuery = entitySortedPagedQueryFactory.getQuery();
+		
+		
 		PageInfo pageInfo = ePageInfo.getPageInfo();
 		if("all".equals(ePageInfo.getScope())){
 			return new EntityQueryAdapter(sortedPagedQuery, config.getConfigResolver(), ePageInfo.getQueryCacheCount());
@@ -274,7 +272,11 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 
 	@Override
 	public String mergeEntity(EntityQueryParameter param, Map<String, Object> entityMap) {
-		return fFactory.getModuleResolver(param.getModuleName()).saveEntity(entityMap, null, param.getUser(), param.getCriteriasMap());
+		BizFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
+		
+		EntitySortedPagedQueryFactory sortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		lcriteriaFactory.appendArrayItemCriteriaParameter(sortedPagedQueryFactory, param);
+		return fFactory.getModuleResolver(param.getModuleName()).saveEntity(entityMap, null, param.getUser(), sortedPagedQueryFactory.getSubQueryParaMap());
 	}
 	
 	@Override
@@ -295,10 +297,55 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 	}
 	
-	
-	
 	@Override
-	public List<Entity> queryModuleEntities(EntitiesQueryParameter param) {
+	public List<Entity> queryModuleEntities(EntitiesQueryParameter param){
+		String moduleName = param.getModuleName();
+		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(param.getUser());
+		
+		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
+		if(!TextUtils.hasText(param.getRelationName())) {
+			if(param.getCriteriaFactoryConsumer() != null) {
+				param.getCriteriaFactoryConsumer().accept(criteriaFactory);
+			}
+		}else {
+			EntityRelationCriteriaFactory relationFactory = criteriaFactory.getRelationCriteriaFacotry(param.getRelationName());
+			EntityUnRecursionCriteriaFactory unRecursionCriteriaFactory = relationFactory
+					.getEntityUnRecursionCriteriaFactory();
+			if(param.getCriteriaFactoryConsumer() != null) {
+				param.getCriteriaFactoryConsumer().accept(unRecursionCriteriaFactory.getRightEntityCriteriaFactory());
+			}
+		}
+		if(param.getArrayItemCriterias() != null && !param.getArrayItemCriterias().isEmpty()) {
+			for (ArrayItemCriteria aCriteria : param.getArrayItemCriterias()) {
+				if(aCriteria.isRelation()) {
+					EntityCriteriaFactory relationCriteriaFactory = entitySortedPagedQueryFactory.getSubEntityCriteriaFactoryWithABCNode(aCriteria.getComposite().getName());
+					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), relationCriteriaFactory);
+				}else {
+					MultiAttrCriteriaFactory multiCriteriaFactory = entitySortedPagedQueryFactory.getSubMultiAttrCriteriaFactory(aCriteria.getComposite().getName());
+					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), multiCriteriaFactory);
+				}
+				
+			}
+		}
+		criteriaFactory.addSortedColumn("编辑时间");
+		
+		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuickQuery();
+		PageInfo pageInfo = param.getPageInfo();
+		query.setPageSize(pageInfo.getPageSize());
+		pageInfo.setCount(query.getAllCount());
+		if(0 == pageInfo.getCount()) {
+			pageInfo.setPageNo(1);
+		}else if(pageInfo.getCount() < pageInfo.getPageSize() * pageInfo.getPageNo() ) {
+			pageInfo.setPageNo((int) Math.ceil(Double.valueOf(pageInfo.getCount()) / pageInfo.getPageSize()));
+		}
+		return query.visitEntity(pageInfo.getPageNo());
+		
+	}
+	
+	
+	
+	/*public List<Entity> queryModuleEntities1(EntitiesQueryParameter param) {
 		BizFusionContext context;
 		String moduleName = param.getModuleName();
 		if(TextUtils.hasText(param.getRelationName())) {
@@ -310,7 +357,6 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		Discoverer discoverer = PanelFactory.getDiscoverer(context);
 		
 		EntitySortedPagedQuery sortedPagedQuery = discoverer.discoverQuick(param.getMainCriterias(), "编辑时间", param.getCriteriasMap());
-		//EntitySortedPagedQuery sortedPagedQuery = discoverer.discoverQuick(param.getMainCriterias(), "编辑时间");
 		PageInfo pageInfo = param.getPageInfo();
 		sortedPagedQuery.setPageSize(pageInfo.getPageSize());
 		pageInfo.setCount(sortedPagedQuery.getAllCount());
@@ -321,7 +367,10 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 		List<Entity> entities = sortedPagedQuery.visit(pageInfo.getPageNo());
 		return entities;
-	}
+	}*/
 
+	
+	
+	
 	
 }

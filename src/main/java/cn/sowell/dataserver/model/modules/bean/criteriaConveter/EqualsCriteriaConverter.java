@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.abc.rrc.query.criteria.CommonSymbol;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
@@ -33,7 +34,7 @@ public class EqualsCriteriaConverter extends ComparatorCriteriaConverter{
 	}
 
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		cFactory.addCriteria(fieldName, value, CommonSymbol.EQUAL);
 	}
 	

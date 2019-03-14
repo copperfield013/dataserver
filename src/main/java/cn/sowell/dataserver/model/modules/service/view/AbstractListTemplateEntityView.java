@@ -21,22 +21,17 @@ import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
 public abstract class AbstractListTemplateEntityView<
 		T extends AbstractListTemplate<COL, CRI>, 
 		COL extends AbstractListColumn, 
-		CRI extends AbstractListCriteria> extends EntityView{
-	private T listTemplate;
-
+		CRI extends AbstractListCriteria, EC extends EntityViewCriteria> extends EntityView<T, EC>{
 	private Map<Long, DictionaryField> fieldMap;
 	
 	private Set<Long> disabledColumns = new HashSet<>();
 
-	public T getListTemplate() {
-		return listTemplate;
-	}
 
 	public AbstractListTemplateEntityView(T listTemplate, Map<Long, DictionaryField> fieldMap) {
 		super();
 		Assert.notNull(listTemplate);
 		Assert.notNull(fieldMap);
-		this.listTemplate = listTemplate;
+		this.setListTemplate(listTemplate);
 		this.fieldMap = fieldMap;
 	}
 
@@ -44,6 +39,7 @@ public abstract class AbstractListTemplateEntityView<
 	@Override
 	public List<EntityColumn> getColumns() {
 		List<EntityColumn> columns = new ArrayList<EntityColumn>();
+		T listTemplate = getListTemplate();
 		if(listTemplate.getColumns() != null) {
 			int i = 0;
 			for (COL tColumn : listTemplate.getColumns()) {
@@ -126,7 +122,7 @@ public abstract class AbstractListTemplateEntityView<
 	}
 	
 	public List<COL> getEnabledColumns(){
-		return listTemplate.getColumns().stream()
+		return getListTemplate().getColumns().stream()
 				.filter((col)->!disabledColumns.contains(col.getId()))
 				.collect(Collectors.toList());
 	}

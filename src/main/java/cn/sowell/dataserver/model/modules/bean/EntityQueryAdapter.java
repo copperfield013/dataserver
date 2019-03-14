@@ -41,7 +41,7 @@ public class EntityQueryAdapter implements EntityPagingQueryProxy{
 
 	@Override
 	public Set<ModuleEntityPropertyParser> load(int pageNo, UserIdentifier user) {
-		List<Entity> entities = sortedPagedQuery.visit(pageNo);
+		List<Entity> entities = sortedPagedQuery.visitEntity(pageNo);
 		return CollectionUtils.toSet(entities, entity->resolver.createParser(entity, user, null));
 	}
 

@@ -1,7 +1,7 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import com.abc.application.BizFusionContext;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
@@ -14,12 +14,20 @@ public class RelationNotExistCriteriaConverter implements CriteriaConverter{
 	}
 
 	@Override
-	public void invokeAddCriteria(BizFusionContext fusionContext, EntityCriteriaFactory criteriaFactory,
+	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory,
 			NormalCriteria nCriteria) {
 		if(nCriteria.getComposite() != null && TextUtils.hasText(nCriteria.getValue())) {
 			String compositeName = nCriteria.getComposite().getName();
-			criteriaFactory.addRelationCriteria(compositeName, null, nCriteria.getValue(), null);
+			criteriaFactory.getRelationCriteriaFacotry(compositeName)
+				.getEntityUnRecursionCriteriaFactory()
+				.setExcludeRType(nCriteria.getValue());
+			//criteriaFactory.addRelationCriteria(compositeName, null, nCriteria.getValue(), null);
 		}
+	}
+	
+	@Override
+	public void invokeAddCriteria(MultiAttrCriteriaFactory arrayItemCriteriaFactory, NormalCriteria nCriteria) {
+		throw new UnsupportedOperationException();
 	}
 	
 }

@@ -16,12 +16,15 @@ import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
 
-public class EntityView {
+public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends EntityViewCriteria> {
 	private List<Entity> entities;
 	private List<? extends CEntityPropertyParser> parsers;
 	
-	private EntityViewCriteria criteria = new EntityViewCriteria();
+	private LT listTemplate;
+	@SuppressWarnings("unchecked")
+	private EC criteria = (EC) new EntityViewCriteria();
 	
 	private ModuleMeta module;
 	
@@ -38,7 +41,7 @@ public class EntityView {
 	}
 	
 	
-	public void setCriteria(EntityViewCriteria criteria) {
+	public void setCriteria(EC criteria) {
 		this.criteria = criteria;
 	}
 	
@@ -50,7 +53,7 @@ public class EntityView {
 		return entities;
 	}
 	
-	public EntityViewCriteria getCriteria() {
+	public EC getCriteria() {
 		return criteria;
 	}
 
@@ -190,6 +193,14 @@ public class EntityView {
 
 	public void setParsers(List<? extends CEntityPropertyParser> parsers) {
 		this.parsers = parsers;
+	}
+
+	public LT getListTemplate() {
+		return listTemplate;
+	}
+
+	public void setListTemplate(LT listTemplate) {
+		this.listTemplate = listTemplate;
 	}
 
 }

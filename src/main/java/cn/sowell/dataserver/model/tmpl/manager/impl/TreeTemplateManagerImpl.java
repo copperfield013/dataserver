@@ -1,0 +1,307 @@
+package cn.sowell.dataserver.model.tmpl.manager.impl;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Resource;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import cn.sowell.copframe.utils.CollectionUtils;
+import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
+import cn.sowell.datacenter.entityResolver.config.ModuleConfigStructure;
+import cn.sowell.dataserver.model.cachable.manager.AbstractModuleCacheManager;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
+import cn.sowell.dataserver.model.dict.service.DictionaryService;
+import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
+import cn.sowell.dataserver.model.tmpl.dao.TreeTemplateDao;
+import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
+import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree;
+import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree.PreparedToTree;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelationCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
+import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
+import cn.sowell.dataserver.model.tmpl.strategy.NormalDaoSetUpdateStrategy;
+
+@Component
+public class TreeTemplateManagerImpl 
+		extends AbstractModuleCacheManager<TemplateTreeTemplate, TreeTemplateDao, GlobalPreparedToTree, PreparedToTree>
+		implements TreeTemplateManager{
+
+	@Resource
+	DictionaryService dictService;
+	
+	@Resource
+	FusionContextConfigFactory fFactory;
+	
+	@Resource
+	ListCriteriaFactory lcFactory;
+	
+	
+	@Autowired
+	protected TreeTemplateManagerImpl(@Autowired TreeTemplateDao dao, 
+			@Autowired ModuleCachableMetaSupportor metaSupportor) {
+		super(dao, metaSupportor);
+	}
+
+	private Map<String, Map<Long, DictionaryField>> getModuleFieldsMap(Map<Long, List<TemplateTreeNode>> nodeListMap){
+		Set<String> moduleNames = new HashSet<>();
+		nodeListMap.values().forEach(nodes->{
+			for (TemplateTreeNode node : nodes) {
+				moduleNames.add(node.getModuleName());
+			}
+		});
+		Map<String, List<DictionaryField>> fieldsMap = dictService.getAllFields(moduleNames);
+		Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
+		fieldsMap.forEach((moduleName, fields)->{
+			moduleFieldsMap.put(moduleName, CollectionUtils.toMap(fields, DictionaryField::getId));
+		});
+		
+		return moduleFieldsMap;
+	}
+	
+	@Override
+	protected GlobalPreparedToTree getGlobalPreparedToCache() {
+		GlobalPreparedToTree gp = new GlobalPreparedToTree();
+		Map<Long, List<TemplateTreeNode>> nodeListMap = CollectionUtils.toListMap(getDao().queryAllNodes(), TemplateTreeNode::getTreeTemplateId);
+		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = CollectionUtils.toListMap(getDao().queryAllRelation(), TemplateTreeRelation::getNodeId);
+		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = CollectionUtils.toListMap(getDao().queryAllCriterias(), TemplateTreeRelationCriteria::getTemplateId);
+		
+		gp.setModuleFieldsMap(getModuleFieldsMap(nodeListMap));
+		
+		gp.setNodeListMap(nodeListMap);
+		gp.setNodeRelationsMap(nodeRelationsMap);
+		gp.setRelationCriteriasMap(relationCriteriasMap);
+		
+		return gp;
+	}
+
+	@Override
+	protected PreparedToTree extractPrepare(GlobalPreparedToTree globalPreparedToCache, TemplateTreeTemplate cachable) {
+		PreparedToTree prepared = new PreparedToTree();
+		List<TemplateTreeNode> nodeList = globalPreparedToCache.getNodeListMap().get(cachable.getId());
+		if(nodeList != null) {
+			prepared.setNodeList(nodeList);
+			for (TemplateTreeNode node : nodeList) {
+				List<TemplateTreeRelation> relations = globalPreparedToCache.getNodeRelationsMap().get(node.getId());
+				if(relations != null) {
+					prepared.getNodeRelationsMap().put(node.getId(), relations);
+					for (TemplateTreeRelation relation : relations) {
+						List<TemplateTreeRelationCriteria> criterias = globalPreparedToCache.getRelationCriteriasMap().get(relation.getId());
+						prepared.getRelationCriteriasMap().put(relation.getId(), criterias);
+					}
+				}
+			}
+			if(!globalPreparedToCache.getModuleFlagSet().contains(cachable.getModule())) {
+				ModuleConfigStructure structure = fFactory.getConfigStructure(cachable.getModule());
+				if(structure != null) {
+					Map<String, Map<String, String>> moduleRelationModuleMap = structure.analyzeModuleRelationModuleMap();
+					globalPreparedToCache.getModuleRelationModuleMap().putAll(moduleRelationModuleMap);
+					Map<String, List<DictionaryField>> moduleFieldMap = dictService.getAllFields(moduleRelationModuleMap.keySet());
+					moduleFieldMap.forEach((module, fields)->{
+						globalPreparedToCache.getModuleFieldsMap().put(module, CollectionUtils.toMap(fields, DictionaryField::getId));
+					});
+				}
+				globalPreparedToCache.getModuleFlagSet().add(cachable.getModule());
+			}
+			prepared.setModuleRelationModuleMap(globalPreparedToCache.getModuleRelationModuleMap());
+			prepared.setModuleFieldsMap(globalPreparedToCache.getModuleFieldsMap());
+		}
+		
+		
+		return prepared;
+	}
+
+	@Override
+	protected PreparedToTree getPreparedToCache(TemplateTreeTemplate cachable) {
+		PreparedToTree preared = new PreparedToTree();
+		List<TemplateTreeNode> nodeList = getDao().queryNodeList(cachable.getId());
+		Map<Long, List<TemplateTreeNode>> tMap = new HashMap<>();
+		tMap.put(cachable.getId(), nodeList);
+		preared.setModuleFieldsMap(getModuleFieldsMap(tMap));
+		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = 
+				getDao().queryRelationsMapByNodes(CollectionUtils.toSet(nodeList, TemplateTreeNode::getId));
+		
+		Set<Long> nodeRelationIds = new HashSet<>();
+		for (List<TemplateTreeRelation> relations : nodeRelationsMap.values()) {
+			for (TemplateTreeRelation relation : relations) {
+				nodeRelationIds.add(relation.getId());
+			}
+		}
+		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap =
+				getDao().queryCriteriasMapByRelations(nodeRelationIds);
+		preared.setNodeList(nodeList);
+		preared.setNodeRelationsMap(nodeRelationsMap);
+		preared.setRelationCriteriasMap(relationCriteriasMap);
+		ModuleConfigStructure structure = fFactory.getConfigStructure(cachable.getModule());
+		Map<String, Map<String, String>> moduleRelationModuleMap = structure.analyzeModuleRelationModuleMap();
+		preared.setModuleRelationModuleMap(moduleRelationModuleMap);
+		Map<String, List<DictionaryField>> moduleFieldMap = dictService.getAllFields(moduleRelationModuleMap.keySet());
+		moduleFieldMap.forEach((module, fields)->{
+			preared.getModuleFieldsMap().put(module, CollectionUtils.toMap(fields, DictionaryField::getId));
+		});
+		
+		return preared;
+	}
+
+	@Override
+	protected void handlerCache(TemplateTreeTemplate ttmpl, PreparedToTree prepareToCache) {
+		List<TemplateTreeNode> nodeList = prepareToCache.getNodeList();
+		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = prepareToCache.getNodeRelationsMap();
+		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = prepareToCache.getRelationCriteriasMap();
+		if(nodeList != null) {
+			for (TemplateTreeNode node : nodeList) {
+				List<TemplateTreeRelation> rels = nodeRelationsMap.get(node.getId());
+				if(rels != null) {
+					for (TemplateTreeRelation rel : rels) {
+						//根据模块名和关系名获得关系对应的RABC的模块名
+						String relationModuleName = prepareToCache.getRelationModuleName(node.getModuleName(), rel.getRelationName());
+						if(relationModuleName != null) {
+							rel.setRelationModule(relationModuleName);
+							List<TemplateTreeRelationCriteria> criterias = relationCriteriasMap.get(rel.getId());
+							if(criterias != null) {
+								for (TemplateTreeRelationCriteria criteria : criterias) {
+									if(criteria.getFieldId() != null) {
+										Map<Long, DictionaryField> fieldMap = prepareToCache.getModuleFieldsMap().get(relationModuleName);
+										DictionaryField field = fieldMap.get(criteria.getFieldId());
+										if(field != null) {
+											if(getMetaSupportor().supportFieldInputType(criteria.getInputType(), field.getType(), prepareToCache.getReferData().getFieldInputTypeMap())) {
+												criteria.setFieldKey(field.getFullKey());
+												//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
+												//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
+												continue;
+											}
+										}
+										criteria.setFieldUnavailable();
+									}
+									if(criteria.getCompositeId() != null) {
+										criteria.setComposite(prepareToCache.getReferData().getCompositeMap().get(criteria.getCompositeId()));
+									}
+								}
+								rel.setCriterias(criterias);
+							}
+						}
+					}
+					node.setRelations(rels);
+				}
+			}
+			ttmpl.setNodes(nodeList);
+		}
+		
+	}
+
+	@Override
+	protected TemplateTreeTemplate createCachablePojo() {
+		return new TemplateTreeTemplate();
+	}
+
+	@Override
+	protected Long doCreate(TemplateTreeTemplate ttmpl) {
+		Long ttmplId = getDao().getNormalOperateDao().save(ttmpl);
+		if(ttmpl != null) {
+			for (TemplateTreeNode node : ttmpl.getNodes()) {
+				node.setTreeTemplateId(ttmplId);
+				doCreateNode(node);
+			}
+		}
+		return ttmplId;
+	}
+
+	@Override
+	protected void doUpdate(TemplateTreeTemplate ttmpl) {
+		Date now = new Date();
+		TemplateTreeTemplate origin = getDao().get(ttmpl.getId());
+		origin.setTitle(ttmpl.getTitle());
+		origin.setDefaultNodeColor(ttmpl.getDefaultNodeColor());
+		origin.setMaxDeep(ttmpl.getMaxDeep());
+		origin.setUpdateTime(now);
+		getDao().getNormalOperateDao().update(origin);
+		List<TemplateTreeNode> originNodes = getDao().queryNodeList(ttmpl.getId());
+		Map<Long, List<TemplateTreeRelation>> nodeRelationMap = getDao().queryRelationsMapByNodes(CollectionUtils.toSet(originNodes, TemplateTreeNode::getId));
+		Set<Long> relationIds = new HashSet<>();
+		nodeRelationMap.values().forEach(rels->{
+			relationIds.addAll(CollectionUtils.toSet(rels, TemplateTreeRelation::getId));
+		});
+		Map<Long, List<TemplateTreeRelationCriteria>> relCriteriasMap = getDao().queryCriteriasMapByRelations(relationIds);
+		NormalDaoSetUpdateStrategy.build(TemplateTreeNode.class, 
+				getDao().getNormalOperateDao(), 
+				TemplateTreeNode::getId, 
+				(oNode, node)->{
+					oNode.setNodeColor(node.getNodeColor());
+					oNode.setOrder(node.getOrder());
+					oNode.setText(node.getText());
+					oNode.setSelector(node.getSelector());
+					getDao().getNormalOperateDao().update(oNode);
+					List<TemplateTreeRelation> originRelationList = nodeRelationMap.get(oNode.getId());
+					Set<TemplateTreeRelation> originRelations = new LinkedHashSet<>();
+					if(originRelationList != null) {
+						originRelations.addAll(originRelationList);
+					}
+					NormalDaoSetUpdateStrategy.build(TemplateTreeRelation.class, 
+							getDao().getNormalOperateDao(), 
+							TemplateTreeRelation::getId, (oRelation, relation)->{
+								oRelation.setTitle(relation.getTitle());
+								oRelation.setOrder(relation.getOrder());
+								getDao().getNormalOperateDao().update(oRelation);
+								List<TemplateTreeRelationCriteria> oCriteriaList = relCriteriasMap.get(oRelation.getId());
+								Set<TemplateTreeRelationCriteria> originCriterias = new LinkedHashSet<>();
+								if(oCriteriaList != null) {
+									originCriterias.addAll(oCriteriaList);
+								}
+								NormalDaoSetUpdateStrategy.build(TemplateTreeRelationCriteria.class, 
+										getDao().getNormalOperateDao(), 
+										TemplateTreeRelationCriteria::getId, 
+										(oCriteria, criteria)->{
+											lcFactory.coverCriteriaForUpdate(oCriteria, criteria);
+											oCriteria.setCompositeId(criteria.getCompositeId());
+											getDao().getNormalOperateDao().update(oCriteria);
+									}, (criteria)->{
+										criteria.setTemplateId(oRelation.getId());
+										getDao().getNormalOperateDao().save(criteria);
+									})
+									.doUpdate(originCriterias, new LinkedHashSet<>(relation.getCriterias()));
+							}, relation->{
+								relation.setNodeId(oNode.getId());
+								doCreateRelation(relation);
+							})
+						.doUpdate(originRelations, new LinkedHashSet<>(node.getRelations()));
+				}, node->{
+					node.setTreeTemplateId(ttmpl.getId());
+					doCreateNode(node);
+				})
+			.doUpdate(new LinkedHashSet<>(originNodes), new LinkedHashSet<>(ttmpl.getNodes()));
+	}
+
+
+	private void doCreateNode(TemplateTreeNode node) {
+		Long nodeId = getDao().getNormalOperateDao().save(node);
+		List<TemplateTreeRelation> relations = node.getRelations();
+		if(relations != null) {
+			for (TemplateTreeRelation relation : relations) {
+				relation.setNodeId(nodeId);
+				doCreateRelation(relation);
+			}
+		}
+	}
+	
+	private void doCreateRelation(TemplateTreeRelation relation) {
+		Long relationId = getDao().getNormalOperateDao().save(relation);
+		List<TemplateTreeRelationCriteria> criterias = relation.getCriterias();
+		
+		if(criterias != null) {
+			for (TemplateTreeRelationCriteria criteria : criterias) {
+				criteria.setTemplateId(relationId);
+				getDao().getNormalOperateDao().save(criteria);
+			}
+		}
+	}
+
+}

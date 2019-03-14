@@ -1,8 +1,10 @@
 package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import cn.sowell.copframe.common.UserIdentifier;
@@ -20,6 +22,8 @@ public class EntityViewCriteria {
 	
 	private PageInfo pageInfo = new CommonPageInfo();
 	private UserIdentifier user;
+	
+	private Map<Long, String> templateCriteriaMap = new HashMap<>();
 	
 	public static class CriteriaEntry{
 		private Long fieldId;
@@ -118,6 +122,15 @@ public class EntityViewCriteria {
 	public void setExistCodes(Set<String> existCodes) {
 		this.existCodes = existCodes;
 	}
+
+	public Map<Long, String> getTemplateCriteriaMap() {
+		return templateCriteriaMap;
+	}
+
+	public void setTemplateCriteriaMap(Map<Long, String> templateCriteriaMap) {
+		this.templateCriteriaMap = templateCriteriaMap;
+	}
+
 	
 	
 

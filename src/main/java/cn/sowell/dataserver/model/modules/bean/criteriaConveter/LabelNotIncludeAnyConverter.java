@@ -3,6 +3,7 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 import java.util.Set;
 
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 import com.abc.rrc.query.criteria.IncludeSymbol;
 
 public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
@@ -13,7 +14,7 @@ public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
 	
 	
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		Set<String> valueSet = getValueSet(value);
 		cFactory.addIncludeCriteria(fieldName, valueSet, IncludeSymbol.NOT_INCLUDES);
 	}

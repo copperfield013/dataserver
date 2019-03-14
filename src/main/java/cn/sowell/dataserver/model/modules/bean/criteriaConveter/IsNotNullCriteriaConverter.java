@@ -1,6 +1,7 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 import com.abc.rrc.query.criteria.NullSymbol;
 
 public class IsNotNullCriteriaConverter extends ComparatorCriteriaConverter {
@@ -15,7 +16,7 @@ public class IsNotNullCriteriaConverter extends ComparatorCriteriaConverter {
 	}
 
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		cFactory.addNullCriteria(fieldName, NullSymbol.ISNOTNULL);
 	}
 	

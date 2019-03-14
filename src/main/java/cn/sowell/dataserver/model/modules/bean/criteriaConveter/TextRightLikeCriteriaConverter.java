@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import com.abc.rrc.query.criteria.CommonSymbol;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 
 public class TextRightLikeCriteriaConverter extends ComparatorCriteriaConverter {
 
@@ -12,7 +13,7 @@ public class TextRightLikeCriteriaConverter extends ComparatorCriteriaConverter 
 	
 	
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		cFactory.addCriteria(fieldName, value, CommonSymbol.LIKE_RIGHT);
 	}
 	

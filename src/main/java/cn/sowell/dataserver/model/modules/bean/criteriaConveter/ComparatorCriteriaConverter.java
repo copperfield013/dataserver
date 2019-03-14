@@ -2,9 +2,11 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import org.springframework.util.Assert;
 
-import com.abc.application.BizFusionContext;
-import com.abc.application.FusionContext;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
+import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
+import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -20,7 +22,7 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 	public boolean shouldHasValue() {
 		return true;
 	}
-	protected abstract void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value);
+	protected abstract void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value);
 	
 	@Override
 	public boolean support(NormalCriteria nCriteria) {
@@ -31,12 +33,22 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 	
 
 	@Override
-	public void invokeAddCriteria(BizFusionContext fusionContext, EntityCriteriaFactory criteriaFactory, NormalCriteria nCriteria) {
+	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory, NormalCriteria nCriteria) {
 		Assert.notNull(criteriaFactory, "criteriaFactory不能为null");
 		DictionaryComposite composite = nCriteria.getComposite();
 		if(composite != null && composite.getRelationSubdomain() != null) {
 			String compositeName = composite.getName();
 			String suffix = nCriteria.getFieldName().substring(compositeName.length() + 1);
+			EntityRelationCriteriaFactory relationCriteriaFactory = criteriaFactory.getRelationCriteriaFacotry(compositeName);
+			//关系名筛选
+			EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = 
+					relationCriteriaFactory.getEntityUnRecursionCriteriaFactory()
+					.setIncludeRType(nCriteria.getRelationLabel());
+			EntityCriteriaFactory rightCriteriaFactory = unrecursionCriteriaFactory.getRightEntityCriteriaFactory();
+			//具体字段筛选
+			appendRelationCriterias(rightCriteriaFactory, suffix, nCriteria.getValue());
+			/*
+			
 			String mappingName = fusionContext.getABCNode().getRelation(compositeName).getFullTitle();
 			BizFusionContext relationFusionContext = new BizFusionContext();
 			relationFusionContext.setMappingName(mappingName);
@@ -47,10 +59,16 @@ public abstract class ComparatorCriteriaConverter implements CriteriaConverter{
 			appendRelationCriterias(relationEntityFactory, suffix, nCriteria.getValue());
 			if(relationEntityFactory.getCriterias() != null) {
 				criteriaFactory.addRelationCriteria(compositeName, nCriteria.getRelationLabel(), relationEntityFactory.getCriterias());
-			}
+			}*/
 		}else {
 			addNormalCriteria(criteriaFactory, nCriteria.getFieldName(), nCriteria.getValue());
 		}
+	}
+	
+	@Override
+	public void invokeAddCriteria(MultiAttrCriteriaFactory arrayItemCriteriaFactory, NormalCriteria nCriteria) {
+		Assert.notNull(arrayItemCriteriaFactory, "criteriaFactory不能为null");
+		addNormalCriteria(arrayItemCriteriaFactory, nCriteria.getFieldName(), nCriteria.getValue());
 	}
 	
 	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {

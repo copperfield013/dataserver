@@ -12,9 +12,7 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.CollectionUtils;
@@ -70,6 +68,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 	@Resource
 	ModuleEntityService entityService;
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	public EntityView query(EntityViewCriteria criteria) {
 		String moduleName = criteria.getModule();
@@ -143,7 +142,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 
 	private List<Entity> queryEntities(SelectionTemplateEntityViewCriteria sCriteria,
 			TemplateSelectionTemplate stmpl) {
-		Map<Long, String> stmplCrteriaMap = sCriteria.getSelectionTemplateCriteria();
+		Map<Long, String> stmplCrteriaMap = sCriteria.getTemplateCriteriaMap();
 		Map<Long, TemplateSelectionCriteria> tCriteriaMap = CollectionUtils.toMap(stmpl.getCriterias(), TemplateSelectionCriteria::getId);
 		
 		if(tCriteriaMap != null) {
@@ -169,10 +168,10 @@ public class ViewDataServiceImpl implements ViewDataService{
 	}
 
 	private List<Entity> queryEntities(ListTemplateEntityViewCriteria criteria, TemplateListTemplate ltmpl) {
-		if(criteria.getListTemplateCriteria() == null) {
-			criteria.setListTemplateCriteria(new LinkedHashMap<>());
+		if(criteria.getTemplateCriteriaMap() == null) {
+			criteria.setTemplateCriteriaMap(new LinkedHashMap<>());
 		}
-		Map<Long, String> ltmplCrteriaMap = criteria.getListTemplateCriteria();
+		Map<Long, String> ltmplCrteriaMap = criteria.getTemplateCriteriaMap();
 		Map<Long, TemplateListCriteria> tCriteriaMap = CollectionUtils.toMap(ltmpl.getCriterias(), c->c.getId());
 		
 		if(tCriteriaMap != null) {
@@ -239,17 +238,13 @@ public class ViewDataServiceImpl implements ViewDataService{
 			nCriterias.add(nCriteria);
 		}
 		
-		BizFusionContext context = null;
-		if(hasRelation) {
-			context = fFactory.getModuleConfig(criteria.getModule()).createRelationContext(criteria.getRelationName(), user);
-		}else {
-			context = fFactory.getModuleConfig(criteria.getModule()).getCurrentContext(user);
-		}
-		EntityCriteriaFactory criteriaFactory = lcriteriaFactory.appendCriterias(nCriterias, 
-				criteria.getModule(), 
-				context
-				); 
-		param.setMainCriterias(criteriaFactory.getCriterias());
+		param.setCriteriaFactoryConsumer((criteriaFactory)->{
+			lcriteriaFactory.appendCriterias(nCriterias, 
+					criteria.getModule(), 
+					criteriaFactory
+					); 
+		});
+		
 		List<Entity> list = entityService.queryModuleEntities(param);
 		return list;
 	}

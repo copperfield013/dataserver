@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import com.abc.rrc.query.criteria.BetweenSymbol;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
+import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
 
 public class DateAfterCriteriaConverter extends MultiSupportComparatorCriteriaConverter {
 
@@ -11,7 +12,7 @@ public class DateAfterCriteriaConverter extends MultiSupportComparatorCriteriaCo
 	
 
 	@Override
-	protected void addNormalCriteria(EntityCriteriaFactory cFactory, String fieldName, String value) {
+	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
 		cFactory.addBetweenCriteria(fieldName, value, null, BetweenSymbol.BETWEEN);
 	}
 	

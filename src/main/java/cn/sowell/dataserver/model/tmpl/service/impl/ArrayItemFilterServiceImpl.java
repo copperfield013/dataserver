@@ -1,23 +1,17 @@
 package cn.sowell.dataserver.model.tmpl.service.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.abc.application.BizFusionContext;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.queryrecord.criteria.Criteria;
-
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigFactory;
 import cn.sowell.datacenter.entityResolver.UserCodeService;
+import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.manager.ArrayItemFilterManager;
@@ -52,9 +46,9 @@ public class ArrayItemFilterServiceImpl
 	}
 	
 	@Override
-	public Map<String, Collection<Criteria>> getArrayItemFilterCriteriasMap(Long dtmplId, UserIdentifier user) {
+	public List<ArrayItemCriteria> getArrayItemFilterCriterias(Long dtmplId, UserIdentifier user) {
 		TemplateDetailTemplate dtmpl =  dtmplManager.get(dtmplId);
-		Map<String, Collection<Criteria>> criteriasMap = new LinkedHashMap<>();
+		List<ArrayItemCriteria> aCriterias = new ArrayList<>();
 		if(dtmpl != null) {
 			String moduleName = dtmpl.getModule();
 			List<TemplateDetailFieldGroup> groups = dtmpl.getGroups();
@@ -70,7 +64,7 @@ public class ArrayItemFilterServiceImpl
 						
 						List<NormalCriteria> nCriterias = new ArrayList<>();
 						filters.stream()
-							.filter(filter->filter != null && filter.getCompositeId().longValue() == composite.getId())
+							.filter(filter->filter != null && filter.getId().longValue() == group.getArrayItemFilterId() && filter.getCompositeId().longValue() == composite.getId())
 							.forEach(filter->{
 								List<TemplateDetailArrayItemCriteria> criterias = filter.getCriterias();
 								if(criterias != null) {
@@ -91,6 +85,13 @@ public class ArrayItemFilterServiceImpl
 						
 						if(!nCriterias.isEmpty()) {
 							if(composite != null) {
+								
+								ArrayItemCriteria aCriteria = new ArrayItemCriteria();
+								aCriteria.setComposite(composite);
+								aCriteria.setRelation(isRelation);
+								aCriteria.setCriterias(nCriterias);
+								aCriterias.add(aCriteria);
+								/*
 								if(isRelation) {
 									//字段组是一个关系
 									//创建关系条件的context
@@ -101,9 +102,11 @@ public class ArrayItemFilterServiceImpl
 								}else {
 									//字段组是一个多值属性
 									BizFusionContext fusionContext = fFactory.getModuleConfig(dtmpl.getModule()).getCurrentContext(user);
+									
+									
 									EntityCriteriaFactory criteriaFactory = lCriteriaFactory.appendCriterias(nCriterias, dtmpl.getModule(), fusionContext);
 									criteriasMap.put(fusionContext.getMappingName() + "." + composite.getName(), criteriaFactory.getCriterias());
-								}
+								}*/
 							}
 						}
 					}
@@ -113,7 +116,7 @@ public class ArrayItemFilterServiceImpl
 			}
 		}
 		
-		return criteriasMap;
+		return aCriterias;
 	}
 	
 }

@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import com.abc.application.BizFusionContext;
 import com.abc.mapping.entity.Entity;
+import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
 import com.abc.panel.StatUpDrill;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
@@ -147,10 +148,18 @@ public class StatViewServiceImpl
 			}
 		});
 		
-		EntityCriteriaFactory beforeEntityCriteriaFactory = lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, context);
+		
+		EntitySortedPagedQueryFactory beforeEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostCriteriaFactory();
+		lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, beforeEntityCriteriaFactory);
+		
+		//EntityCriteriaFactory beforeEntityCriteriaFactory = lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, context);
 		drillContext.setBeforeCriteria(beforeEntityCriteriaFactory.getCriterias());
 		
-		EntityCriteriaFactory afterEntityCriteriaFactory = lcriteriaFactory.appendCriterias(afterCriterias, moduleName, context);
+		EntitySortedPagedQueryFactory afterEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostCriteriaFactory();
+		lcriteriaFactory.appendCriterias(afterCriterias, moduleName, afterEntityCriteriaFactory);
+		//EntityCriteriaFactory afterEntityCriteriaFactory = lcriteriaFactory.appendCriterias(afterCriterias, moduleName, context);
 		drillContext.setAfterCriteria(afterEntityCriteriaFactory.getCriterias());
 		
 		
@@ -160,7 +169,7 @@ public class StatViewServiceImpl
 		
 		PageInfo pageInfo = criteria.getPageInfo();
 		pageInfo.setCount(query.getAllCount());
-		List<Entity> entities = query.visit(pageInfo.getPageNo());
+		List<Entity> entities = query.visitEntity(pageInfo.getPageNo());
 		StatListTemplateEntityView view = new StatListTemplateEntityView(statListTemplate, fieldMap);
 		view.getDisabledColumns().addAll(criteria.getDisabledColumnIds());
 		ModuleMeta module = mService.getModule(moduleName);
