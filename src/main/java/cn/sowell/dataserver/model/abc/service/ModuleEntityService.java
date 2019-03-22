@@ -96,7 +96,7 @@ public interface ModuleEntityService {
 	
 	RelationEntitySPQuery getRelationEntitiesQuery(RelationEntitiesQueryParameter queryParam);
 	
-	RelationEntitySPQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
+	EntitySortedPagedQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
 	
 	/**
 	 * 
@@ -118,7 +118,7 @@ public interface ModuleEntityService {
 	 * @param relationName
 	 * @return
 	 */
-	Map<String, RelSelectionEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param, String relationName);
+	Map<String, RelSelectionEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param);
 	
 	/**********************************************************
 	 * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ 查询实体列表 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑

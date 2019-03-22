@@ -256,10 +256,9 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 	
 	@Override
-	public Map<String, RelSelectionEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param,
-			String relationName) {
+	public Map<String, RelSelectionEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param) {
 		Map<String, RelSelectionEntityPropertyParser> map = new LinkedHashMap<>();
-		if(param.getEntityCodes() != null && !param.getEntityCodes().isEmpty() && relationName != null) {
+		if(param.getEntityCodes() != null && !param.getEntityCodes().isEmpty() && param.getRelationName() != null) {
 			for (String code : param.getEntityCodes()) {
 				EntityQueryParameter entityQueryParam = new EntityQueryParameter(param.getModuleName(), code, param.getRelationName(), param.getUser());
 				RelSelectionEntityPropertyParser parser = getRelationEntityParser(entityQueryParam);
@@ -442,20 +441,22 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 	
 	@Override
-	public RelationEntitySPQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam) {
+	public EntitySortedPagedQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam) {
 		FusionContextConfig config = fFactory.getModuleConfig(queryParam.getModuleName());
-		BizFusionContext context = config.getCurrentContext(queryParam.getUser());
+		BizFusionContext context = config.createRelationContext(queryParam.getRelationName(), queryParam.getUser());
 		
-		PartialRelationEnSPQFactory relationEnSPQFactory = new PartialRelationEnSPQFactory(context, queryParam.getRelationName());
-		EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = relationEnSPQFactory.getRelationCriteriaFactory().getEntityUnRecursionCriteriaFactory();
+		//BizFusionContext context = config.getCurrentContext(queryParam.getUser());
 		
-		EntityCriteriaFactory rightEntityCriteriaFactory = unrecursionCriteriaFactory.getRightEntityCriteriaFactory();
+		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
+		
+		
 		//添加关系筛选条件
 		if(queryParam.getCriteriaFactoryConsumer() != null) {
-			queryParam.getCriteriaFactoryConsumer().accept(rightEntityCriteriaFactory);
+			queryParam.getCriteriaFactoryConsumer().accept(criteriaFactory);
 		}
 		
-		RelationEntitySPQuery query = relationEnSPQFactory.getQuery();
+		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuery();
 		PageInfo pageInfo = queryParam.getPageInfo();
 		query.setPageSize(pageInfo.getPageSize());
 		return query;

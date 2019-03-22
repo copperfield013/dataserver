@@ -206,7 +206,7 @@ public class EntityQuery {
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
 		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
-		this.relaltionEntitiesQuery = entityService.getSelectionEntitiesQuery(queryParam);
+		this.sortedEntitiesQuery = entityService.getSelectionEntitiesQuery(queryParam);
 		//完成准备工作
 		EntityParserParameter parserParam = new EntityParserParameter(this.moduleName, this.user);
 		parserParam.setRelationName(selectionTemplate.getRelationName());
