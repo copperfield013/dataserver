@@ -1,5 +1,6 @@
 package cn.sowell.dataserver.model.statview.service.impl;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -134,8 +135,8 @@ public class StatViewServiceImpl
 		}
 		
 		//根据条件的类型，归放到before和after中
-		Set<NormalCriteria> beforeCriterias = new LinkedHashSet<>();
-		Set<NormalCriteria> afterCriterias = new LinkedHashSet<>();
+		List<NormalCriteria> beforeCriterias = new ArrayList<>();
+		List<NormalCriteria> afterCriterias = new ArrayList<>();
 		
 		nCriteriaMap.forEach((criteriaId, nCriteria)->{
 			switch (nCriteria.getFilterOccasion()) {

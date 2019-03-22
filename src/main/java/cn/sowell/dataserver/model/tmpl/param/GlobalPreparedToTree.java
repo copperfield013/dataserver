@@ -22,7 +22,6 @@ public class GlobalPreparedToTree extends PreparedToCache{
 	private Map<String, Map<String, String>> moduleRelationModuleMap = new HashMap<>();
 	private Set<String> moduleFlagSet = new HashSet<>();
 	
-	
 	public static class PreparedToTree extends PreparedToCache{
 
 		private List<TemplateTreeNode> nodeList = new ArrayList<>();
@@ -67,7 +66,6 @@ public class GlobalPreparedToTree extends PreparedToCache{
 			}
 			return null;
 		}
-		
 	}
 
 
@@ -129,6 +127,7 @@ public class GlobalPreparedToTree extends PreparedToCache{
 	public void setModuleFlagSet(Set<String> moduleFlagSet) {
 		this.moduleFlagSet = moduleFlagSet;
 	}
+
 
 
 }

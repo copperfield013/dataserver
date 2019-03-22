@@ -7,10 +7,7 @@ import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.Composite;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 
-public abstract class AbstractEntityQueryParameter {
-	private String moduleName;
-	private String relationName;
-	private UserIdentifier user;
+public abstract class AbstractEntityQueryParameter extends AbstractPureEntityQueryParameter{
 	List<ArrayItemCriteria> arrayItemCriterias = new ArrayList<>();
 	public static class ArrayItemCriteria{
 		private Composite composite;
@@ -43,27 +40,7 @@ public abstract class AbstractEntityQueryParameter {
 		}
 	}
 	public AbstractEntityQueryParameter(String moduleName, UserIdentifier user) {
-		super();
-		this.moduleName = moduleName;
-		this.user = user;
-	}
-	public String getModuleName() {
-		return moduleName;
-	}
-	public void setModuleName(String moduleName) {
-		this.moduleName = moduleName;
-	}
-	public UserIdentifier getUser() {
-		return user;
-	}
-	public void setUser(UserIdentifier user) {
-		this.user = user;
-	}
-	public String getRelationName() {
-		return relationName;
-	}
-	public void setRelationName(String relationName) {
-		this.relationName = relationName;
+		super(moduleName, user);
 	}
 	public List<ArrayItemCriteria> getArrayItemCriterias() {
 		return arrayItemCriterias;

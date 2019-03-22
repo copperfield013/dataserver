@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 import org.springframework.util.Assert;
 
 import cn.sowell.copframe.common.UserIdentifier;
-import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.RelSelectionEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 
@@ -35,20 +35,20 @@ public class ArrayEntityProxy {
 		this.relationEntityCode = relationEntityCode;
 	}
 	
-	private ThreadLocal<RelationEntityPropertyParser> localParser = new ThreadLocal<>();
+	private ThreadLocal<RelSelectionEntityPropertyParser> localParser = new ThreadLocal<>();
 	
 	
 	
-	private <T> T _getFieldValue(String fieldName, BiFunction<RelationEntityPropertyParser, String, T> func) {
-		RelationEntityPropertyParser parser = getParser();
+	private <T> T _getFieldValue(String fieldName, BiFunction<RelSelectionEntityPropertyParser, String, T> func) {
+		RelSelectionEntityPropertyParser parser = getParser();
 		if(fieldName != null) {
 			return func.apply(parser, fieldName);
 		}
 		return null;
 	}
 	
-	private synchronized RelationEntityPropertyParser getParser() {
-		RelationEntityPropertyParser parser = localParser.get();
+	private synchronized RelSelectionEntityPropertyParser getParser() {
+		RelSelectionEntityPropertyParser parser = localParser.get();
 		if(parser == null) {
 			UserIdentifier user = localUser.get();
 			Assert.notNull(user, "获得ArrayEntityProxy之前需要设置user");
@@ -59,11 +59,11 @@ public class ArrayEntityProxy {
 	}
 
 	public Object getFieldValue(String fieldName) {
-		return _getFieldValue(fieldName, RelationEntityPropertyParser::getProperty);
+		return _getFieldValue(fieldName, RelSelectionEntityPropertyParser::getProperty);
 	}
 	
 	public String getFormatedFieldValue(String fieldName) {
-		return _getFieldValue(fieldName, RelationEntityPropertyParser::getFormatedProperty);
+		return _getFieldValue(fieldName, RelSelectionEntityPropertyParser::getFormatedProperty);
 	}
 
 }

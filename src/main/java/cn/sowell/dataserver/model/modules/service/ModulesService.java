@@ -25,5 +25,14 @@ public interface ModulesService {
 	ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId);
 
 	ModuleConfigStructure getModuleConfigStructure(String moduleName);
+	/**
+	 * 根据模块和关系名，获得关系对应的模块名（关系必须有配置RabcNode）
+	 * @param moduleName
+	 * @param relationName
+	 * @return
+	 */
+	ModuleMeta getRelationModule(String moduleName, String relationName);
+
+	
 
 }

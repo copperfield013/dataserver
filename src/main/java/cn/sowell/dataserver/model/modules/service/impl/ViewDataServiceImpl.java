@@ -1,7 +1,7 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -202,7 +202,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		param.setRelationName(criteria.getRelationName());
 		param.setPageInfo(criteria.getPageInfo());
 		param.setUser(user);
-		Set<NormalCriteria> nCriterias = new LinkedHashSet<NormalCriteria>();
+		List<NormalCriteria> nCriterias = new ArrayList<>();
 		boolean hasRelation = TextUtils.hasText(criteria.getRelationName());
 		if(criteria.getCriteriaEntries() != null) {
 			criteria.getCriteriaEntries().forEach(entry->{

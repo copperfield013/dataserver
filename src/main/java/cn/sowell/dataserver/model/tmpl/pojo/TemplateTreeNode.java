@@ -29,6 +29,18 @@ public class TemplateTreeNode {
 	@Column(name="c_module_name")
 	private String moduleName;
 	
+	@Column(name="tmpl_group_id")
+	private Long templateGroupId;
+	
+	@Transient
+	private String templateGroupTitle;
+	
+	@Column(name="c_hide_detail_btn")
+	private Integer hideDetailButton;
+	
+	@Column(name="c_hide_update_btn")
+	private Integer hideUpdateButton;
+	
 	@Column(name="c_node_color")
 	private String nodeColor;
 	
@@ -85,5 +97,29 @@ public class TemplateTreeNode {
 	}
 	public void setTreeTemplateId(Long treeTemplateId) {
 		this.treeTemplateId = treeTemplateId;
+	}
+	public Long getTemplateGroupId() {
+		return templateGroupId;
+	}
+	public void setTemplateGroupId(Long templateGroupId) {
+		this.templateGroupId = templateGroupId;
+	}
+	public String getTemplateGroupTitle() {
+		return templateGroupTitle;
+	}
+	public void setTemplateGroupTitle(String templateGroupTitle) {
+		this.templateGroupTitle = templateGroupTitle;
+	}
+	public Integer getHideDetailButton() {
+		return hideDetailButton;
+	}
+	public void setHideDetailButton(Integer hideDetailButton) {
+		this.hideDetailButton = hideDetailButton;
+	}
+	public Integer getHideUpdateButton() {
+		return hideUpdateButton;
+	}
+	public void setHideUpdateButton(Integer hideUpdateButton) {
+		this.hideUpdateButton = hideUpdateButton;
 	}
 }

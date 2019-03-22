@@ -65,10 +65,20 @@ public class ModulesServiceImpl implements ModulesService{
 	
 	@Override
 	public ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId) {
-		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
 		DictionaryComposite composite = dictService.getComposite(moduleName, compositeId);
 		String compositeName = composite.getName();
-		FieldConfigure relationConfigure = resolver.getFieldConfigure(compositeName);
+		return getRelationModule(moduleName, compositeName);
+	} 
+	
+	@Override
+	public ModuleConfigStructure getModuleConfigStructure(String moduleName) {
+		return fFactory.getConfigStructure(moduleName);
+	}
+	
+	@Override
+	public ModuleMeta getRelationModule(String moduleName, String relationName) {
+		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
+		FieldConfigure relationConfigure = resolver.getFieldConfigure(relationName);
 		if(relationConfigure instanceof RelationFieldConfigure) {
 			Long mappingId = ((RelationFieldConfigure) relationConfigure).getRabcMappingId();
 			if(mappingId != null) {
@@ -79,11 +89,6 @@ public class ModulesServiceImpl implements ModulesService{
 			}
 		}
 		return null;
-	} 
-	
-	@Override
-	public ModuleConfigStructure getModuleConfigStructure(String moduleName) {
-		return fFactory.getConfigStructure(moduleName);
 	}
 	
 	

@@ -1,9 +1,8 @@
 package cn.sowell.dataserver.model.tmpl.service;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -23,12 +22,12 @@ public interface ListCriteriaFactory {
 	Map<Long, NormalCriteria> getCriteriasFromRequest(MutablePropertyValues pvs,
 			Map<Long, ? extends AbstractListCriteria> defaultCriteriaMap);
 
-	void appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName,
+	void appendCriterias(List<NormalCriteria> nCriterias, String moduleName,
 			EntityCriteriaFactory criteriaFactory);
 
 	Map<Long, String> exractTemplateCriteriaMap(HttpServletRequest request);
 
-	void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, Set<NormalCriteria> criteria);
+	void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, List<NormalCriteria> criteria);
 
 	<CRI extends AbstractListCriteria> void coverCriteriaForUpdate(CRI originCriteria, CRI criteria);
 
@@ -37,6 +36,9 @@ public interface ListCriteriaFactory {
 
 	void appendCriterias(List<NormalCriteria> criterias, String moduleName,
 			MultiAttrCriteriaFactory multiCriteriaFactory);
+
+	Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias);
+
 
 	
 

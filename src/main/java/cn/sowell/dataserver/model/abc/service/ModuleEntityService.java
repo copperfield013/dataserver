@@ -5,13 +5,18 @@ import java.util.List;
 import java.util.Map;
 
 import com.abc.mapping.entity.Entity;
+import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.rrc.query.entity.RelationEntitySPQuery;
 
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
-import cn.sowell.datacenter.entityResolver.impl.RelationEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.RelSelectionEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
 import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
+import cn.sowell.dataserver.model.modules.service.view.EntityItem;
+import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
 
 public interface ModuleEntityService {
 	/**********************************************************
@@ -65,12 +70,16 @@ public interface ModuleEntityService {
 	 * @param param
 	 * @return
 	 */
-	RelationEntityPropertyParser getRelationEntityParser(EntityQueryParameter param);
+	RelSelectionEntityPropertyParser getRelationEntityParser(EntityQueryParameter param);
 	
 	
 	ModuleEntityPropertyParser toEntityParser(Entity entity, EntityParserParameter parameter);
 	
-	RelationEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter);
+	RelSelectionEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter);
+	
+	RabcModuleEntityPropertyParser toRabcEntityParser(Entity entity, EntityParserParameter parameter);
+	
+	List<EntityItem> convertEntityItems(PagedEntityList el);
 	
 	/**********************************************************
 	 * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ 查询关系单体 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
@@ -81,7 +90,13 @@ public interface ModuleEntityService {
 	 * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ 查询实体列表 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 	 **********************************************************/
 	
+	EntitySortedPagedQuery getSortedEntitiesQuery(EntitiesQueryParameter queryParam);
+	
 	List<Entity> queryModuleEntities(EntitiesQueryParameter param);
+	
+	RelationEntitySPQuery getRelationEntitiesQuery(RelationEntitiesQueryParameter queryParam);
+	
+	RelationEntitySPQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
 	
 	/**
 	 * 
@@ -103,7 +118,7 @@ public interface ModuleEntityService {
 	 * @param relationName
 	 * @return
 	 */
-	Map<String, RelationEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param, String relationName);
+	Map<String, RelSelectionEntityPropertyParser> queryRelationEntityParsers(EntitiesQueryParameter param, String relationName);
 	
 	/**********************************************************
 	 * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ 查询实体列表 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑
@@ -138,12 +153,5 @@ public interface ModuleEntityService {
 	
 	void remove(EntitiesQueryParameter param);
 
-	
 
-	
-
-
-	
-
-	
 }

@@ -1,10 +1,9 @@
 package cn.sowell.dataserver.model.tmpl.service.impl;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -99,7 +98,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 	
 	
 	@Override
-	public void appendCriterias(Collection<NormalCriteria> nCriterias, String moduleName, EntityCriteriaFactory criteriaFactory){
+	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName, EntityCriteriaFactory criteriaFactory){
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
@@ -134,7 +133,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 	
 	
 	@Override
-	public void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, Set<NormalCriteria> nCriterias) {
+	public void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, List<NormalCriteria> nCriterias) {
 		//添加模板组合的默认字段条件
 		if(premises != null) {
 			premises.forEach(premise->{
@@ -183,6 +182,13 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 				appendCriterias(nCriterias, aCriteria.getModuleName(), arrayItemCriteriaFactory);
 			}
 		}
+	}
+
+	@Override
+	public Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias) {
+		return factory->{
+			appendCriterias(nCriterias, moduleName, factory);
+		};
 	}
 
 	

@@ -21,9 +21,11 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
 import cn.sowell.dataserver.model.tmpl.dao.TreeTemplateDao;
+import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
 import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
 import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree;
 import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree.PreparedToTree;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelationCriteria;
@@ -45,12 +47,16 @@ public class TreeTemplateManagerImpl
 	@Resource
 	ListCriteriaFactory lcFactory;
 	
+	@Resource
+	TemplateGroupManager tmplGroupManager;
+	
 	
 	@Autowired
 	protected TreeTemplateManagerImpl(@Autowired TreeTemplateDao dao, 
 			@Autowired ModuleCachableMetaSupportor metaSupportor) {
 		super(dao, metaSupportor);
 	}
+	
 
 	private Map<String, Map<Long, DictionaryField>> getModuleFieldsMap(Map<Long, List<TemplateTreeNode>> nodeListMap){
 		Set<String> moduleNames = new HashSet<>();
@@ -159,6 +165,12 @@ public class TreeTemplateManagerImpl
 		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = prepareToCache.getRelationCriteriasMap();
 		if(nodeList != null) {
 			for (TemplateTreeNode node : nodeList) {
+				if(node.getTemplateGroupId() != null) {
+					TemplateGroup tmplGroup = tmplGroupManager.get(node.getTemplateGroupId());
+					if(tmplGroup != null) {
+						node.setTemplateGroupTitle(tmplGroup.getTitle());
+					}
+				}
 				List<TemplateTreeRelation> rels = nodeRelationsMap.get(node.getId());
 				if(rels != null) {
 					for (TemplateTreeRelation rel : rels) {
@@ -239,6 +251,9 @@ public class TreeTemplateManagerImpl
 					oNode.setOrder(node.getOrder());
 					oNode.setText(node.getText());
 					oNode.setSelector(node.getSelector());
+					oNode.setTemplateGroupId(node.getTemplateGroupId());
+					oNode.setHideDetailButton(node.getHideDetailButton());
+					oNode.setHideUpdateButton(node.getHideUpdateButton());
 					getDao().getNormalOperateDao().update(oNode);
 					List<TemplateTreeRelation> originRelationList = nodeRelationMap.get(oNode.getId());
 					Set<TemplateTreeRelation> originRelations = new LinkedHashSet<>();
