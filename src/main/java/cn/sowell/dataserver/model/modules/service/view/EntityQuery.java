@@ -44,7 +44,6 @@ import cn.sowell.dataserver.model.tmpl.pojo.Cachable;
 import cn.sowell.dataserver.model.tmpl.pojo.SuperTemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
@@ -263,7 +262,9 @@ public class EntityQuery {
 		TemplateGroup tmplGroup = getTemplate(context, TemplateGroupService.class, this.templateGroupId);
 		List<TemplateGroupPremise> premises = tmplGroup.getPremises();
 		TemplateListTemplate ltmpl = getTemplate(context, ListTemplateService.class, tmplGroup.getListTemplateId());
-		List<TemplateListCriteria> tCriterias = ltmpl.getCriterias();
+		List<SuperTemplateListCriteria> tCriterias = new ArrayList<>();
+		if(ltmpl.getCriterias() != null) {ltmpl.getCriterias().forEach(criteria->tCriterias.add(criteria));}
+		if(this.nodeTemplate != null && this.nodeTemplate.getCriterias() != null) {this.nodeTemplate.getCriterias().forEach(criteria->tCriterias.add(criteria));}
 		
 		//封装请求中传入的条件对象，与列表模板中条件对象进行整合
 		//整合后的对象可以允许被外部访问（Map<Long, ViewListCriteria>）
@@ -319,6 +320,7 @@ public class EntityQuery {
 		if(tCriterias != null && !tCriterias.isEmpty()) {
 			//获得条件中的枚举值
 			Set<Long> fieldIds = CollectionUtils.toSet(tCriterias, AbstractListCriteria::getFieldId);
+			fieldIds.remove(null);
 			Set<String> criteriaFieldNames = CollectionUtils.toSet(tCriterias, AbstractListCriteria::getFieldKey);
 			Map<String, Label> labelMap = dictService.getModuleLabelMap(criteriaModuleName, criteriaFieldNames);
 			Map<Long, List<OptionItem>> optionsMap = dictService.getOptionsMap(fieldIds);

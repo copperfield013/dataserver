@@ -9,7 +9,7 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 
 @MappedSuperclass
-public class SuperTemplateListCriteria extends AbstractListCriteria {
+public abstract class SuperTemplateListCriteria extends AbstractListCriteria {
 
 	@Column(name = "composite_id")
 	protected Long compositeId;

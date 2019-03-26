@@ -11,6 +11,7 @@ import java.util.Set;
 import cn.sowell.dataserver.model.cachable.prepare.PreparedToCache;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNodeCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelationCriteria;
 
@@ -20,6 +21,7 @@ public class GlobalPreparedToTree extends PreparedToCache{
 	private Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap  = new LinkedHashMap<>();
 	private Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
 	private Map<String, Map<String, String>> moduleRelationModuleMap = new HashMap<>();
+	private Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = new HashMap<>();
 	private Set<String> moduleFlagSet = new HashSet<>();
 	
 	public static class PreparedToTree extends PreparedToCache{
@@ -29,6 +31,7 @@ public class GlobalPreparedToTree extends PreparedToCache{
 		private Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = new LinkedHashMap<>();
 		private Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
 		private Map<String, Map<String, String>> moduleRelationModuleMap = new HashMap<>();
+		private Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = new HashMap<>();
 		public List<TemplateTreeNode> getNodeList() {
 			return nodeList;
 		}
@@ -65,6 +68,12 @@ public class GlobalPreparedToTree extends PreparedToCache{
 				return relationModuleMap.get(relationName);
 			}
 			return null;
+		}
+		public Map<Long, List<TemplateTreeNodeCriteria>> getNodeCriteriasMap() {
+			return nodeCriteriasMap;
+		}
+		public void setNodeCriteriasMap(Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap) {
+			this.nodeCriteriasMap = nodeCriteriasMap;
 		}
 	}
 
@@ -126,6 +135,16 @@ public class GlobalPreparedToTree extends PreparedToCache{
 
 	public void setModuleFlagSet(Set<String> moduleFlagSet) {
 		this.moduleFlagSet = moduleFlagSet;
+	}
+
+
+	public Map<Long, List<TemplateTreeNodeCriteria>> getNodeCriteriasMap() {
+		return nodeCriteriasMap;
+	}
+
+
+	public void setNodeCriteriasMap(Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap) {
+		this.nodeCriteriasMap = nodeCriteriasMap;
 	}
 
 

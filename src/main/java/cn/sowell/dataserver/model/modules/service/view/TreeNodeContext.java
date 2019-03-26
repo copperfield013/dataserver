@@ -45,4 +45,7 @@ public class TreeNodeContext {
 		}
 		return this.treeTemplate;
 	}
+	public boolean isRoot() {
+		return this.relationComposite == null;
+	}
 }

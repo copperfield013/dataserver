@@ -26,6 +26,7 @@ import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverte
 import cn.sowell.dataserver.model.modules.bean.criteriaConveter.CriteriaConverterFactory;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.SuperTemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
@@ -150,7 +151,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 		}
 	}
 	@Override
-	public <CRI extends AbstractListCriteria> void coverCriteriaForUpdate(CRI originCriteria, CRI criteria) {
+	public <CRI extends AbstractListCriteria> void coverAbsCriteriaForUpdate(CRI originCriteria, CRI criteria) {
 		originCriteria.setTitle(criteria.getTitle());
 		originCriteria.setOrder(criteria.getOrder());
 		if(criteria.getFieldAvailable()) {
@@ -165,6 +166,11 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 			originCriteria.setDefaultValue(criteria.getDefaultValue());
 			originCriteria.setPlaceholder(criteria.getPlaceholder());
 		}
+	}
+	@Override
+	public <CRI extends SuperTemplateListCriteria> void coverSupCriteriaForUpdate(CRI originCriteria, CRI criteria) {
+		coverAbsCriteriaForUpdate(originCriteria, criteria);
+		originCriteria.setCompositeId(criteria.getCompositeId());
 	}
 	
 	

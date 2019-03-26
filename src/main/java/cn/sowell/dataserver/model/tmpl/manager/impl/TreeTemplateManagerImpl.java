@@ -25,8 +25,10 @@ import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
 import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
 import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree;
 import cn.sowell.dataserver.model.tmpl.param.GlobalPreparedToTree.PreparedToTree;
+import cn.sowell.dataserver.model.tmpl.pojo.SuperTemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNodeCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelationCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
@@ -80,12 +82,14 @@ public class TreeTemplateManagerImpl
 		Map<Long, List<TemplateTreeNode>> nodeListMap = CollectionUtils.toListMap(getDao().queryAllNodes(), TemplateTreeNode::getTreeTemplateId);
 		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = CollectionUtils.toListMap(getDao().queryAllRelation(), TemplateTreeRelation::getNodeId);
 		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = CollectionUtils.toListMap(getDao().queryAllCriterias(), TemplateTreeRelationCriteria::getTemplateId);
+		Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = CollectionUtils.toListMap(getDao().queryAllNodeCriterias(), TemplateTreeNodeCriteria::getTemplateId);
 		
 		gp.setModuleFieldsMap(getModuleFieldsMap(nodeListMap));
 		
 		gp.setNodeListMap(nodeListMap);
 		gp.setNodeRelationsMap(nodeRelationsMap);
 		gp.setRelationCriteriasMap(relationCriteriasMap);
+		gp.setNodeCriteriasMap(nodeCriteriasMap);
 		
 		return gp;
 	}
@@ -118,6 +122,7 @@ public class TreeTemplateManagerImpl
 				}
 				globalPreparedToCache.getModuleFlagSet().add(cachable.getModule());
 			}
+			prepared.setNodeCriteriasMap(globalPreparedToCache.getNodeCriteriasMap());
 			prepared.setModuleRelationModuleMap(globalPreparedToCache.getModuleRelationModuleMap());
 			prepared.setModuleFieldsMap(globalPreparedToCache.getModuleFieldsMap());
 		}
@@ -133,8 +138,9 @@ public class TreeTemplateManagerImpl
 		Map<Long, List<TemplateTreeNode>> tMap = new HashMap<>();
 		tMap.put(cachable.getId(), nodeList);
 		preared.setModuleFieldsMap(getModuleFieldsMap(tMap));
+		Set<Long> nodeIds = CollectionUtils.toSet(nodeList, TemplateTreeNode::getId);
 		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = 
-				getDao().queryRelationsMapByNodes(CollectionUtils.toSet(nodeList, TemplateTreeNode::getId));
+				getDao().queryRelationsMapByNodes(nodeIds);
 		
 		Set<Long> nodeRelationIds = new HashSet<>();
 		for (List<TemplateTreeRelation> relations : nodeRelationsMap.values()) {
@@ -145,6 +151,7 @@ public class TreeTemplateManagerImpl
 		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap =
 				getDao().queryCriteriasMapByRelations(nodeRelationIds);
 		preared.setNodeList(nodeList);
+		preared.setNodeCriteriasMap(getDao().queryNodeCriterias(nodeIds));
 		preared.setNodeRelationsMap(nodeRelationsMap);
 		preared.setRelationCriteriasMap(relationCriteriasMap);
 		ModuleConfigStructure structure = fFactory.getConfigStructure(cachable.getModule());
@@ -161,6 +168,7 @@ public class TreeTemplateManagerImpl
 	@Override
 	protected void handlerCache(TemplateTreeTemplate ttmpl, PreparedToTree prepareToCache) {
 		List<TemplateTreeNode> nodeList = prepareToCache.getNodeList();
+		Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = prepareToCache.getNodeCriteriasMap();
 		Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = prepareToCache.getNodeRelationsMap();
 		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = prepareToCache.getRelationCriteriasMap();
 		if(nodeList != null) {
@@ -171,6 +179,13 @@ public class TreeTemplateManagerImpl
 						node.setTemplateGroupTitle(tmplGroup.getTitle());
 					}
 				}
+				
+				List<TemplateTreeNodeCriteria> nodeCriterias = nodeCriteriasMap.get(node.getId());
+				if(nodeCriterias != null) {
+					handleCriteria(node.getModuleName(), nodeCriterias, prepareToCache);
+					node.setCriterias(nodeCriterias);
+				}
+				
 				List<TemplateTreeRelation> rels = nodeRelationsMap.get(node.getId());
 				if(rels != null) {
 					for (TemplateTreeRelation rel : rels) {
@@ -180,24 +195,7 @@ public class TreeTemplateManagerImpl
 							rel.setRelationModule(relationModuleName);
 							List<TemplateTreeRelationCriteria> criterias = relationCriteriasMap.get(rel.getId());
 							if(criterias != null) {
-								for (TemplateTreeRelationCriteria criteria : criterias) {
-									if(criteria.getFieldId() != null) {
-										Map<Long, DictionaryField> fieldMap = prepareToCache.getModuleFieldsMap().get(relationModuleName);
-										DictionaryField field = fieldMap.get(criteria.getFieldId());
-										if(field != null) {
-											if(getMetaSupportor().supportFieldInputType(criteria.getInputType(), field.getType(), prepareToCache.getReferData().getFieldInputTypeMap())) {
-												criteria.setFieldKey(field.getFullKey());
-												//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
-												//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
-												continue;
-											}
-										}
-										criteria.setFieldUnavailable();
-									}
-									if(criteria.getCompositeId() != null) {
-										criteria.setComposite(prepareToCache.getReferData().getCompositeMap().get(criteria.getCompositeId()));
-									}
-								}
+								handleCriteria(relationModuleName, criterias, prepareToCache);
 								rel.setCriterias(criterias);
 							}
 						}
@@ -209,6 +207,29 @@ public class TreeTemplateManagerImpl
 		}
 		
 	}
+
+	private void handleCriteria(String relationModuleName, List<? extends SuperTemplateListCriteria> criterias, PreparedToTree prepareToCache) {
+		
+		for (SuperTemplateListCriteria criteria : criterias) {
+			if(criteria.getFieldId() != null) {
+				Map<Long, DictionaryField> fieldMap = prepareToCache.getModuleFieldsMap().get(relationModuleName);
+				DictionaryField field = fieldMap.get(criteria.getFieldId());
+				if(field != null) {
+					if(getMetaSupportor().supportFieldInputType(criteria.getInputType(), field.getType(), prepareToCache.getReferData().getFieldInputTypeMap())) {
+						criteria.setFieldKey(field.getFullKey());
+						//只有字段存在并且字段当前类型支持当前条件的表单类型，该条件字段才可用
+						//(因为条件的表单类型是创建模板时选择的，与字段类型不同，防止字段修改了类型但与条件表单类型不匹配)
+						continue;
+					}
+				}
+				criteria.setFieldUnavailable();
+			}
+			if(criteria.getCompositeId() != null) {
+				criteria.setComposite(prepareToCache.getReferData().getCompositeMap().get(criteria.getCompositeId()));
+			}
+		}
+	}
+
 
 	@Override
 	protected TemplateTreeTemplate createCachablePojo() {
@@ -237,7 +258,9 @@ public class TreeTemplateManagerImpl
 		origin.setUpdateTime(now);
 		getDao().getNormalOperateDao().update(origin);
 		List<TemplateTreeNode> originNodes = getDao().queryNodeList(ttmpl.getId());
-		Map<Long, List<TemplateTreeRelation>> nodeRelationMap = getDao().queryRelationsMapByNodes(CollectionUtils.toSet(originNodes, TemplateTreeNode::getId));
+		Set<Long> nodeIds = CollectionUtils.toSet(originNodes, TemplateTreeNode::getId);
+		Map<Long, List<TemplateTreeRelation>> nodeRelationMap = getDao().queryRelationsMapByNodes(nodeIds);
+		Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = getDao().queryNodeCriterias(nodeIds);
 		Set<Long> relationIds = new HashSet<>();
 		nodeRelationMap.values().forEach(rels->{
 			relationIds.addAll(CollectionUtils.toSet(rels, TemplateTreeRelation::getId));
@@ -254,7 +277,26 @@ public class TreeTemplateManagerImpl
 					oNode.setTemplateGroupId(node.getTemplateGroupId());
 					oNode.setHideDetailButton(node.getHideDetailButton());
 					oNode.setHideUpdateButton(node.getHideUpdateButton());
+					oNode.setIsRootNode(node.getIsRootNode());
+					oNode.setIsDirect(node.getIsDirect());
 					getDao().getNormalOperateDao().update(oNode);
+					
+					List<TemplateTreeNodeCriteria> oNodeCriterias = nodeCriteriasMap.get(oNode.getId());
+					Set<TemplateTreeNodeCriteria> originNodeCriterias = new LinkedHashSet<>();
+					if(oNodeCriterias != null) {
+						originNodeCriterias.addAll(oNodeCriterias);
+					}
+					NormalDaoSetUpdateStrategy.build(TemplateTreeNodeCriteria.class, 
+							getDao().getNormalOperateDao(), TemplateTreeNodeCriteria::getId, 
+							(oCriteria, criteria)->{
+								lcFactory.coverSupCriteriaForUpdate(oCriteria, criteria);
+								getDao().getNormalOperateDao().update(oCriteria);
+							}, (criteria)->{
+								criteria.setTemplateId(oNode.getId());
+								getDao().getNormalOperateDao().save(criteria);
+							})
+					.doUpdate(originNodeCriterias, new LinkedHashSet<>(node.getCriterias()));
+					
 					List<TemplateTreeRelation> originRelationList = nodeRelationMap.get(oNode.getId());
 					Set<TemplateTreeRelation> originRelations = new LinkedHashSet<>();
 					if(originRelationList != null) {
@@ -275,7 +317,7 @@ public class TreeTemplateManagerImpl
 										getDao().getNormalOperateDao(), 
 										TemplateTreeRelationCriteria::getId, 
 										(oCriteria, criteria)->{
-											lcFactory.coverCriteriaForUpdate(oCriteria, criteria);
+											lcFactory.coverSupCriteriaForUpdate(oCriteria, criteria);
 											oCriteria.setCompositeId(criteria.getCompositeId());
 											getDao().getNormalOperateDao().update(oCriteria);
 									}, (criteria)->{
@@ -298,6 +340,13 @@ public class TreeTemplateManagerImpl
 
 	private void doCreateNode(TemplateTreeNode node) {
 		Long nodeId = getDao().getNormalOperateDao().save(node);
+		List<TemplateTreeNodeCriteria> criterias = node.getCriterias();
+		if(criterias != null) {
+			for (TemplateTreeNodeCriteria criteria : criterias) {
+				criteria.setTemplateId(nodeId);
+				getDao().getNormalOperateDao().save(criteria);
+			}
+		}
 		List<TemplateTreeRelation> relations = node.getRelations();
 		if(relations != null) {
 			for (TemplateTreeRelation relation : relations) {

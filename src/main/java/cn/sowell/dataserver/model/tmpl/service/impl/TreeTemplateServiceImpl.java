@@ -55,6 +55,10 @@ public class TreeTemplateServiceImpl
 		return ttmpl.getNodes().stream()
 				.filter(nodeTmpl->nodeContext.getModuleName().equals(nodeTmpl.getModuleName()))
 				.filter(nodeTmpl->{
+					//匹配根节点
+					if(nodeContext.isRoot() && nodeTmpl.getIsRootNode() != null && 1 == nodeTmpl.getIsRootNode()) {
+						return true;
+					}
 					String selector = nodeTmpl.getSelector();
 					return createSelector(selector).match(nodeContext);
 				}).findFirst().orElse(null);

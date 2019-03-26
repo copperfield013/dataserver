@@ -15,6 +15,7 @@ import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.SuperTemplateListCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 
 public interface ListCriteriaFactory {
@@ -29,8 +30,10 @@ public interface ListCriteriaFactory {
 
 	void appendPremiseCriteria(String moduleName, List<TemplateGroupPremise> premises, List<NormalCriteria> criteria);
 
-	<CRI extends AbstractListCriteria> void coverCriteriaForUpdate(CRI originCriteria, CRI criteria);
+	<CRI extends AbstractListCriteria> void coverAbsCriteriaForUpdate(CRI originCriteria, CRI criteria);
 
+	<CRI extends SuperTemplateListCriteria> void coverSupCriteriaForUpdate(CRI originCriteria, CRI criteria);
+	
 	void appendArrayItemCriteriaParameter(EntitySortedPagedQueryFactory sortedPagedQueryFactory,
 			EntityQueryParameter queryParam);
 
@@ -38,6 +41,7 @@ public interface ListCriteriaFactory {
 			MultiAttrCriteriaFactory multiCriteriaFactory);
 
 	Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias);
+
 
 
 	

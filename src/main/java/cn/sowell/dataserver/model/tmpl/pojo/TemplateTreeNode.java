@@ -47,6 +47,15 @@ public class TemplateTreeNode {
 	@Column(name="c_order")
 	private Integer order;
 	
+	@Column(name="c_is_root_node")
+	private Integer isRootNode;
+	
+	@Column(name="c_is_direct")
+	private Integer isDirect;
+	
+	@Transient
+	private List<TemplateTreeNodeCriteria> criterias;
+	
 	@Transient
 	private List<TemplateTreeRelation> relations;
 	
@@ -121,5 +130,23 @@ public class TemplateTreeNode {
 	}
 	public void setHideUpdateButton(Integer hideUpdateButton) {
 		this.hideUpdateButton = hideUpdateButton;
+	}
+	public Integer getIsRootNode() {
+		return isRootNode;
+	}
+	public void setIsRootNode(Integer isRootNode) {
+		this.isRootNode = isRootNode;
+	}
+	public List<TemplateTreeNodeCriteria> getCriterias() {
+		return criterias;
+	}
+	public void setCriterias(List<TemplateTreeNodeCriteria> criterias) {
+		this.criterias = criterias;
+	}
+	public Integer getIsDirect() {
+		return isDirect;
+	}
+	public void setIsDirect(Integer isDirect) {
+		this.isDirect = isDirect;
 	}
 }

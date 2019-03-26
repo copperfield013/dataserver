@@ -170,7 +170,7 @@ public abstract class AbstractListTemplateManager<LT extends AbstractListTemplat
 				getDao().getListCriteriaClass(), getDao().getNormalOperateDao(), 
 				criteria->criteria.getId(), 
 				(originCriteria, criteria)->{
-					lcFactory.coverCriteriaForUpdate(originCriteria, criteria);
+					lcFactory.coverAbsCriteriaForUpdate(originCriteria, criteria);
 					updateCriteria(originCriteria, criteria);
 				}, criteria->{
 					criteria.setCreateTime(now);
