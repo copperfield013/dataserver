@@ -65,12 +65,21 @@ public abstract class AbstractModuleCacheManager<T extends Cachable, D extends C
 						cacheMap.put(latest.getId(), latest);
 					});
 				});
+				cacheMap.values().forEach(cache->handlerCacheAfterAllLoaded(cache));
 			}
 			return cacheMap;
 		}
 	}
 	
 
+
+	/**
+	 * 在所有的数据都加载结束之后进行处理
+	 * @param cache
+	 */
+	protected void handlerCacheAfterAllLoaded(T cache) {
+		
+	}
 
 	/**
 	 * 
@@ -151,6 +160,7 @@ public abstract class AbstractModuleCacheManager<T extends Cachable, D extends C
 				}
 				handlerCache(cachable, prepared);
 				cacheMap.put(cachableId, cachable);
+				handlerCacheAfterAllLoaded(cachable);
 				afterReloadCache(cachable);
 			}else {
 				cacheMap.remove(cachableId);

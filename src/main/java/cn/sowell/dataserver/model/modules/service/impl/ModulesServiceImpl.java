@@ -1,5 +1,7 @@
 package cn.sowell.dataserver.model.modules.service.impl;
 
+import java.util.List;
+
 import javax.annotation.Resource;
 
 import org.springframework.stereotype.Service;
@@ -80,12 +82,10 @@ public class ModulesServiceImpl implements ModulesService{
 		FusionContextConfigResolver resolver = fFactory.getModuleResolver(moduleName);
 		FieldConfigure relationConfigure = resolver.getFieldConfigure(relationName);
 		if(relationConfigure instanceof RelationFieldConfigure) {
-			Long mappingId = ((RelationFieldConfigure) relationConfigure).getRabcMappingId();
-			if(mappingId != null) {
-				FusionContextConfig config = fFactory.getAllConfigs().stream().filter((c)->mappingId.equals(c.getMappingId())).findFirst().orElse(null);
-				if(config != null) {
-					return getModule(config.getModule());
-				}
+			List<DictionaryComposite> composites = dictService.getAllComposites(moduleName);
+			DictionaryComposite relComposite = composites.stream().filter(composite->relationName.equals(composite.getName())).findFirst().orElse(null);
+			if(relComposite != null) {
+				return getModule(relComposite.getRelModuleName());
 			}
 		}
 		return null;

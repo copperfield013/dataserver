@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
 
@@ -173,12 +174,6 @@ public class TreeTemplateManagerImpl
 		Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = prepareToCache.getRelationCriteriasMap();
 		if(nodeList != null) {
 			for (TemplateTreeNode node : nodeList) {
-				if(node.getTemplateGroupId() != null) {
-					TemplateGroup tmplGroup = tmplGroupManager.get(node.getTemplateGroupId());
-					if(tmplGroup != null) {
-						node.setTemplateGroupTitle(tmplGroup.getTitle());
-					}
-				}
 				
 				List<TemplateTreeNodeCriteria> nodeCriterias = nodeCriteriasMap.get(node.getId());
 				if(nodeCriterias != null) {
@@ -206,6 +201,21 @@ public class TreeTemplateManagerImpl
 			ttmpl.setNodes(nodeList);
 		}
 		
+	}
+	
+	@Override
+	protected void handlerCacheAfterAllLoaded(TemplateTreeTemplate ttmpl) {
+		List<TemplateTreeNode> nodes = ttmpl.getNodes();
+		if(nodes != null ) {
+			for (TemplateTreeNode node : nodes) {
+				if(node.getTemplateGroupId() != null) {
+					TemplateGroup tmplGroup = tmplGroupManager.get(node.getTemplateGroupId());
+					if(tmplGroup != null) {
+						node.setTemplateGroupTitle(tmplGroup.getTitle());
+					}
+				}
+			}
+		}
 	}
 
 	private void handleCriteria(String relationModuleName, List<? extends SuperTemplateListCriteria> criterias, PreparedToTree prepareToCache) {
@@ -270,6 +280,7 @@ public class TreeTemplateManagerImpl
 				getDao().getNormalOperateDao(), 
 				TemplateTreeNode::getId, 
 				(oNode, node)->{
+					oNode.setTitle(node.getTitle());
 					oNode.setNodeColor(node.getNodeColor());
 					oNode.setOrder(node.getOrder());
 					oNode.setText(node.getText());
@@ -366,6 +377,17 @@ public class TreeTemplateManagerImpl
 				getDao().getNormalOperateDao().save(criteria);
 			}
 		}
+	}
+	
+	@Override
+	public List<TemplateTreeTemplate> queryByNodeModule(String nodeModule) {
+		return getCachableMap().values().stream().filter(ttmpl->{
+			List<TemplateTreeNode> nodes = ttmpl.getNodes();
+			if(nodes != null) {
+				return nodes.stream().anyMatch(node->nodeModule.equals(node.getModuleName()));
+			}
+			return false;
+		}).collect(Collectors.toList());
 	}
 
 }

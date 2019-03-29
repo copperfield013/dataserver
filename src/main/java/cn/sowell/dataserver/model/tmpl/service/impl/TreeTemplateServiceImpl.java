@@ -165,14 +165,15 @@ public class TreeTemplateServiceImpl
 		css.append("}");
 	}
 	
-
-	
-	
-
 	@Override
 	public Long copy(Long tmplId, String targetReference) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	@Override
+	public List<TemplateTreeTemplate> queryByNodeModule(String nodeModule) {
+		return getManager().queryByNodeModule(nodeModule);
 	}
 
 }

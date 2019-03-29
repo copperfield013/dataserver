@@ -47,6 +47,9 @@ public class DictionaryComposite implements Composite, Serializable{
 	@Column(name="add_type")
 	private Integer addType;
 	
+	@Column(name="c_rel_module_name")
+	private String relModuleName;
+	
 	@Column(name="c_opt")
 	private String access;
 	
@@ -128,5 +131,11 @@ public class DictionaryComposite implements Composite, Serializable{
 	}
 	public void setRelationKey(String relationKey) {
 		this.relationKey = relationKey;
+	}
+	public String getRelModuleName() {
+		return relModuleName;
+	}
+	public void setRelModuleName(String relModuleName) {
+		this.relModuleName = relModuleName;
 	}
 }

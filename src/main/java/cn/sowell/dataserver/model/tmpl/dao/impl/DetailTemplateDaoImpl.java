@@ -1,5 +1,7 @@
 package cn.sowell.dataserver.model.tmpl.dao.impl;
 
+import java.util.List;
+
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import cn.sowell.copframe.dao.utils.NormalOperateDao;
 import cn.sowell.dataserver.model.tmpl.dao.DetailTemplateDao;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailField;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroupTreeNode;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 
 @Repository
@@ -43,5 +46,24 @@ public class DetailTemplateDaoImpl extends AbstractDetailTemplateDao<TemplateDet
 		query.setLong("groupId", templateGroupId);
 		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailTemplate.class));
 		return (TemplateDetailTemplate) query.uniqueResult();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateDetailFieldGroupTreeNode> queryAllFieldGroupTreeNodes() {
+		return getSessionFactory().getCurrentSession()
+				.createCriteria(TemplateDetailFieldGroupTreeNode.class).list();
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<TemplateDetailFieldGroupTreeNode> queryFieldGroupTreeNodes(Long dtmplId) {
+		String sql = "select n.* from t_sa_tmpl_detail_fieldgroup_treenode n "
+				+ " left join t_sa_tmpl_detail_fieldgroup g on n.fieldgroup_id = g.id"
+				+ " where g.tmpl_id = :dtmplId";
+		SQLQuery query = getSessionFactory().getCurrentSession().createSQLQuery(sql);
+		query.setLong("dtmplId", dtmplId);
+		query.setResultTransformer(HibernateRefrectResultTransformer.getInstance(TemplateDetailFieldGroupTreeNode.class));
+		return query.list();
 	}
 }

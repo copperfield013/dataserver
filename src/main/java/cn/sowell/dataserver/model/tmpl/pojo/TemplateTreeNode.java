@@ -17,6 +17,9 @@ public class TemplateTreeNode {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
+	@Column(name="c_title")
+	private String title;
+	
 	@Column(name="ttmpl_id")
 	private Long treeTemplateId;
 	
@@ -148,5 +151,11 @@ public class TemplateTreeNode {
 	}
 	public void setIsDirect(Integer isDirect) {
 		this.isDirect = isDirect;
+	}
+	public String getTitle() {
+		return title;
+	}
+	public void setTitle(String title) {
+		this.title = title;
 	}
 }

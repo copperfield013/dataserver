@@ -162,6 +162,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 			group.setTmplId(tmplId);
 			group.setUpdateTime(now);
 			Long groupId = getDao().getNormalOperateDao().save(group);
+			handleFieldGroupAfterSave(null, group);
 			for (FT field : group.getFields()) {
 				if(fieldMap.containsKey(field.getFieldId())){
 					field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
@@ -211,6 +212,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 						originGroup.setUpdateTime(now);
 						doUpdateFieldGroup(originGroup, group);
 						getDao().getNormalOperateDao().update(originGroup);
+						handleFieldGroupAfterSave(originGroup, group);
 						
 						Map<Long, FT> originFieldMap = CollectionUtils.toMap(originGroup.getFields(), field->field.getId());
 						for (FT field : group.getFields()) {
@@ -246,6 +248,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 					group.setTmplId(origin.getId());
 					group.setUpdateTime(now);
 					Long groupId = getDao().getNormalOperateDao().save(group);
+					handleFieldGroupAfterSave(null, group);
 					for (FT field : group.getFields()) {
 						if(fieldMap.containsKey(field.getFieldId())){
 							field.setFieldName(fieldMap.get(field.getFieldId()).getFullKey());
@@ -265,5 +268,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 		}
 	}
 	
+	protected void handleFieldGroupAfterSave(GT originGroup, GT group) {}
+
 	protected void doUpdateFieldGroup(GT originGroup, GT group) {}
 }

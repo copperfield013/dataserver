@@ -1,5 +1,7 @@
 package cn.sowell.dataserver.model.tmpl.service;
 
+import java.util.List;
+
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.service.view.TreeNodeContext;
 import cn.sowell.dataserver.model.tmpl.duplicator.ModuleTemplateDuplicator;
@@ -18,5 +20,7 @@ public interface TreeTemplateService extends OpenTemplateService<TemplateTreeTem
 	String parserNodeText(String text, ModuleEntityPropertyParser parser);
 
 	TemplateTreeNode getNodeTemplate(String moduleName, Long nodeId);
+
+	List<TemplateTreeTemplate> queryByNodeModule(String nodeModule);
 	
 }

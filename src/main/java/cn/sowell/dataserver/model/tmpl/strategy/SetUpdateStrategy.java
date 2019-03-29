@@ -54,17 +54,19 @@ public abstract class SetUpdateStrategy<T> {
 		if(toUpdateSet != null){
 			for (T pojo : toUpdateSet) {
 				Long pojoId = getPojoId(pojo);
-				if(pojoId != null){
-					toRemoveIds.remove(pojoId);
-					//修改
+				if(pojoId != null) {
 					T originPojo = originMap.get(pojoId);
-					if(handlerUpdatePojo(originPojo, pojo)){
-						doDaoUpdate(originPojo);
+					if(originPojo != null) {
+						toRemoveIds.remove(pojoId);
+						//修改
+						if(handlerUpdatePojo(originPojo, pojo)){
+							doDaoUpdate(originPojo);
+							continue;
+						}
 					}
-				}else{
-					if(handlerCreatePojo(pojo)){
-						doDaoCreate(pojo);
-					}
+				}
+				if(handlerCreatePojo(pojo)){
+					doDaoCreate(pojo);
 				}
 			}
 		}

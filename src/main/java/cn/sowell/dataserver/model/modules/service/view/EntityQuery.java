@@ -167,12 +167,50 @@ public class EntityQuery {
 		}else if(this.templateGroupId != null){
 			//执行一般的列表查询
 			doPrepareForNormalList(requrestCriteriaMap, context);
+		}else if(this.nodeTemplate != null) {
+			//执行没有关联模板组合的树形结构的根节点列表查询
+			doPrepareForTreeRootList(requrestCriteriaMap, context);
 		}
 		return this;
 		
 	}
 	
 	
+	private void doPrepareForTreeRootList(Map<Long, String> requrestCriteriaMap, ApplicationContext context) {
+		String nodeModuleName = this.nodeTemplate.getModuleName();
+		//Assert.state(this.moduleName.equals(this.nodeTemplate.getModuleName()), "nodeTemplate的moduleName与this.moduleName不一致");
+		DictionaryService dictService = context.getBean(DictionaryService.class);
+		//获得模板组合中的默认字段、列表模板中的所有条件对象。
+		List<SuperTemplateListCriteria> tCriterias = new ArrayList<>();
+		if(this.nodeTemplate.getCriterias() != null) {this.nodeTemplate.getCriterias().forEach(criteria->tCriterias.add(criteria));}
+		
+		//封装请求中传入的条件对象，与列表模板中条件对象进行整合
+		//整合后的对象可以允许被外部访问（Map<Long, ViewListCriteria>）
+		this.viewCriteriaMap = integrateViewCriteriaMap(nodeModuleName, tCriterias, requrestCriteriaMap, dictService);
+		
+		//按照“请求条件-列表隐藏条件-模板组合默认字段”的递增优先级
+		//创建NormalCriteria列表
+		List<NormalCriteria> nCriterias = new ArrayList<>(this.precriterias);
+		this.viewCriteriaMap.values().forEach(vCriteria->{
+			@SuppressWarnings("unchecked")
+			ViewListCriteria<? extends SuperTemplateListCriteria> vvCriteria = (ViewListCriteria<? extends SuperTemplateListCriteria>) vCriteria;
+			appendSuperTemplateListCriteria(nodeModuleName, vvCriteria, nCriterias, dictService);
+		});
+		
+		nCriterias.addAll(this.hiddenCriterias);
+		
+		//构造EntitiesQueryParameter对象，调用ModuleEntityService构造EntitySortedPagedQuery对象
+		EntitiesQueryParameter queryParam = new EntitiesQueryParameter(nodeModuleName, this.user);
+		queryParam.setPageInfo(this.pageInfo);
+		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
+		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(nodeModuleName, nCriterias));
+		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
+		this.sortedEntitiesQuery = entityService.getSortedEntitiesQuery(queryParam);
+		//完成准备工作
+		EntityParserParameter parserParam = new EntityParserParameter(nodeModuleName, this.user);
+		this.parserConverter = entity->entityService.toEntityParser(entity, parserParam);
+		
+	}
 	/**
 	 * 查询关系对应模块的实体列表
 	 * @param requrestCriteriaMap
@@ -279,7 +317,7 @@ public class EntityQuery {
 			appendSuperTemplateListCriteria(this.moduleName, vvCriteria, nCriterias, dictService);
 		});
 		premises.forEach(premise->{
-			appendCriterias(premise, this.hiddenCriterias, dictService);
+			appendPremiseCriterias(premise, this.hiddenCriterias, dictService);
 		});
 		
 		nCriterias.addAll(this.hiddenCriterias);
@@ -360,7 +398,7 @@ public class EntityQuery {
 	 * @param nCriterias
 	 * @param dictService
 	 */
-	private void appendCriterias(TemplateGroupPremise premise, Set<NormalCriteria> nCriterias,
+	private void appendPremiseCriterias(TemplateGroupPremise premise, Set<NormalCriteria> nCriterias,
 			DictionaryService dictService) {
 		DictionaryField field = dictService.getField(this.moduleName, premise.getFieldId());
 		if(field != null) {
