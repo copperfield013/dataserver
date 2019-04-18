@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
 import com.abc.mapping.entity.Entity;
+import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
+import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
@@ -245,8 +247,10 @@ public class ViewDataServiceImpl implements ViewDataService{
 					); 
 		});
 		
-		List<Entity> list = entityService.queryModuleEntities(param);
-		return list;
+		EntitySortedPagedQuery query = entityService.getQuickSortedEntitiesQuery(param);
+		PageInfo pageInfo = param.getPageInfo();
+		pageInfo.setCount(query.getAllCount());
+		return query.visitEntity(pageInfo.getPageNo());
 	}
 
 }

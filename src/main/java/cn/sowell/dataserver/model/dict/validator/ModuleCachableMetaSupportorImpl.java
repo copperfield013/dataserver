@@ -10,7 +10,7 @@ import javax.annotation.Resource;
 import org.apache.log4j.Logger;
 import org.springframework.util.Assert;
 
-import com.abc.mapping.node.NodeOpsType;
+import com.abc.model.enun.NodeOpsType;
 
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;

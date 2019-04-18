@@ -1,11 +1,14 @@
 package cn.sowell.dataserver.model.abc.service;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
+import cn.sowell.copframe.utils.TextUtils;
 
 public class RelationEntitiesQueryParameter {
 	private String moduleName;
@@ -14,6 +17,8 @@ public class RelationEntitiesQueryParameter {
 	private UserIdentifier user;
 	private PageInfo pageInfo;
 	private Consumer<EntityCriteriaFactory> criteriaFactoryConsumer;
+	private Set<String> relationExcludeLabels = new HashSet<>();
+	private Set<String> relationIncludeLabels = new HashSet<>();
 	
 	public RelationEntitiesQueryParameter(String moduleName, String relationName, String parentEntityCode, UserIdentifier user) {
 		this.moduleName = moduleName;
@@ -55,6 +60,23 @@ public class RelationEntitiesQueryParameter {
 		this.criteriaFactoryConsumer = criteriaFactoryConsumer;
 		return this;
 	}
+
+	public void addRelationExcludeLabels(String filterLabels) {
+		this.relationExcludeLabels.addAll(TextUtils.split(filterLabels, ","));
+	}
+
+	public void addRelationIncludeLabels(String filterLabels) {
+		this.relationIncludeLabels.addAll(TextUtils.split(filterLabels, ","));
+	}
+	
+	public Set<String> getRelationExcludeLabels(){
+		return this.relationExcludeLabels;
+	}
+	
+	public Set<String> getRelationIncludeLabels(){
+		return this.relationIncludeLabels;
+	}
+	
 
 
 }

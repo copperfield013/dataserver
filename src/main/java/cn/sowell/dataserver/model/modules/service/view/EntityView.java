@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.abc.mapping.entity.Entity;
-import com.abc.util.ValueType;
+import com.abc.model.enun.ValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 

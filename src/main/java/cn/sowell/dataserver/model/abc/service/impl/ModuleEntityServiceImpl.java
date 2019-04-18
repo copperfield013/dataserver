@@ -58,11 +58,16 @@ import cn.sowell.dataserver.model.modules.service.view.EntityItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityNode;
 import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
 import cn.sowell.dataserver.model.modules.service.view.ListEntityItem;
+import cn.sowell.dataserver.model.modules.service.view.ListModuleEntityItem;
 import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
+import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
+import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 import cn.sowell.dataserver.model.tmpl.service.TreeTemplateService;
 
 @Service
@@ -78,6 +83,12 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	@Resource
 	TreeTemplateService treeService;
+	
+	@Resource
+	TemplateGroupService tmplGroupService;
+	
+	@Resource
+	ListTemplateService ltmplService;
 	
 	@Override
 	public Entity getEntity(EntityQueryParameter queryParam){
@@ -129,11 +140,26 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		return null;
 	}
 	
-	private EntityItem toEntityNode(CEntityPropertyParser parser, TemplateSelectionTemplate selectionTemplate) {
+	private EntityItem toEntityItem(CEntityPropertyParser parser, TemplateSelectionTemplate selectionTemplate) {
 		if(parser != null) {
 			List<TemplateSelectionColumn> cols = selectionTemplate.getColumns();
 			ListEntityItem item = new ListEntityItem(parser);
 			for (TemplateSelectionColumn col : cols) {
+				if(col.getFieldKey() != null) {
+					String val = parser.getFormatedProperty(col.getFieldKey());
+					item.putCell(col.getId().toString(), val);
+				}
+			}
+			return item;
+		}
+		return null;
+	}
+	
+	private EntityItem toEntityItem(ModuleEntityPropertyParser parser, TemplateListTemplate ltmpl) {
+		if(parser != null) {
+			List<TemplateListColumn> cols = ltmpl.getColumns();
+			ListModuleEntityItem item = new ListModuleEntityItem(parser);
+			for (TemplateListColumn col : cols) {
 				if(col.getFieldKey() != null) {
 					String val = parser.getFormatedProperty(col.getFieldKey());
 					item.putCell(col.getId().toString(), val);
@@ -152,7 +178,10 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		if(query.getNodeTemplate() != null) {
 			return CollectionUtils.toList(parsers, parser->toEntityNode((ModuleEntityPropertyParser) parser, query.getNodeTemplate()));
 		}else if(query.getSelectionTemplate() != null) {
-			return CollectionUtils.toList(parsers, parser->toEntityNode(parser, query.getSelectionTemplate()));
+			return CollectionUtils.toList(parsers, parser->toEntityItem(parser, query.getSelectionTemplate()));
+		}else if(query.getTemplateGroup() != null) {
+			TemplateListTemplate ltmpl = ltmplService.getTemplate(query.getTemplateGroup().getListTemplateId());
+			return CollectionUtils.toList(parsers, parser->toEntityItem((ModuleEntityPropertyParser)parser, ltmpl));
 		}
 		return null;
 	}
@@ -362,8 +391,24 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 	}
 	
+	
 	@Override
-	public EntitySortedPagedQuery getSortedEntitiesQuery(EntitiesQueryParameter param) {
+	public EntitySortedPagedQuery getNormalSortedEntitiesQuery(EntitiesQueryParameter param) {
+		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = getEntitySortedPagedQueryFactory(param);
+		return entitySortedPagedQueryFactory.getQuery();
+	}
+	
+	@Override
+	public EntitySortedPagedQuery getQuickSortedEntitiesQuery(EntitiesQueryParameter param) {
+		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = getEntitySortedPagedQueryFactory(param);
+		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuickQuery();
+		if(param.getPageInfo() != null) {
+			query.setPageSize(param.getPageInfo().getPageSize());
+		}
+		return query;
+	}
+	
+	private EntitySortedPagedQueryFactory getEntitySortedPagedQueryFactory(EntitiesQueryParameter param) {
 		String moduleName = param.getModuleName();
 		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(param.getUser());
 		
@@ -395,22 +440,12 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 			}
 		}
 		criteriaFactory.addSortedColumn("编辑时间");
-		
-		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuickQuery();
-		PageInfo pageInfo = param.getPageInfo();
-		query.setPageSize(pageInfo.getPageSize());
-		pageInfo.setCount(query.getAllCount());
-		if(0 == pageInfo.getCount()) {
-			pageInfo.setPageNo(1);
-		}else if(pageInfo.getCount() < pageInfo.getPageSize() * pageInfo.getPageNo() ) {
-			pageInfo.setPageNo((int) Math.ceil(Double.valueOf(pageInfo.getCount()) / pageInfo.getPageSize()));
-		}
-		return query;
+		return entitySortedPagedQueryFactory;
 	}
-	
+
 	@Override
 	public List<Entity> queryModuleEntities(EntitiesQueryParameter param){
-		EntitySortedPagedQuery query = getSortedEntitiesQuery(param);
+		EntitySortedPagedQuery query = getQuickSortedEntitiesQuery(param);
 		PageInfo pageInfo = param.getPageInfo();
 		return query.visitEntity(pageInfo.getPageNo());
 		
@@ -426,6 +461,13 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		//添加父实体的code约束
 		if(queryParam.getParentEntityCode() != null) {
 			unrecursionCriteriaFactory.addLeftCode(queryParam.getParentEntityCode());
+		}
+		//关系名称过滤
+		if(!queryParam.getRelationIncludeLabels().isEmpty()) {
+			unrecursionCriteriaFactory.setIncludeRType(queryParam.getRelationIncludeLabels());
+		}
+		if(!queryParam.getRelationExcludeLabels().isEmpty()) {
+			unrecursionCriteriaFactory.setExcludeRType(queryParam.getRelationExcludeLabels());
 		}
 		EntityCriteriaFactory rightEntityCriteriaFactory = unrecursionCriteriaFactory.getRightEntityCriteriaFactory();
 		//添加关系筛选条件

@@ -1,6 +1,7 @@
 package cn.sowell.dataserver.model.modules.service.view;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.Label;
+import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.EntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
@@ -36,6 +38,9 @@ import cn.sowell.dataserver.model.abc.service.SelectionEntityQueyrParameter;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
+import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
+import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
+import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
 import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.modules.service.ModulesService;
@@ -54,7 +59,6 @@ import cn.sowell.dataserver.model.tmpl.service.ArrayItemFilterService;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.OpenTemplateService;
-import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 
 public class EntityQuery {
 	//查询的唯一标识
@@ -66,8 +70,8 @@ public class EntityQuery {
 	//用于查询树形结构，或者是用于查询某个模块的关系对应的模块的列表时
 	//列表查询的分页数据
 	private PageInfo pageInfo = new CommonPageInfo();
-	//列表查询和树状查询时，所传入的模板组合id
-	private Long templateGroupId;
+	//列表查询和树状查询时，所传入的模板组合
+	private TemplateGroup templateGroup;
 	//树形查询时，构造查询结果的节点模板
 	private TemplateTreeNode nodeTemplate;
 	//树形查询时，查询的子节点所在的关系模板
@@ -93,6 +97,11 @@ public class EntityQuery {
 	//用于解析和转换entity
 	private Function<Entity, CEntityPropertyParser> parserConverter;
 	private RelationEntitySPQuery relaltionEntitiesQuery;
+	//用于存放列表模板中查询条件的值
+	private Map<Long, String> criteriaValueMap = new HashMap<>();
+	//已知的最后一页的页码（不一定是实际的最后一页页码）
+	private Integer virtualEndPageNo;
+	private EntitiesQueryParameter queryParam;
 	
 	
 	public EntityQuery(UserIdentifier user) {
@@ -132,7 +141,14 @@ public class EntityQuery {
 		return this.pageInfo.getPageSize();
 	}
 	public EntityQuery setPageSize(Integer pageSize) {
-		this.pageInfo.setPageSize(pageSize);
+		if(this.getPageSize().intValue() != pageSize) {
+			this.pageInfo.setPageSize(pageSize);
+			if(this.sortedEntitiesQuery != null) {
+				this.sortedEntitiesQuery.setPageSize(pageSize);
+			}else if(this.relaltionEntitiesQuery != null) {
+				this.relaltionEntitiesQuery.setPageSize(pageSize);
+			}
+		}
 		return this;
 	}
 	public String getKey() {
@@ -144,8 +160,8 @@ public class EntityQuery {
 	public int getPageNo() {
 		return this.pageInfo.getPageNo();
 	}
-	public EntityQuery setTemplateGroupId(Long templateGroupId) {
-		this.templateGroupId = templateGroupId;
+	public EntityQuery setTemplateGroup(TemplateGroup templateGroup) {
+		this.templateGroup = templateGroup;
 		return this;
 	}
 	public Map<Long, ViewListCriteria<? extends AbstractListCriteria>> getViewCriteriaMap() {
@@ -164,7 +180,7 @@ public class EntityQuery {
 		}else if(this.selectionTemplate != null) {
 			//查询关系对应模块的实体列表
 			doPrepareForRelSelectionList(requrestCriteriaMap, context);
-		}else if(this.templateGroupId != null){
+		}else if(this.templateGroup != null){
 			//执行一般的列表查询
 			doPrepareForNormalList(requrestCriteriaMap, context);
 		}else if(this.nodeTemplate != null) {
@@ -205,11 +221,12 @@ public class EntityQuery {
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
 		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(nodeModuleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
-		this.sortedEntitiesQuery = entityService.getSortedEntitiesQuery(queryParam);
+		this.sortedEntitiesQuery = entityService.getQuickSortedEntitiesQuery(queryParam);
 		//完成准备工作
 		EntityParserParameter parserParam = new EntityParserParameter(nodeModuleName, this.user);
 		this.parserConverter = entity->entityService.toEntityParser(entity, parserParam);
-		
+		//生成查询条件值的map
+		generateCriteriaValueMap(nCriterias);
 	}
 	/**
 	 * 查询关系对应模块的实体列表
@@ -248,6 +265,8 @@ public class EntityQuery {
 		EntityParserParameter parserParam = new EntityParserParameter(this.moduleName, this.user);
 		parserParam.setRelationName(selectionTemplate.getRelationName());
 		this.parserConverter = entity->entityService.toRelationParser(entity, parserParam);
+		//生成查询条件值的map
+		generateCriteriaValueMap(nCriterias);
 		
 	}
 	/**
@@ -261,10 +280,20 @@ public class EntityQuery {
 		RelationEntitiesQueryParameter queryParam = new RelationEntitiesQueryParameter(this.moduleName, this.getRelationName(), this.parentEntityCode, this.user);
 		ListCriteriaFactory lCriteriaFactory = context.getBean(ListCriteriaFactory.class);
 		DictionaryService dictService = context.getBean(DictionaryService.class);
-		List<TemplateTreeRelationCriteria> tCriterias = this.relationTemplate.getCriterias();
+		List<TemplateTreeRelationCriteria> tCriterias = new ArrayList<>(),
+											labelCriterias = new ArrayList<>();
+		if(this.relationTemplate.getCriterias() != null) {
+			for (TemplateTreeRelationCriteria criteria : this.relationTemplate.getCriterias()) {
+				if(TemplateTreeRelationCriteria.FILTER_MODE_LABEL.equals(criteria.getFilterMode())){
+					labelCriterias.add(criteria);
+				}else {
+					tCriterias.add(criteria);
+				}
+			}
+		}
 		//封装请求中传入的条件对象，与列表模板中条件对象进行整合
 		//整合后的对象可以允许被外部访问（Map<Long, ViewListCriteria>）
-		this.viewCriteriaMap = integrateViewCriteriaMap(relationModuleName, tCriterias, requrestCriteriaMap, dictService);
+		this.viewCriteriaMap = integrateViewCriteriaMap(relationModuleName, tCriterias,requrestCriteriaMap, dictService);
 		
 		List<NormalCriteria> nCriterias = new ArrayList<>(this.precriterias);
 		this.viewCriteriaMap.values().forEach(vCriteria->{
@@ -272,6 +301,14 @@ public class EntityQuery {
 			ViewListCriteria<? extends SuperTemplateListCriteria> vvCriteria = (ViewListCriteria<? extends SuperTemplateListCriteria>) vCriteria;
 			appendSuperTemplateListCriteria(relationModuleName, vvCriteria, nCriterias, dictService);
 		});
+		
+		for (TemplateTreeRelationCriteria lCriteria : labelCriterias) {
+			if(Integer.valueOf(1).equals(lCriteria.getIsExcludeLabel())) {
+				queryParam.addRelationExcludeLabels(lCriteria.getFilterLabels());
+			}else {
+				queryParam.addRelationIncludeLabels(lCriteria.getFilterLabels());
+			}
+		}
 		
 		queryParam
 			.setCriteriaFactoryConsumer(lCriteriaFactory.getNormalCriteriaFactoryConsumer(relationModuleName, nCriterias))
@@ -285,7 +322,8 @@ public class EntityQuery {
 		ModuleMeta targetRelationModule = mService.getRelationModule(this.moduleName, this.getRelationName());
 		EntityParserParameter parserParam = new EntityParserParameter(targetRelationModule.getName(), this.user);
 		this.parserConverter = entity->entityService.toRabcEntityParser(entity, parserParam);
-		
+		//生成查询条件值的map
+		generateCriteriaValueMap(nCriterias);
 	}
 	
 	/**
@@ -295,11 +333,10 @@ public class EntityQuery {
 	 */
 	private void doPrepareForNormalList(Map<Long, String> requrestCriteriaMap, ApplicationContext context) {
 		DictionaryService dictService = context.getBean(DictionaryService.class);
-		Assert.notNull(this.templateGroupId, "执行prepare时，EntityQuery的templateGroupId不能为null");
+		Assert.notNull(this.templateGroup, "执行prepare时，EntityQuery的templateGroup不能为null");
 		//获得模板组合中的默认字段、列表模板中的所有条件对象。
-		TemplateGroup tmplGroup = getTemplate(context, TemplateGroupService.class, this.templateGroupId);
-		List<TemplateGroupPremise> premises = tmplGroup.getPremises();
-		TemplateListTemplate ltmpl = getTemplate(context, ListTemplateService.class, tmplGroup.getListTemplateId());
+		List<TemplateGroupPremise> premises = this.templateGroup.getPremises();
+		TemplateListTemplate ltmpl = getTemplate(context, ListTemplateService.class, this.templateGroup.getListTemplateId());
 		List<SuperTemplateListCriteria> tCriterias = new ArrayList<>();
 		if(ltmpl.getCriterias() != null) {ltmpl.getCriterias().forEach(criteria->tCriterias.add(criteria));}
 		if(this.nodeTemplate != null && this.nodeTemplate.getCriterias() != null) {this.nodeTemplate.getCriterias().forEach(criteria->tCriterias.add(criteria));}
@@ -324,22 +361,39 @@ public class EntityQuery {
 		
 		//根据详情模板中的Composite筛选器，构造筛选条件列表ArrayItemCriteriaList
 		ArrayItemFilterService arrayItemFilterService = context.getBean(ArrayItemFilterService.class);
-		List<ArrayItemCriteria> aCriterias = arrayItemFilterService.getArrayItemFilterCriterias(tmplGroup.getDetailTemplateId(), this.user);
+		List<ArrayItemCriteria> aCriterias = arrayItemFilterService.getArrayItemFilterCriterias(this.templateGroup.getDetailTemplateId(), this.user);
 		
 		//构造EntitiesQueryParameter对象，调用ModuleEntityService构造EntitySortedPagedQuery对象
-		EntitiesQueryParameter queryParam = new EntitiesQueryParameter(this.moduleName, this.user);
-		queryParam.setPageInfo(this.pageInfo);
-		queryParam.setArrayItemCriterias(aCriterias);
+		this.queryParam = new EntitiesQueryParameter(this.moduleName, this.user);
+		this.queryParam.setPageInfo(this.pageInfo);
+		this.queryParam.setArrayItemCriterias(aCriterias);
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
-		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
+		this.queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
-		this.sortedEntitiesQuery = entityService.getSortedEntitiesQuery(queryParam);
+		this.sortedEntitiesQuery = entityService.getQuickSortedEntitiesQuery(this.queryParam);
+		this.sortedEntitiesQuery.setPageSize(this.pageInfo.getPageSize());
+		this.sortedEntitiesQuery.setCachedPageCount(10);
 		//完成准备工作
 		EntityParserParameter parserParam = new EntityParserParameter(this.moduleName, this.user);
 		this.parserConverter = entity->entityService.toEntityParser(entity, parserParam);
-		
+		//生成查询条件值的map
+		generateCriteriaValueMap(nCriterias);
 	}
 	
+	/**
+	 * 
+	 * @param nCriterias
+	 */
+	private void generateCriteriaValueMap(List<NormalCriteria> nCriterias) {
+		this.criteriaValueMap.clear();
+		if(nCriterias != null) {
+			for (NormalCriteria nCriteria : nCriterias) {
+				if(nCriteria.getCriteriaId() != null) {
+					this.criteriaValueMap.put(nCriteria.getCriteriaId(), nCriteria.getValue());
+				}
+			}
+		}
+	}
 	/**
 	 * 根据模板中的条件和请求传递的条件，整合并封装成条件对象
 	 * @param <CRI>
@@ -407,6 +461,7 @@ public class EntityQuery {
 			nCriteria.setComparator("equals");
 			nCriteria.setFieldName(field.getFullKey());
 			nCriteria.setValue(premise.getFieldValue());
+			nCriterias.add(nCriteria);
 		}
 	}
 	
@@ -424,6 +479,7 @@ public class EntityQuery {
 			if(tCriteria.getFieldId() != null) {
 				DictionaryField field = dictService.getField(fieldModuleName, tCriteria.getFieldId());
 				if(field != null) {
+					nCriteria.setCriteriaId(tCriteria.getId());
 					nCriteria.setCompositeId(tCriteria.getCompositeId());
 					nCriteria.setFieldId(tCriteria.getFieldId());
 					String fieldName = field.getFullKey();
@@ -457,6 +513,7 @@ public class EntityQuery {
 					if(hasRelation && fieldName.startsWith(this.getRelationName())) {
 						fieldName = fieldName.substring(this.getRelationName().length() + 1);
 					}
+					nCriteria.setCriteriaId(tCriteria.getId());
 					nCriteria.setFieldName(fieldName);
 					nCriteria.setComparator(tCriteria.getComparator());
 					nCriteria.setRelationLabel(tCriteria.getRelationLabel());
@@ -490,13 +547,16 @@ public class EntityQuery {
 				return parser;
 			});
 			list.setIsEndList(!this.relaltionEntitiesQuery.hasData(pageNo + 1));
+			this.virtualEndPageNo = this.relaltionEntitiesQuery.getCurrentEndCachePage();
 		}else if(this.sortedEntitiesQuery != null) {
 			//根据当前已经准备好的EntitySortedPagedQuery对象
 			//结合分页参数pageNo和pageSize，执行查询获得Enity列表
 			//调用FusionConfigResolver将Entity列表转换成Parser列表
 			List<Entity> entities = this.sortedEntitiesQuery.visitEntity(pageNo);
+			
 			parsers = CollectionUtils.toList(entities, this.parserConverter);
 			list.setIsEndList(!this.sortedEntitiesQuery.hasData(pageNo + 1));
+			this.virtualEndPageNo = this.sortedEntitiesQuery.getCurrentEndCachePage();
 		}else {
 			throw new UnsupportedOperationException("成功执行prepare方法后再执行当前方法");
 		}
@@ -519,8 +579,8 @@ public class EntityQuery {
 			throw new UnsupportedOperationException("成功执行prepare方法后再执行当前方法");
 		}
 	}
-	public Long getTemplateGroupId() {
-		return templateGroupId;
+	public TemplateGroup getTemplateGroup() {
+		return this.templateGroup;
 	}
 	public TemplateTreeNode getNodeTemplate() {
 		return this.nodeTemplate;
@@ -551,6 +611,68 @@ public class EntityQuery {
 		nCriteria.setValue(CollectionUtils.toChain(entityCodes));
 		this.precriterias.add(nCriteria);
 		return this;
+	}
+	public Map<Long, String> getCriteriaValueMap() {
+		return Collections.unmodifiableMap(this.criteriaValueMap);
+	}
+	public Integer getVirtualEndPageNo() {
+		return this.virtualEndPageNo;
+	}
+	public EntityPagingIterator createExportIterator(ExportDataPageInfo ePageInfo, ApplicationContext appContext) {
+		Assert.notNull(this.sortedEntitiesQuery, "需要先调用prepare方法后再调用当前方法");
+		int dataCount = getPageSize();
+		int startPageNo = getPageNo();
+		int totalCount = getCount();
+		int ignoreCount = 0;
+		if(totalCount < getPageSize()) {
+			dataCount = totalCount;
+			startPageNo = 1;
+		}
+		if("all".equals(ePageInfo.getScope())){
+			dataCount = totalCount;
+			startPageNo = 1;
+			if(ePageInfo.getRangeStart() != null){
+				ignoreCount = ePageInfo.getRangeStart() - 1;
+				if(ePageInfo.getRangeEnd() != null && ePageInfo.getRangeEnd() < dataCount){
+					dataCount = ePageInfo.getRangeEnd() - ePageInfo.getRangeStart() + 1;
+				}else{
+					dataCount -= ePageInfo.getRangeStart() - 1;
+				}
+			}else if(ePageInfo.getRangeEnd() != null && ePageInfo.getRangeEnd() < dataCount){
+				dataCount = ePageInfo.getRangeEnd();
+			}
+		}
+		ModuleEntityService mService = appContext.getBean(ModuleEntityService.class);
+		EntitySortedPagedQuery query = mService.getNormalSortedEntitiesQuery(this.queryParam);
+		query.setPageSize(getPageSize());
+		EntityPagingQueryProxy proxy = createEntityPagingQueryProxy(query,ePageInfo);
+		EntityPagingIterator itr = new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, user, proxy);
+		return itr;
+	}
+	
+	private EntityPagingQueryProxy createEntityPagingQueryProxy(EntitySortedPagedQuery query,
+			ExportDataPageInfo ePageInfo) {
+		
+		EntityQuery _this = this;
+		
+		return new EntityPagingQueryProxy() {
+			
+			@Override
+			public Set<ModuleEntityPropertyParser> load(int pageNo, UserIdentifier user) {
+				List<Entity> entities = query.visitEntity(pageNo);
+				return CollectionUtils.toSet(entities, e->(ModuleEntityPropertyParser)parserConverter.apply(e));
+			}
+			
+			@Override
+			public synchronized int getTotalCount() {
+				return query.getAllCount();
+			}
+			
+			@Override
+			public int getPageSize() {
+				return _this.getPageSize();
+			}
+		};
 	}
 	
 	

@@ -22,12 +22,12 @@ import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.datacenter.entityResolver.EntityConstants;
 import cn.sowell.datacenter.entityResolver.ImportCompositeField;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.AbstractFusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.impl.ArrayItemPropertyParser;
-import cn.sowell.datacenter.entityResolver.impl.RelationEntityProxy;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -135,7 +135,7 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 									for (ArrayItemPropertyParser existArrayEntity : existArrayEntities) {
 										entityMap.put(existArrayEntity.getCodeName(), existArrayEntity.getCode());
 										if(isRelation) {
-											String relationLabelKey = composite.getName() + "[" + existArrayEntity.getItemIndex() + "]." + RelationEntityProxy.LABEL_KEY;
+											String relationLabelKey = composite.getName() + "[" + existArrayEntity.getItemIndex() + "]." + EntityConstants.LABEL_KEY;
 											entityMap.put(relationLabelKey, existEntity.getFormatedProperty(relationLabelKey));
 										}
 									}
@@ -157,7 +157,7 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 										entityMap.put(composite.getName() + "[" + thisEntityIndex + "]." + ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, arrayEntity.getRelationEntityCode());
 									}
 									//放入关系名称
-									entityMap.put(composite.getName() + "[" + thisEntityIndex + "]." + RelationEntityProxy.LABEL_KEY, arrayEntity.getRelationLabel());
+									entityMap.put(composite.getName() + "[" + thisEntityIndex + "]." + EntityConstants.LABEL_KEY, arrayEntity.getRelationLabel());
 								}
 								if(!isRelation || !TextUtils.hasText(arrayEntity.getRelationEntityCode())) {
 									List<TemplateActionArrayEntityField> eFields = arrayEntity.getFields();

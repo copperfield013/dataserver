@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.modules.bean;
 
 import java.util.Iterator;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
@@ -26,6 +27,7 @@ public class EntityPagingIterator implements Iterator<ModuleEntityPropertyParser
 	private int pageNoInc = 0;
 	private int hasIgnored = 0;
 	private EntityPagingQueryProxy queryProxy;
+	private Predicate<Integer> hasNextPredicate;
 	private UserIdentifier user;
 	
 	
@@ -47,7 +49,11 @@ public class EntityPagingIterator implements Iterator<ModuleEntityPropertyParser
 
 	@Override
 	public boolean hasNext() {
-		return current < dataCount;
+		if(hasNextPredicate != null) {
+			return hasNextPredicate.test(current);
+		}else {
+			return current < dataCount;
+		}
 	}
 
 	
@@ -107,6 +113,10 @@ public class EntityPagingIterator implements Iterator<ModuleEntityPropertyParser
 			return (dataCount - current) / speed;
 		}
 		return 0;
+	}
+
+	public void setHasNextPredicate(Predicate<Integer> hasNextPredicate) {
+		this.hasNextPredicate = hasNextPredicate;
 	}
 
 }

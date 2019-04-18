@@ -4,6 +4,7 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
 
 public class NormalCriteria implements Cloneable{
+	private Long criteriaId;
 	private Long fieldId;
 	private Long compositeId;
 	private String fieldName;
@@ -32,6 +33,7 @@ public class NormalCriteria implements Cloneable{
 		criteria.setValue(this.getValue());
 		criteria.setRelationLabel(this.getRelationLabel());
 		criteria.setComposite(this.getComposite());
+		criteria.setCriteriaId(this.getCriteriaId());
 		return criteria;
 	}
 	
@@ -85,6 +87,14 @@ public class NormalCriteria implements Cloneable{
 	}
 	public void setFilterOccasion(Integer filterOccasion) {
 		this.filterOccasion = filterOccasion;
+	}
+
+	public Long getCriteriaId() {
+		return criteriaId;
+	}
+
+	public void setCriteriaId(Long criteriaId) {
+		this.criteriaId = criteriaId;
 	}
 
 }

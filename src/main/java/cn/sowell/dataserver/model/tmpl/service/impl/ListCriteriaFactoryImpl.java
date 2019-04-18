@@ -73,6 +73,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 					 if(criteria instanceof TemplateStatCriteria) {
 						 ncriteria.setFilterOccasion(((TemplateStatCriteria) criteria).getFilterOccasion());
 					 }
+					 ncriteria.setCriteriaId(criteriaId);
 					 ncriteria.setFieldName(criteria.getFieldKey());
 					 ncriteria.setComparator(criteria.getComparator());
 					 ncriteria.setValue(FormatUtils.toString(pv.getValue()));
@@ -85,6 +86,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 			 if(TextUtils.hasText(criteria.getDefaultValue()) && !map.containsKey(criteriaId)){
 				 NormalCriteria nCriteria = new NormalCriteria();
 				 //TODO: 需要将fieldKey转换成attributeName
+				 nCriteria.setCriteriaId(criteriaId);
 				 nCriteria.setFieldId(criteria.getFieldId());
 				 nCriteria.setFieldName(criteria.getFieldKey());
 				 nCriteria.setComparator(criteria.getComparator());

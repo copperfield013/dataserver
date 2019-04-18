@@ -90,7 +90,9 @@ public interface ModuleEntityService {
 	 * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ 查询实体列表 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 	 **********************************************************/
 	
-	EntitySortedPagedQuery getSortedEntitiesQuery(EntitiesQueryParameter queryParam);
+	EntitySortedPagedQuery getNormalSortedEntitiesQuery(EntitiesQueryParameter param);
+	
+	EntitySortedPagedQuery getQuickSortedEntitiesQuery(EntitiesQueryParameter queryParam);
 	
 	List<Entity> queryModuleEntities(EntitiesQueryParameter param);
 	
@@ -152,6 +154,8 @@ public interface ModuleEntityService {
 	void delete(EntityQueryParameter param);
 	
 	void remove(EntitiesQueryParameter param);
+
+	
 
 
 }

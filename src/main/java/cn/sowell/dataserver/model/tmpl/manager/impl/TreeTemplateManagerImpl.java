@@ -330,6 +330,9 @@ public class TreeTemplateManagerImpl
 										(oCriteria, criteria)->{
 											lcFactory.coverSupCriteriaForUpdate(oCriteria, criteria);
 											oCriteria.setCompositeId(criteria.getCompositeId());
+											oCriteria.setFilterMode(criteria.getFilterMode());
+											oCriteria.setFilterLabels(criteria.getFilterLabels());
+											oCriteria.setIsExcludeLabel(criteria.getIsExcludeLabel());
 											getDao().getNormalOperateDao().update(oCriteria);
 									}, (criteria)->{
 										criteria.setTemplateId(oRelation.getId());

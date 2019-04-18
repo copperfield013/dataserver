@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.service.view.TreeNodeContext;
 import cn.sowell.dataserver.model.tmpl.bean.NodeTemplateSelector;
@@ -40,7 +41,7 @@ public class TreeTemplateServiceImpl
 			while(matcher.find()) {
 				String propertyName = matcher.group(1);
 				String propertyValue = map.get(propertyName);
-				matcher.appendReplacement(buffer, propertyValue);
+				matcher.appendReplacement(buffer, FormatUtils.coalesce(propertyValue, ""));
 			}
 			return buffer.toString();
 		} catch (Exception e) {

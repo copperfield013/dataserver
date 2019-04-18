@@ -70,6 +70,7 @@ public class ArrayItemFilterServiceImpl
 								if(criterias != null) {
 									for (TemplateDetailArrayItemCriteria criteria : criterias) {
 										NormalCriteria nCriteria = new NormalCriteria();
+										nCriteria.setCriteriaId(criteria.getId());
 										nCriteria.setFieldId(criteria.getFieldId());
 										nCriteria.setValue(criteria.getDefaultValue());
 										nCriteria.setComparator(criteria.getComparator());

@@ -7,6 +7,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 @Entity
 @Table(name="t_sa_tmpl_group_action")
 public class TemplateGroupAction {
@@ -23,9 +25,6 @@ public class TemplateGroupAction {
 	@Column(name="c_face")
 	private String face;
 	
-	public static final String ACTION_FACE_LIST = "list";
-	public static final String ACTION_FACE_DETAIL = "detail";
-	
 	/**
 	 * 
 	 */
@@ -38,10 +37,6 @@ public class TemplateGroupAction {
 	@Column(name="c_multiple")
 	private Integer multiple;
 	
-	public static final Integer ACTION_MULTIPLE_SINGLE = 0;
-	public static final Integer ACTION_MULTIPLE_NORMAL = 1;
-	public static final Integer ACTION_MULTIPLE_TRANSACTION = 2;
-	
 	@Column(name="c_icon_class")
 	private String iconClass;
 	
@@ -51,12 +46,29 @@ public class TemplateGroupAction {
 	@Column(name="c_order")
 	private Integer order;
 	
+	@JSONField(serialize=false)
 	@Column(name="atmpl_id")
 	private Long atmplId;
 	
+	@JSONField(serialize=false)
 	@Column(name="group_id")
 	private Long groupId;
 	
+	
+	@JSONField(serialize=false)
+	public static final String ACTION_FACE_LIST = "list";
+	
+	@JSONField(serialize=false)
+	public static final String ACTION_FACE_DETAIL = "detail";
+	
+	@JSONField(serialize=false)
+	public static final Integer ACTION_MULTIPLE_SINGLE = 0;
+	
+	@JSONField(serialize=false)
+	public static final Integer ACTION_MULTIPLE_NORMAL = 1;
+	
+	@JSONField(serialize=false)
+	public static final Integer ACTION_MULTIPLE_TRANSACTION = 2;
 	
 	public Long getId() {
 		return id;

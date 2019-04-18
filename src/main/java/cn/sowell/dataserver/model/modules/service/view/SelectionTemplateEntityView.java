@@ -6,7 +6,7 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
-import com.abc.util.ValueType;
+import com.abc.model.enun.ValueType;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
