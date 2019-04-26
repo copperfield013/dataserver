@@ -1,5 +1,6 @@
 package cn.sowell.dataserver.model.tmpl.manager.impl;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -393,4 +394,28 @@ public class TreeTemplateManagerImpl
 		}).collect(Collectors.toList());
 	}
 
+
+	@Override
+	public TreeRelationComposite getNodeRelationTemplate(Long nodeRelationTemplateId) {
+		Collection<TemplateTreeTemplate> tmpls = getCachableMap().values();
+		for (TemplateTreeTemplate tmpl : tmpls) {
+			List<TemplateTreeNode> nodes = tmpl.getNodes();
+			if(nodes != null) {
+				for (TemplateTreeNode node : nodes) {
+					List<TemplateTreeRelation> rels = node.getRelations();
+					if(rels != null) {
+						for (TemplateTreeRelation rel : rels) {
+							if(nodeRelationTemplateId.longValue() == rel.getId()) {
+								return new TreeRelationComposite(tmpl, node, rel);
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	
+	
 }

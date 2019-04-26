@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import cn.sowell.dataserver.model.tmpl.duplicator.impl.DetailTemplateDuplicator;
 import cn.sowell.dataserver.model.tmpl.manager.DetailTemplateManager;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.service.DetailTemplateService;
@@ -41,5 +42,11 @@ public class DetailTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 	protected boolean isRelatedGroup(Long tmplId, TemplateGroup tmplGroup) {
 		return tmplId.equals(tmplGroup.getDetailTemplateId());
 	}
+
+	@Override
+	public TemplateDetailFieldGroup getFieldGroup(Long groupId) {
+		return getManager().getFieldGroup(groupId);
+	}
+	
 
 }

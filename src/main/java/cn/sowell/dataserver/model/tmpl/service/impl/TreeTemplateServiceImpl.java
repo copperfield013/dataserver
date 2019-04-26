@@ -13,9 +13,11 @@ import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.modules.service.view.TreeNodeContext;
 import cn.sowell.dataserver.model.tmpl.bean.NodeTemplateSelector;
+import cn.sowell.dataserver.model.tmpl.bean.TreeNodeStyle;
+import cn.sowell.dataserver.model.tmpl.bean.TreeStyle;
 import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager;
+import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager.TreeRelationComposite;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
 import cn.sowell.dataserver.model.tmpl.service.TreeTemplateService;
 
@@ -87,57 +89,28 @@ public class TreeTemplateServiceImpl
 	}
 	
 	@Override
-	public TreeRelationComposite getNodeRelationTemplate(String moduleName, Long nodeRelationTemplateId) {
-		List<TemplateTreeTemplate> tmpls = getManager().queryByModule(moduleName);
-		for (TemplateTreeTemplate tmpl : tmpls) {
-			List<TemplateTreeNode> nodes = tmpl.getNodes();
-			if(nodes != null) {
-				for (TemplateTreeNode node : nodes) {
-					List<TemplateTreeRelation> rels = node.getRelations();
-					if(rels != null) {
-						for (TemplateTreeRelation rel : rels) {
-							if(nodeRelationTemplateId.longValue() == rel.getId()) {
-								return new TreeRelationComposite(tmpl, node, rel);
-							}
-						}
-					}
+	public TreeRelationComposite getNodeRelationTemplate(Long nodeRelationTemplateId) {
+		return getManager().getNodeRelationTemplate(nodeRelationTemplateId);
+	}
+	
+	
+	@Override
+	public TreeStyle getTreeNodeStyle(TemplateTreeTemplate ttmpl) {
+		if(ttmpl != null) {
+			TreeStyle style = new TreeStyle();
+			style.setDefaultNodeColor(ttmpl.getDefaultNodeColor());
+			if(ttmpl.getNodes() != null) {
+				for (TemplateTreeNode node : ttmpl.getNodes()) {
+					TreeNodeStyle nodeStyle = new TreeNodeStyle();
+					nodeStyle.setNodeId(node.getId());
+					nodeStyle.setNodeColor(node.getNodeColor());
+					style.getNodeStyles().add(nodeStyle);
 				}
 			}
+			return style;
 		}
 		return null;
 	}
-	
-	public static class TreeRelationComposite{
-		private TemplateTreeTemplate treeTemplate;
-		private TemplateTreeNode nodeTemplate;
-		private TemplateTreeRelation relationTempalte;
-		public TreeRelationComposite(TemplateTreeTemplate treeTemplate, TemplateTreeNode nodeTemplate,
-				TemplateTreeRelation reltionTempalte) {
-			super();
-			this.treeTemplate = treeTemplate;
-			this.nodeTemplate = nodeTemplate;
-			this.relationTempalte = reltionTempalte;
-		}
-		public TemplateTreeTemplate getTreeTemplate() {
-			return treeTemplate;
-		}
-		public void setTreeTemplate(TemplateTreeTemplate treeTemplate) {
-			this.treeTemplate = treeTemplate;
-		}
-		public TemplateTreeNode getNodeTemplate() {
-			return nodeTemplate;
-		}
-		public void setNodeTemplate(TemplateTreeNode nodeTemplate) {
-			this.nodeTemplate = nodeTemplate;
-		}
-		public TemplateTreeRelation getRelationTempalte() {
-			return relationTempalte;
-		}
-		public void setRelationTempalte(TemplateTreeRelation reltionTempalte) {
-			this.relationTempalte = reltionTempalte;
-		}
-	}
-
 	
 	@Override
 	public String generateNodesCSS(TemplateTreeTemplate ttmpl) {
@@ -175,6 +148,15 @@ public class TreeTemplateServiceImpl
 	@Override
 	public List<TemplateTreeTemplate> queryByNodeModule(String nodeModule) {
 		return getManager().queryByNodeModule(nodeModule);
+	}
+
+
+	@Override
+	public TemplateTreeNode getDefaultNodeTemplate(TemplateTreeTemplate ttmpl) {
+		//构造根节点的上下文
+		TreeNodeContext nodeContext = new TreeNodeContext(ttmpl);
+		//根据上下文获得节点模板
+		return analyzeNodeTemplate(nodeContext);
 	}
 
 }

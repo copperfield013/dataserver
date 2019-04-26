@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.util.Assert;
 
+import cn.sowell.dataserver.model.tmpl.manager.TreeTemplateManager.TreeRelationComposite;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
-import cn.sowell.dataserver.model.tmpl.service.impl.TreeTemplateServiceImpl.TreeRelationComposite;
 
 public class TreeNodeContext {
 	private List<String> path;

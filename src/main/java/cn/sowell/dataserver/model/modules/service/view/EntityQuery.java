@@ -27,6 +27,7 @@ import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
+import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.EntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
@@ -315,7 +316,7 @@ public class EntityQuery {
 			.setPageInfo(this.pageInfo);
 				
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
-		this.relaltionEntitiesQuery = entityService.getRelationEntitiesQuery(queryParam);
+		this.relaltionEntitiesQuery = entityService.getRabcEntitiesQuery(queryParam);
 		//完成准备工作
 		ModulesService mService = context.getBean(ModulesService.class);
 		//获得关系的对应的模块 
@@ -606,7 +607,7 @@ public class EntityQuery {
 	
 	public EntityQuery addExcludeEntityCodes(Set<String> entityCodes) {
 		NormalCriteria nCriteria = new NormalCriteria();
-		nCriteria.setFieldName("唯一编码");
+		nCriteria.setFieldName(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL);
 		nCriteria.setComparator("l1n");
 		nCriteria.setValue(CollectionUtils.toChain(entityCodes));
 		this.precriterias.add(nCriteria);

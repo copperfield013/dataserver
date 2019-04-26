@@ -3,11 +3,13 @@ package cn.sowell.dataserver.model.abc.service;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.abc.mapping.entity.Entity;
 import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RelSelectionEntityPropertyParser;
@@ -16,7 +18,9 @@ import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
 import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityItem;
+import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
 import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 
 public interface ModuleEntityService {
 	/**********************************************************
@@ -96,7 +100,7 @@ public interface ModuleEntityService {
 	
 	List<Entity> queryModuleEntities(EntitiesQueryParameter param);
 	
-	RelationEntitySPQuery getRelationEntitiesQuery(RelationEntitiesQueryParameter queryParam);
+	RelationEntitySPQuery getRabcEntitiesQuery(RelationEntitiesQueryParameter queryParam);
 	
 	EntitySortedPagedQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
 	
@@ -154,6 +158,12 @@ public interface ModuleEntityService {
 	void delete(EntityQueryParameter param);
 	
 	void remove(EntitiesQueryParameter param);
+
+	void wrapSelectEntityQuery(EntityQuery query, TemplateDetailFieldGroup fieldGroup,
+			Map<Long, String> requrestCriteriaMap);
+
+	Map<String, RelSelectionEntityPropertyParser> loadEntities(Set<String> codeSet, TemplateDetailFieldGroup fieldGroup,
+			UserIdentifier user);
 
 	
 

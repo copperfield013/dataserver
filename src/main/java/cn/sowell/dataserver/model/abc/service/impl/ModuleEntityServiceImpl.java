@@ -6,10 +6,12 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
 import org.apache.log4j.Logger;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
@@ -31,6 +33,7 @@ import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
 
+import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
@@ -49,6 +52,7 @@ import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.abc.service.RelationEntitiesQueryParameter;
 import cn.sowell.dataserver.model.abc.service.SelectionEntityQueyrParameter;
+import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.EntityQueryAdapter;
@@ -60,13 +64,17 @@ import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
 import cn.sowell.dataserver.model.modules.service.view.ListEntityItem;
 import cn.sowell.dataserver.model.modules.service.view.ListModuleEntityItem;
 import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
+import cn.sowell.dataserver.model.tmpl.service.SelectionTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 import cn.sowell.dataserver.model.tmpl.service.TreeTemplateService;
 
@@ -89,6 +97,12 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	@Resource
 	ListTemplateService ltmplService;
+	
+	@Resource
+	SelectionTemplateService stmplService;
+
+	@Resource
+	ApplicationContext applicationContext;
 	
 	@Override
 	public Entity getEntity(EntityQueryParameter queryParam){
@@ -452,7 +466,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 	
 	@Override
-	public RelationEntitySPQuery getRelationEntitiesQuery(RelationEntitiesQueryParameter queryParam) {
+	public RelationEntitySPQuery getRabcEntitiesQuery(RelationEntitiesQueryParameter queryParam) {
 		FusionContextConfig config = fFactory.getModuleConfig(queryParam.getModuleName());
 		BizFusionContext context = config.getCurrentContext(queryParam.getUser());
 		
@@ -476,7 +490,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 		
 		
-		RelationEntitySPQuery query = relationEnSPQFactory.getQuery();
+		RelationEntitySPQuery query = relationEnSPQFactory.getRABCNodeQuery();
 		PageInfo pageInfo = queryParam.getPageInfo();
 		query.setPageSize(pageInfo.getPageSize());
 		return query;
@@ -504,10 +518,56 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		return query;
 	}
 	
+	
+	
+	
+	@Override
+	public void wrapSelectEntityQuery(EntityQuery query, TemplateDetailFieldGroup fieldGroup, Map<Long, String> requrestCriteriaMap) {
+		if(TemplateDetailFieldGroup.DIALOG_SELECT_TYPE_STMPL.equals(fieldGroup.getDialogSelectType())) {
+			TemplateSelectionTemplate stmpl = stmplService.getTemplate(fieldGroup.getSelectionTemplateId());
+			if(stmpl != null) {
+				query.setModuleName(stmpl.getModule())
+					.setPageSize(stmpl.getDefaultPageSize())
+					.setSelectionTemplate(stmpl)
+					;
+				query.prepare(requrestCriteriaMap, applicationContext);
+			}
+		}else if(TemplateDetailFieldGroup.DIALOG_SELECT_TYPE_TTMPL.equals(fieldGroup.getDialogSelectType())) {
+			TemplateTreeTemplate ttmpl = treeService.getTemplate(fieldGroup.getRabcTreeTemplateId());
+			if(ttmpl != null) {
+				TemplateTreeNode defaultNode = treeService.getDefaultNodeTemplate(ttmpl);
+				query
+					.setModuleName(defaultNode.getModuleName())
+					.setPageSize(10)
+					.setNodeTemplate(defaultNode)
+					;
+				query.prepare(requrestCriteriaMap, applicationContext);
+			}
+		}else if(TemplateDetailFieldGroup.DIALOG_SELECT_TYPE_LTMPL.equals(fieldGroup.getDialogSelectType())) {
+			TemplateGroup tmplGroup = tmplGroupService.getTemplate(fieldGroup.getRabcTemplateGroupId());
+			if(tmplGroup != null) {
+				TemplateListTemplate ltmpl = ltmplService.getTemplate(tmplGroup.getListTemplateId());
+				query
+					.setModuleName(tmplGroup.getModule())
+					.setPageSize(ltmpl.getDefaultPageSize())
+					.setTemplateGroup(tmplGroup)
+					;
+				//根据传入的条件和约束开始初始化查询对象，但还不获取实体数据
+				query.prepare(requrestCriteriaMap, applicationContext);
+			}
+		}
+		
+	}
 
+	@Override
+	public Map<String, RelSelectionEntityPropertyParser> loadEntities(Set<String> codeSet,
+			TemplateDetailFieldGroup fieldGroup, UserIdentifier user) {
+			DictionaryComposite composite = fieldGroup.getComposite();
+			EntitiesQueryParameter param = new EntitiesQueryParameter(composite.getModule(), user);
+			param.setRelationName(composite.getRelationKey());
+			param.setEntityCodes(codeSet);
+			return queryRelationEntityParsers(param);
+		
+	}
 
-	
-	
-	
-	
 }

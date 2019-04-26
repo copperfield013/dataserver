@@ -155,5 +155,21 @@ public class DetailTemplateManagerImpl
 			});
 		}
 	}
+
+	@Override
+	public TemplateDetailFieldGroup getFieldGroup(Long groupId) {
+		if(groupId != null) {
+			for (TemplateDetailTemplate dtmpl : getCachableMap().values()) {
+				if(dtmpl.getGroups() != null) {
+					for (TemplateDetailFieldGroup group : dtmpl.getGroups()) {
+						if(groupId.equals(group.getId())) {
+							return group;
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
 	
 }

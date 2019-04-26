@@ -46,11 +46,9 @@ public class TemplateGroupAction {
 	@Column(name="c_order")
 	private Integer order;
 	
-	@JSONField(serialize=false)
 	@Column(name="atmpl_id")
 	private Long atmplId;
 	
-	@JSONField(serialize=false)
 	@Column(name="group_id")
 	private Long groupId;
 	
