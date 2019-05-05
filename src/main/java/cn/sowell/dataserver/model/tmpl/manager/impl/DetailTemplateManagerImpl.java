@@ -33,9 +33,6 @@ public class DetailTemplateManagerImpl
 
 	private static final String FIELD_GROUP_TREE_NODES_MAP = "fieldGroupTreeNodesMap";
 	@Resource
-	TemplateGroupManager tmplGroupManager;
-	
-	@Resource
 	TreeTemplateManager treeManager;
 	
 	@Autowired
