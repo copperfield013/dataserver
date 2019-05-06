@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.abc.mapping.entity.Entity;
+import com.abc.mapping.entity.RecordEntity;
 import com.abc.model.enun.ValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -19,7 +19,7 @@ import cn.sowell.dataserver.model.modules.pojo.ModuleMeta;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
 
 public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends EntityViewCriteria> {
-	private List<Entity> entities;
+	private List<? extends RecordEntity> entities;
 	private List<? extends CEntityPropertyParser> parsers;
 	
 	private LT listTemplate;
@@ -36,7 +36,7 @@ public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends Entity
 		return columns;
 	}
 	
-	public void setEntities(List<Entity> entities) {
+	public void setEntities(List<? extends RecordEntity> entities) {
 		this.entities = entities;
 	}
 	
@@ -49,7 +49,7 @@ public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends Entity
 		this.module = module;
 	}
 	
-	public List<Entity> getEntities() {
+	public List<? extends RecordEntity> getEntities() {
 		return entities;
 	}
 	

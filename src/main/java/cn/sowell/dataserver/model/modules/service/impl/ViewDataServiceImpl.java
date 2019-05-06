@@ -12,8 +12,8 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.mapping.entity.RecordEntity;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -76,7 +76,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		String moduleName = criteria.getModule();
 		ModuleMeta module = mService.getModule(moduleName);
 		EntityView view = null;
-		List<Entity> entities = null;
+		List<RecordEntity> entities = null;
 		List<? extends CEntityPropertyParser> parsers = null;
 		if(criteria instanceof ListTemplateEntityViewCriteria) {
 			ListTemplateEntityViewCriteria lCriteria = (ListTemplateEntityViewCriteria) criteria;
@@ -142,7 +142,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		
 	}
 
-	private List<Entity> queryEntities(SelectionTemplateEntityViewCriteria sCriteria,
+	private List<RecordEntity> queryEntities(SelectionTemplateEntityViewCriteria sCriteria,
 			TemplateSelectionTemplate stmpl) {
 		Map<Long, String> stmplCrteriaMap = sCriteria.getTemplateCriteriaMap();
 		Map<Long, TemplateSelectionCriteria> tCriteriaMap = CollectionUtils.toMap(stmpl.getCriterias(), TemplateSelectionCriteria::getId);
@@ -169,7 +169,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		return queryEntities(sCriteria, sCriteria.getUser());
 	}
 
-	private List<Entity> queryEntities(ListTemplateEntityViewCriteria criteria, TemplateListTemplate ltmpl) {
+	private List<RecordEntity> queryEntities(ListTemplateEntityViewCriteria criteria, TemplateListTemplate ltmpl) {
 		if(criteria.getTemplateCriteriaMap() == null) {
 			criteria.setTemplateCriteriaMap(new LinkedHashMap<>());
 		}
@@ -199,7 +199,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		return queryEntities(criteria, criteria.getUser());
 	}
 
-	private List<Entity> queryEntities(EntityViewCriteria criteria, UserIdentifier user) {
+	private List<RecordEntity> queryEntities(EntityViewCriteria criteria, UserIdentifier user) {
 		EntitiesQueryParameter param = new EntitiesQueryParameter(criteria.getModule(), user);
 		param.setRelationName(criteria.getRelationName());
 		param.setPageInfo(criteria.getPageInfo());
@@ -247,7 +247,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 					); 
 		});
 		
-		EntitySortedPagedQuery query = entityService.getQuickSortedEntitiesQuery(param);
+		SortedPagedQuery<RecordEntity> query = entityService.getQuickSortedEntitiesQuery(param);
 		PageInfo pageInfo = param.getPageInfo();
 		pageInfo.setCount(query.getAllCount());
 		return query.visitEntity(pageInfo.getPageNo());

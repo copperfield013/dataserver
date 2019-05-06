@@ -6,8 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.mapping.entity.RecordEntity;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
@@ -16,7 +17,7 @@ import cn.sowell.datacenter.entityResolver.impl.RelSelectionEntityPropertyParser
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
-import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
+import cn.sowell.dataserver.model.modules.pojo.EntityVersionItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
 import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
@@ -32,7 +33,7 @@ public interface ModuleEntityService {
 	 * @param queryParam
 	 * @return
 	 */
-	Entity getEntity(EntityQueryParameter queryParam);
+	RecordEntity getEntity(EntityQueryParameter queryParam);
 	
 	/**
 	 * 根据code获得实体
@@ -47,7 +48,7 @@ public interface ModuleEntityService {
 	 * @param historyId
 	 * @return
 	 */
-	ModuleEntityPropertyParser getHistoryEntityParser(EntityQueryParameter queryParam, Long historyId,
+	ModuleEntityPropertyParser getHistoryEntityParser(EntityQueryParameter queryParam, String versionCode,
 			Date historyTime);
 	
 	
@@ -67,7 +68,7 @@ public interface ModuleEntityService {
 	 * @param relationName
 	 * @return
 	 */
-	Entity getModuleRelationEntity(EntityQueryParameter entityQueryParam);
+	RecordEntity getModuleRelationEntity(EntityQueryParameter entityQueryParam);
 	
 	/**
 	 * 
@@ -77,11 +78,11 @@ public interface ModuleEntityService {
 	RelSelectionEntityPropertyParser getRelationEntityParser(EntityQueryParameter param);
 	
 	
-	ModuleEntityPropertyParser toEntityParser(Entity entity, EntityParserParameter parameter);
+	ModuleEntityPropertyParser toEntityParser(RecordEntity entity, EntityParserParameter parameter);
 	
-	RelSelectionEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter);
+	RelSelectionEntityPropertyParser toRelationParser(RecordEntity entity, EntityParserParameter parameter);
 	
-	RabcModuleEntityPropertyParser toRabcEntityParser(Entity entity, EntityParserParameter parameter);
+	RabcModuleEntityPropertyParser toRabcEntityParser(RecordEntity entity, EntityParserParameter parameter);
 	
 	List<EntityItem> convertEntityItems(PagedEntityList el);
 	
@@ -94,15 +95,15 @@ public interface ModuleEntityService {
 	 * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ 查询实体列表 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 	 **********************************************************/
 	
-	EntitySortedPagedQuery getNormalSortedEntitiesQuery(EntitiesQueryParameter param);
+	SortedPagedQuery<Entity> getNormalSortedEntitiesQuery(EntitiesQueryParameter param);
 	
-	EntitySortedPagedQuery getQuickSortedEntitiesQuery(EntitiesQueryParameter queryParam);
+	SortedPagedQuery<RecordEntity> getQuickSortedEntitiesQuery(EntitiesQueryParameter queryParam);
 	
-	List<Entity> queryModuleEntities(EntitiesQueryParameter param);
+	List<RecordEntity> queryModuleEntities(EntitiesQueryParameter param);
 	
 	RelationEntitySPQuery getRabcEntitiesQuery(RelationEntitiesQueryParameter queryParam);
 	
-	EntitySortedPagedQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
+	SortedPagedQuery<Entity> getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam);
 	
 	/**
 	 * 
@@ -135,9 +136,9 @@ public interface ModuleEntityService {
 	 * ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓ 查询历史 ↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓↓
 	 **********************************************************/
 	
-	List<EntityHistoryItem> queryHistory(EntityQueryParameter param, Integer pageNo, Integer pageSize);
+	List<EntityVersionItem> queryHistory(EntityQueryParameter param, Integer pageNo, Integer pageSize);
 
-	EntityHistoryItem getLastHistoryItem(EntityQueryParameter param);
+	EntityVersionItem getLastHistoryItem(EntityQueryParameter param);
 	
 	/**********************************************************
 	 * ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑ 查询历史 ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑

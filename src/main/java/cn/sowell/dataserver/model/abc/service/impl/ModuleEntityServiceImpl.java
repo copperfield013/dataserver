@@ -1,6 +1,5 @@
 package cn.sowell.dataserver.model.abc.service.impl;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -18,25 +17,25 @@ import org.springframework.util.Assert;
 import com.abc.application.BizFusionContext;
 import com.abc.auth.pojo.UserInfo;
 import com.abc.auth.service.ServiceFactory;
-import com.abc.dto.ErrorInfomation;
-import com.abc.extface.dto.RecordHistory;
+import com.abc.dto.VersionQueryParameter;
+import com.abc.extface.dto.Version;
 import com.abc.mapping.entity.Entity;
+import com.abc.mapping.entity.RecordEntity;
 import com.abc.panel.Discoverer;
 import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
 import com.abc.panel.PartialRelationEnSPQFactory;
-import com.abc.record.HistoryTracker;
+import com.abc.record.VersionEntity;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
 import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
 import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
-import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
@@ -57,7 +56,7 @@ import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.EntityQueryAdapter;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
-import cn.sowell.dataserver.model.modules.pojo.EntityHistoryItem;
+import cn.sowell.dataserver.model.modules.pojo.EntityVersionItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityNode;
 import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
@@ -128,17 +127,17 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	
 	@Override
-	public ModuleEntityPropertyParser toEntityParser(Entity entity, EntityParserParameter parameter) {
+	public ModuleEntityPropertyParser toEntityParser(RecordEntity entity, EntityParserParameter parameter) {
 		return fFactory.getModuleResolver(parameter.getModuleName()).createParser(entity, parameter.getUser(), parameter.getPropertyGetterArgument());
 	}
 	
 	@Override
-	public RelSelectionEntityPropertyParser toRelationParser(Entity entity, EntityParserParameter parameter) {
+	public RelSelectionEntityPropertyParser toRelationParser(RecordEntity entity, EntityParserParameter parameter) {
 		return fFactory.getModuleResolver(parameter.getModuleName()).createRelationParser(entity, parameter.getRelationName(), parameter.getUser());
 	}
 	
 	@Override
-	public RabcModuleEntityPropertyParser toRabcEntityParser(Entity entity, EntityParserParameter parameter) {
+	public RabcModuleEntityPropertyParser toRabcEntityParser(RecordEntity entity, EntityParserParameter parameter) {
 		return fFactory.getModuleResolver(parameter.getModuleName()).createRabcEntityParser(entity, parameter.getUser(), parameter.getPropertyGetterArgument());
 	}
 	
@@ -203,27 +202,27 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 
 	@Override
-	public ModuleEntityPropertyParser getHistoryEntityParser(EntityQueryParameter queryParam, Long historyId, Date historyTime) {
+	public ModuleEntityPropertyParser getHistoryEntityParser(EntityQueryParameter queryParam, String versionCode, Date historyTime) {
 		BizFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
-		HistoryTracker tracker = null;
-		if(historyId != null) {
-			tracker = discoverer.track(BigInteger.valueOf(historyId));
+		VersionEntity vEntity = null;
+		if(versionCode != null) {
+			vEntity = discoverer.track(versionCode);
+			//tracker = discoverer.track(BigInteger.valueOf(historyId));
 		}else if(queryParam.getEntityCode() != null) {
-			tracker = discoverer.track(queryParam.getEntityCode(), historyTime);
+			discoverer.track(queryParam.getEntityCode(), historyTime);
+			vEntity = discoverer.track(queryParam.getEntityCode(), historyTime);
 		}else {
 			logger.error("historyId以及entityCode不能都为null！！！");
 		}
-		return trackEntityParser(discoverer, tracker, queryParam);
+		return trackEntityParser(discoverer, vEntity, queryParam);
 		
 	}
 
-	private ModuleEntityPropertyParser trackEntityParser(Discoverer discoverer, HistoryTracker tracker, EntityQueryParameter queryParam) {
-		if(tracker != null) {
-			Entity entity = tracker.getEntity();
-			List<ErrorInfomation> errors = tracker.getErrorInfomations();
+	private ModuleEntityPropertyParser trackEntityParser(Discoverer discoverer, VersionEntity vEntity, EntityQueryParameter queryParam) {
+		if(vEntity != null) {
+			Entity entity = vEntity.getEntity();
 			ModuleEntityPropertyParser parser = toEntityParser(entity, new EntityParserParameter(queryParam.getModuleName(), queryParam.getUser(), discoverer));
-			parser.setErrors(errors);
 			return parser;
 		}else {
 			return null;
@@ -287,8 +286,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 		criteriaFactory.addSortedColumn("编辑时间");
 		
-		EntitySortedPagedQuery sortedPagedQuery = entitySortedPagedQueryFactory.getQuery();
-		
+		SortedPagedQuery<Entity> sortedPagedQuery = entitySortedPagedQueryFactory.getEntityQuery();
 		
 		PageInfo pageInfo = ePageInfo.getPageInfo();
 		if("all".equals(ePageInfo.getScope())){
@@ -331,26 +329,29 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 	
 	@Override
-	public List<EntityHistoryItem> queryHistory(EntityQueryParameter param, Integer pageNo, Integer pageSize) {
+	public List<EntityVersionItem> queryHistory(EntityQueryParameter param, Integer pageNo, Integer pageSize) {
 		BizFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
-		List<RecordHistory> historyList = discoverer.trackHistory(param.getEntityCode(), pageNo, pageSize);
-		List<EntityHistoryItem> list = new ArrayList<EntityHistoryItem>();
+		VersionQueryParameter vParam = new VersionQueryParameter(param.getEntityCode());
+		vParam.setOffset((pageNo - 1) * pageSize);
+		vParam.setSize(pageSize);
+		List<Version> historyList = discoverer.trackVersion(vParam);
+		List<EntityVersionItem> list = new ArrayList<EntityVersionItem>();
 		historyList.forEach(history->{
-			EntityHistoryItem item = new EntityHistoryItem();
-			item.setId(FormatUtils.toLong(history.getId()));
-			item.setTime(history.getCreationTime());
-			item.setUserName(toUserName(history.getUsergroupId()));
-			item.setDesc(history.getContentWithDecompress());
+			EntityVersionItem item = new EntityVersionItem();
+			item.setVersionCode(history.getVersionCode());
+			item.setTime(history.getVersionTime());
+			item.setUserName(toUserName(history.getUserId()));
+			item.setDesc(history.getDescripation());
 			list.add(item);
 		});
 		return list;
 	}
 	
 	@Override
-	public EntityHistoryItem getLastHistoryItem(EntityQueryParameter param) {
-		List<EntityHistoryItem> histories = queryHistory(param, 1, 1);
+	public EntityVersionItem getLastHistoryItem(EntityQueryParameter param) {
+		List<EntityVersionItem> histories = queryHistory(param, 1, 1);
 		if(histories != null && !histories.isEmpty()) {
 			return histories.get(0);
 		}
@@ -407,15 +408,15 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	
 	@Override
-	public EntitySortedPagedQuery getNormalSortedEntitiesQuery(EntitiesQueryParameter param) {
+	public SortedPagedQuery<Entity> getNormalSortedEntitiesQuery(EntitiesQueryParameter param) {
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = getEntitySortedPagedQueryFactory(param);
-		return entitySortedPagedQueryFactory.getQuery();
+		return entitySortedPagedQueryFactory.getEntityQuery();
 	}
 	
 	@Override
-	public EntitySortedPagedQuery getQuickSortedEntitiesQuery(EntitiesQueryParameter param) {
+	public SortedPagedQuery<RecordEntity> getQuickSortedEntitiesQuery(EntitiesQueryParameter param) {
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = getEntitySortedPagedQueryFactory(param);
-		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuickQuery();
+		SortedPagedQuery<RecordEntity> query = entitySortedPagedQueryFactory.getRecordEntityQuery();
 		if(param.getPageInfo() != null) {
 			query.setPageSize(param.getPageInfo().getPageSize());
 		}
@@ -458,8 +459,8 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 
 	@Override
-	public List<Entity> queryModuleEntities(EntitiesQueryParameter param){
-		EntitySortedPagedQuery query = getQuickSortedEntitiesQuery(param);
+	public List<RecordEntity> queryModuleEntities(EntitiesQueryParameter param){
+		SortedPagedQuery<RecordEntity> query = getQuickSortedEntitiesQuery(param);
 		PageInfo pageInfo = param.getPageInfo();
 		return query.visitEntity(pageInfo.getPageNo());
 		
@@ -497,7 +498,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	}
 	
 	@Override
-	public EntitySortedPagedQuery getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam) {
+	public SortedPagedQuery<Entity> getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam) {
 		FusionContextConfig config = fFactory.getModuleConfig(queryParam.getModuleName());
 		BizFusionContext context = config.createRelationContext(queryParam.getRelationName(), queryParam.getUser());
 		
@@ -512,7 +513,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 			queryParam.getCriteriaFactoryConsumer().accept(criteriaFactory);
 		}
 		
-		EntitySortedPagedQuery query = entitySortedPagedQueryFactory.getQuery();
+		SortedPagedQuery<Entity> query = entitySortedPagedQueryFactory.getEntityQuery();
 		PageInfo pageInfo = queryParam.getPageInfo();
 		query.setPageSize(pageInfo.getPageSize());
 		return query;

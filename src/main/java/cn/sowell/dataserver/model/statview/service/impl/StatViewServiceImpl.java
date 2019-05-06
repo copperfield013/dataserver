@@ -14,12 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.abc.application.BizFusionContext;
-import com.abc.mapping.entity.Entity;
+import com.abc.mapping.entity.RecordEntity;
 import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
 import com.abc.panel.StatUpDrill;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 import com.abc.stat.StatUpDrillContext;
 
 import cn.sowell.copframe.common.UserIdentifier;
@@ -165,12 +165,12 @@ public class StatViewServiceImpl
 		
 		
 		//执行查询
-		EntitySortedPagedQuery query = drill.drillUp(drillContext);
+		SortedPagedQuery<RecordEntity> query = drill.drillUp(drillContext);
 		
 		
 		PageInfo pageInfo = criteria.getPageInfo();
 		pageInfo.setCount(query.getAllCount());
-		List<Entity> entities = query.visitEntity(pageInfo.getPageNo());
+		List<RecordEntity> entities = query.visitEntity(pageInfo.getPageNo());
 		StatListTemplateEntityView view = new StatListTemplateEntityView(statListTemplate, fieldMap);
 		view.getDisabledColumns().addAll(criteria.getDisabledColumnIds());
 		ModuleMeta module = mService.getModule(moduleName);

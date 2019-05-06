@@ -14,8 +14,9 @@ import org.springframework.util.Assert;
 
 import com.abc.mapping.entity.Entity;
 import com.abc.mapping.entity.FreeRelationEntity;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.mapping.entity.RecordEntity;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 import com.beust.jcommander.internal.Lists;
 
 import cn.sowell.copframe.common.UserIdentifier;
@@ -94,9 +95,9 @@ public class EntityQuery {
 	//隐含条件
 	private Set<NormalCriteria> hiddenCriterias = new LinkedHashSet<>();
 	//执行prepare方法之后生成的查询对象
-	private EntitySortedPagedQuery sortedEntitiesQuery;
+	private SortedPagedQuery<? extends RecordEntity> sortedEntitiesQuery;
 	//用于解析和转换entity
-	private Function<Entity, CEntityPropertyParser> parserConverter;
+	private Function<RecordEntity, CEntityPropertyParser> parserConverter;
 	private RelationEntitySPQuery relaltionEntitiesQuery;
 	//用于存放列表模板中查询条件的值
 	private Map<Long, String> criteriaValueMap = new HashMap<>();
@@ -553,9 +554,11 @@ public class EntityQuery {
 			//根据当前已经准备好的EntitySortedPagedQuery对象
 			//结合分页参数pageNo和pageSize，执行查询获得Enity列表
 			//调用FusionConfigResolver将Entity列表转换成Parser列表
-			List<Entity> entities = this.sortedEntitiesQuery.visitEntity(pageNo);
+			List<? extends RecordEntity> entities = this.sortedEntitiesQuery.visitEntity(pageNo);
 			
-			parsers = CollectionUtils.toList(entities, this.parserConverter);
+			parsers = CollectionUtils.toList(entities, entity->{
+				return this.parserConverter.apply((Entity) entity);
+			});
 			list.setIsEndList(!this.sortedEntitiesQuery.hasData(pageNo + 1));
 			this.virtualEndPageNo = this.sortedEntitiesQuery.getCurrentEndCachePage();
 		}else {
@@ -644,14 +647,14 @@ public class EntityQuery {
 			}
 		}
 		ModuleEntityService mService = appContext.getBean(ModuleEntityService.class);
-		EntitySortedPagedQuery query = mService.getNormalSortedEntitiesQuery(this.queryParam);
+		SortedPagedQuery<Entity> query = mService.getNormalSortedEntitiesQuery(this.queryParam);
 		query.setPageSize(getPageSize());
 		EntityPagingQueryProxy proxy = createEntityPagingQueryProxy(query,ePageInfo);
 		EntityPagingIterator itr = new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, user, proxy);
 		return itr;
 	}
 	
-	private EntityPagingQueryProxy createEntityPagingQueryProxy(EntitySortedPagedQuery query,
+	private EntityPagingQueryProxy createEntityPagingQueryProxy(SortedPagedQuery<Entity> query,
 			ExportDataPageInfo ePageInfo) {
 		
 		EntityQuery _this = this;

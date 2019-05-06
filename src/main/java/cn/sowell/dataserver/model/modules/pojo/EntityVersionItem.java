@@ -5,16 +5,16 @@ import java.util.Date;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class EntityHistoryItem {
-	private Long id;
+public class EntityVersionItem {
+	private String code;
 	private Date time;
-	private String userName;
+	private String userId;
 	private String desc;
-	public Long getId() {
-		return id;
+	public String getCode() {
+		return code;
 	}
-	public void setId(Long id) {
-		this.id = id;
+	public void setVersionCode(String id) {
+		this.code = id;
 	}
 	@JSONField(name="monthKey")
 	public Long getMonthKey() {
@@ -39,10 +39,10 @@ public class EntityHistoryItem {
 		}
 	}
 	public String getUserName() {
-		return userName;
+		return userId;
 	}
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUserName(String userId) {
+		this.userId = userId;
 	}
 	public String getDesc() {
 		return desc;

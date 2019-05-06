@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.entity.EntitySortedPagedQuery;
+import com.abc.rrc.query.entity.SortedPagedQuery;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.Assert;
@@ -14,13 +14,13 @@ import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 
 public class EntityQueryAdapter implements EntityPagingQueryProxy{
 
-	private EntitySortedPagedQuery sortedPagedQuery;
+	private SortedPagedQuery<Entity> sortedPagedQuery;
 	private int pageSize;
 	private FusionContextConfigResolver resolver;
 	
 	
 	
-	public EntityQueryAdapter(EntitySortedPagedQuery sortedPagedQuery, 
+	public EntityQueryAdapter(SortedPagedQuery<Entity> sortedPagedQuery, 
 			FusionContextConfigResolver fusionContextConfigResolver, Integer pageSize) {
 		Assert.notNull(fusionContextConfigResolver);
 		sortedPagedQuery.setPageSize(pageSize);
