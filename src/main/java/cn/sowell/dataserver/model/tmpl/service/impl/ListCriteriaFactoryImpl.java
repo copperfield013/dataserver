@@ -198,8 +198,4 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 			appendCriterias(nCriterias, moduleName, factory);
 		};
 	}
-
-	
-	
-	
 }

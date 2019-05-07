@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
 import com.abc.mapping.entity.Entity;
 import com.abc.mapping.entity.FreeRelationEntity;
 import com.abc.mapping.entity.RecordEntity;
+import com.abc.panel.PanelFactory;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
 import com.abc.rrc.query.entity.SortedPagedQuery;
 import com.beust.jcommander.internal.Lists;
@@ -54,6 +56,10 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroupPremise;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatList;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatView;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelation;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeRelationCriteria;
@@ -61,6 +67,7 @@ import cn.sowell.dataserver.model.tmpl.service.ArrayItemFilterService;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.OpenTemplateService;
+import cn.sowell.dataserver.model.tmpl.service.StatListTemplateService;
 
 public class EntityQuery {
 	//查询的唯一标识
@@ -81,6 +88,9 @@ public class EntityQuery {
 	
 	//关系查询时，解析查询的选择模板
 	private TemplateSelectionTemplate selectionTemplate;
+	
+	//统计查询是，解析查询的统计模板
+	private TemplateStatView statViewTemplate;
 	
 	//发起查询的用户
 	private UserIdentifier user;
@@ -104,6 +114,8 @@ public class EntityQuery {
 	//已知的最后一页的页码（不一定是实际的最后一页页码）
 	private Integer virtualEndPageNo;
 	private EntitiesQueryParameter queryParam;
+	private Set<Long> statDisabledColumnIds;
+	
 	
 	
 	public EntityQuery(UserIdentifier user) {
@@ -188,10 +200,59 @@ public class EntityQuery {
 		}else if(this.nodeTemplate != null) {
 			//执行没有关联模板组合的树形结构的根节点列表查询
 			doPrepareForTreeRootList(requrestCriteriaMap, context);
+		}else if(this.statViewTemplate != null) {
+			doPrepareForStatList(requrestCriteriaMap, context);
 		}
 		return this;
 		
 	}
+	
+	
+	private void doPrepareForStatList(Map<Long, String> requrestCriteriaMap, ApplicationContext appContext) {
+		String moduleName = this.getModuleName();
+		
+		TemplateStatList statListTemplate = getTemplate(appContext, StatListTemplateService.class, this.statViewTemplate.getStatListTemplateId());
+		List<TemplateStatColumn> columns = statListTemplate.getColumns();
+		
+		Set<Long> fieldIds = CollectionUtils.toSet(columns, col->col.getFieldId());
+		DictionaryService dictService = appContext.getBean(DictionaryService.class);
+		Map<Long, DictionaryField> fieldMap = dictService.getFieldMap(moduleName, fieldIds);
+		LinkedHashSet<String> dimensions = new LinkedHashSet<String>();
+		
+		for (TemplateStatColumn column : columns) {
+			if(!this.statDisabledColumnIds.contains(column.getId()) && column.getFieldId() != null) {
+				DictionaryField field = fieldMap.get(column.getFieldId());
+				if(field != null) {
+					if(PanelFactory.getStatGenerator().isDimension(field.getAbcAttrCode())) {
+						dimensions.add(field.getAbcAttrCode());
+					}
+				}
+			}
+		}
+		
+		//将其转换成通用条件对象
+		List<TemplateStatCriteria> tCriterias = statListTemplate.getCriterias();
+		Map<Long, TemplateStatCriteria> criteriaMap = CollectionUtils.toMap(tCriterias, TemplateStatCriteria::getId);
+		ListCriteriaFactory lcriteriaFactory = appContext.getBean(ListCriteriaFactory.class);
+		Map<Long, NormalCriteria> nCriteriaMap = lcriteriaFactory.getCriteriasFromRequest(new MutablePropertyValues(requrestCriteriaMap), criteriaMap);
+		
+		this.viewCriteriaMap = integrateViewCriteriaMap(moduleName, tCriterias, requrestCriteriaMap, dictService);
+		
+		this.queryParam = new EntitiesQueryParameter(moduleName, this.user);
+		this.queryParam.setPageInfo(pageInfo);
+		this.queryParam.setStatNormalCriterias(new ArrayList<>(nCriteriaMap.values()));
+		this.queryParam.setStatDimensions(dimensions);
+		
+		ModuleEntityService entityService = appContext.getBean(ModuleEntityService.class);
+		this.sortedEntitiesQuery = entityService.getStatSortedEntitiesQuery(queryParam);
+		
+		//完成准备工作
+		EntityParserParameter parserParam = new EntityParserParameter(this.moduleName, this.user);
+		this.parserConverter = entity->entityService.toEntityParser(entity, parserParam);
+		//生成查询条件值的map
+		generateCriteriaValueMap(queryParam.getStatNormalCriterias());
+	}
+	
 	
 	
 	private void doPrepareForTreeRootList(Map<Long, String> requrestCriteriaMap, ApplicationContext context) {
@@ -647,14 +708,19 @@ public class EntityQuery {
 			}
 		}
 		ModuleEntityService mService = appContext.getBean(ModuleEntityService.class);
-		SortedPagedQuery<Entity> query = mService.getNormalSortedEntitiesQuery(this.queryParam);
+		SortedPagedQuery<? extends RecordEntity> query = null;
+		if(this.templateGroup != null) {
+			query = mService.getNormalSortedEntitiesQuery(this.queryParam);
+		}else if(this.statViewTemplate != null) {
+			query = mService.getStatSortedEntitiesQuery(this.queryParam);
+		}
 		query.setPageSize(getPageSize());
-		EntityPagingQueryProxy proxy = createEntityPagingQueryProxy(query,ePageInfo);
+		EntityPagingQueryProxy proxy = createEntityPagingQueryProxy(query, ePageInfo);
 		EntityPagingIterator itr = new EntityPagingIterator(totalCount, dataCount, ignoreCount, startPageNo, user, proxy);
 		return itr;
 	}
 	
-	private EntityPagingQueryProxy createEntityPagingQueryProxy(SortedPagedQuery<Entity> query,
+	private EntityPagingQueryProxy createEntityPagingQueryProxy(SortedPagedQuery<? extends RecordEntity> query,
 			ExportDataPageInfo ePageInfo) {
 		
 		EntityQuery _this = this;
@@ -663,7 +729,7 @@ public class EntityQuery {
 			
 			@Override
 			public Set<ModuleEntityPropertyParser> load(int pageNo, UserIdentifier user) {
-				List<Entity> entities = query.visitEntity(pageNo);
+				List<? extends RecordEntity> entities = query.visitEntity(pageNo);
 				return CollectionUtils.toSet(entities, e->(ModuleEntityPropertyParser)parserConverter.apply(e));
 			}
 			
@@ -678,6 +744,19 @@ public class EntityQuery {
 			}
 		};
 	}
-	
+	public EntityQuery setStatViewTemplate(TemplateStatView statViewTmpl) {
+		this.statViewTemplate = statViewTmpl;
+		return this;
+	}
+	public TemplateStatView getStatViewTemplate() {
+		return this.statViewTemplate;
+	}
+	public EntityQuery setStatDisabledColumnIds(Set<Long> disabledColumnIds) {
+		this.statDisabledColumnIds = disabledColumnIds;
+		return this;
+	}
+	public Set<Long> getStatDisabledColumnIds() {
+		return statDisabledColumnIds;
+	}
 	
 }

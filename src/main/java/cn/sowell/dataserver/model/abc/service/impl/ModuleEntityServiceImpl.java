@@ -25,6 +25,7 @@ import com.abc.panel.Discoverer;
 import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
 import com.abc.panel.PartialRelationEnSPQFactory;
+import com.abc.panel.StatUpDrill;
 import com.abc.record.VersionEntity;
 import com.abc.rrc.query.criteria.EntityCriteriaFactory;
 import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
@@ -32,6 +33,7 @@ import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
 import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
 import com.abc.rrc.query.entity.RelationEntitySPQuery;
 import com.abc.rrc.query.entity.SortedPagedQuery;
+import com.abc.stat.StatUpDrillContext;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -57,23 +59,28 @@ import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.EntityQueryAdapter;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
 import cn.sowell.dataserver.model.modules.pojo.EntityVersionItem;
+import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.modules.service.view.EntityItem;
 import cn.sowell.dataserver.model.modules.service.view.EntityNode;
 import cn.sowell.dataserver.model.modules.service.view.EntityQuery;
 import cn.sowell.dataserver.model.modules.service.view.ListEntityItem;
 import cn.sowell.dataserver.model.modules.service.view.ListModuleEntityItem;
 import cn.sowell.dataserver.model.modules.service.view.PagedEntityList;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListColumn;
+import cn.sowell.dataserver.model.tmpl.pojo.AbstractListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateDetailFieldGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateListColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionColumn;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
+import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatList;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeNode;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateTreeTemplate;
 import cn.sowell.dataserver.model.tmpl.service.ListCriteriaFactory;
 import cn.sowell.dataserver.model.tmpl.service.ListTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.SelectionTemplateService;
+import cn.sowell.dataserver.model.tmpl.service.StatListTemplateService;
 import cn.sowell.dataserver.model.tmpl.service.TemplateGroupService;
 import cn.sowell.dataserver.model.tmpl.service.TreeTemplateService;
 
@@ -168,11 +175,11 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		return null;
 	}
 	
-	private EntityItem toEntityItem(ModuleEntityPropertyParser parser, TemplateListTemplate ltmpl) {
+	private EntityItem toEntityItem(ModuleEntityPropertyParser parser, AbstractListTemplate<? extends AbstractListColumn, ?> ltmpl) {
 		if(parser != null) {
-			List<TemplateListColumn> cols = ltmpl.getColumns();
+			List<? extends AbstractListColumn> cols = ltmpl.getColumns();
 			ListModuleEntityItem item = new ListModuleEntityItem(parser);
-			for (TemplateListColumn col : cols) {
+			for (AbstractListColumn col : cols) {
 				if(col.getFieldKey() != null) {
 					String val = parser.getFormatedProperty(col.getFieldKey());
 					item.putCell(col.getId().toString(), val);
@@ -182,6 +189,9 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 		return null;
 	}
+	
+	@Resource
+	StatListTemplateService statListTemplateService;
 	
 	@Override
 	public List<EntityItem> convertEntityItems(PagedEntityList el) {
@@ -194,6 +204,9 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 			return CollectionUtils.toList(parsers, parser->toEntityItem(parser, query.getSelectionTemplate()));
 		}else if(query.getTemplateGroup() != null) {
 			TemplateListTemplate ltmpl = ltmplService.getTemplate(query.getTemplateGroup().getListTemplateId());
+			return CollectionUtils.toList(parsers, parser->toEntityItem((ModuleEntityPropertyParser)parser, ltmpl));
+		}else if(query.getStatViewTemplate() != null) {
+			TemplateStatList ltmpl = statListTemplateService.getTemplate(query.getStatViewTemplate().getStatListTemplateId());
 			return CollectionUtils.toList(parsers, parser->toEntityItem((ModuleEntityPropertyParser)parser, ltmpl));
 		}
 		return null;
@@ -456,6 +469,53 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		}
 		criteriaFactory.addSortedColumn("编辑时间");
 		return entitySortedPagedQueryFactory;
+	}
+	
+	@Override
+	public SortedPagedQuery<RecordEntity> getStatSortedEntitiesQuery(EntitiesQueryParameter queryParam) {
+
+		FusionContextConfig config =  fFactory.getModuleConfig(queryParam.getModuleName());
+		BizFusionContext context = config.getCurrentContext(queryParam.getUser());
+		StatUpDrillContext drillContext = new StatUpDrillContext();
+		
+		drillContext.setDimensions(queryParam.getStatDimensions());
+		
+		//根据条件的类型，归放到before和after中
+		List<NormalCriteria> beforeCriterias = new ArrayList<>();
+		List<NormalCriteria> afterCriterias = new ArrayList<>();
+		
+		List<NormalCriteria> nCriterias = queryParam.getStatNormalCriterias();
+		if(nCriterias != null) {
+			for (NormalCriteria nCriteria : nCriterias) {
+				switch (nCriteria.getFilterOccasion()) {
+				case TemplateStatCriteria.FILTER_OCCASION_BEFORE:
+					beforeCriterias.add(nCriteria);
+					break;
+				case TemplateStatCriteria.FILTER_OCCASION_AFTER:
+					afterCriterias.add(nCriteria);
+					break;
+				}
+			}
+		}
+		
+		
+		EntitySortedPagedQueryFactory beforeEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostCriteriaFactory();
+		lcriteriaFactory.appendCriterias(beforeCriterias, queryParam.getModuleName(), beforeEntityCriteriaFactory);
+		
+		drillContext.setBeforeCriteria(beforeEntityCriteriaFactory.getCriterias());
+		
+		EntitySortedPagedQueryFactory afterEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
+		EntityCriteriaFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostCriteriaFactory();
+		lcriteriaFactory.appendCriterias(afterCriterias, queryParam.getModuleName(), afterEntityCriteriaFactory);
+		drillContext.setAfterCriteria(afterEntityCriteriaFactory.getCriterias());
+		
+		StatUpDrill drill = PanelFactory.getStatUpDrill(context);
+		//执行查询
+		SortedPagedQuery<RecordEntity> query = drill.drillUp(drillContext);
+		PageInfo pageInfo = queryParam.getPageInfo();
+		query.setPageSize(pageInfo.getPageSize());
+		return query;
 	}
 
 	@Override

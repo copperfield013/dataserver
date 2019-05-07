@@ -42,10 +42,4 @@ public interface ListCriteriaFactory {
 
 	Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias);
 
-
-
-	
-
-	
-
 }

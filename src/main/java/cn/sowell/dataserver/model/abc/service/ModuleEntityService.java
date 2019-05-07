@@ -166,6 +166,8 @@ public interface ModuleEntityService {
 	Map<String, RelSelectionEntityPropertyParser> loadEntities(Set<String> codeSet, TemplateDetailFieldGroup fieldGroup,
 			UserIdentifier user);
 
+	SortedPagedQuery<RecordEntity> getStatSortedEntitiesQuery(EntitiesQueryParameter queryParam);
+
 	
 
 
