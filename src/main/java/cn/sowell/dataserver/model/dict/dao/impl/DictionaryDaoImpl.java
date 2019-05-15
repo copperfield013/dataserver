@@ -13,6 +13,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.SQLQuery;
 import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Order;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.type.StandardBasicTypes;
 import org.springframework.stereotype.Repository;
@@ -54,6 +55,7 @@ public class DictionaryDaoImpl implements DictionaryDao{
 		if(moduleNames != null && !moduleNames.isEmpty()) {
 			Criteria criteria = sFactory.getCurrentSession().createCriteria(DictionaryComposite.class);
 			criteria.add(Restrictions.in("module", moduleNames));
+			criteria.addOrder(Order.asc("id"));
 			return criteria.list();
 		}else {
 			return Lists.newArrayList();
