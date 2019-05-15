@@ -14,11 +14,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.application.BizFusionContext;
 import com.abc.auth.pojo.UserInfo;
 import com.abc.auth.service.ServiceFactory;
 import com.abc.dto.VersionQueryParameter;
 import com.abc.extface.dto.Version;
+import com.abc.hc.HCFusionContext;
 import com.abc.mapping.entity.Entity;
 import com.abc.mapping.entity.RecordEntity;
 import com.abc.panel.Discoverer;
@@ -112,14 +112,17 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	@Override
 	public Entity getEntity(EntityQueryParameter queryParam){
-		BizFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
+		long start = System.currentTimeMillis();
+		HCFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
 		
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		EntitySortedPagedQueryFactory sortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
 		lcriteriaFactory.appendArrayItemCriteriaParameter(sortedPagedQueryFactory, queryParam);
 		
-		return discoverer.discover(queryParam.getEntityCode(), sortedPagedQueryFactory.getSubQueryParaMap());
+		Entity entity = discoverer.discover(queryParam.getEntityCode(), sortedPagedQueryFactory.getSubQueryParaMap());
+		logger.debug("discover实体[code=" + queryParam.getEntityCode() + "]使用时间" + (System.currentTimeMillis() - start) + "ms");
+		return entity;
 	}
 	
 	@Override
@@ -216,7 +219,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 
 	@Override
 	public ModuleEntityPropertyParser getHistoryEntityParser(EntityQueryParameter queryParam, String versionCode, Date historyTime) {
-		BizFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
+		HCFusionContext context = fFactory.getModuleConfig(queryParam.getModuleName()).getCurrentContext(queryParam.getUser());
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		VersionEntity vEntity = null;
 		if(versionCode != null) {
@@ -279,7 +282,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	@Override
 	public EntityPagingQueryProxy getEntityExportQueryProxy(EntitiesQueryParameter param, ExportDataPageInfo ePageInfo) {
 		FusionContextConfig config = fFactory.getModuleConfig(param.getModuleName());
-		BizFusionContext context = config.getCurrentContext(param.getUser());
+		HCFusionContext context = config.getCurrentContext(param.getUser());
 		//Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		//EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(param.getMainCriterias(), "编辑时间", param.getCriteriasMap());
 		
@@ -335,7 +338,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	@Override
 	public Entity getModuleRelationEntity(EntityQueryParameter entityQueryParam) {
-		BizFusionContext context = fFactory.getModuleConfig(entityQueryParam.getModuleName()).createRelationContext(entityQueryParam.getRelationName(), entityQueryParam.getUser());
+		HCFusionContext context = fFactory.getModuleConfig(entityQueryParam.getModuleName()).createRelationContext(entityQueryParam.getRelationName(), entityQueryParam.getUser());
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		Entity result=discoverer.discover(entityQueryParam.getEntityCode());
 		return result;
@@ -343,7 +346,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	@Override
 	public List<EntityVersionItem> queryHistory(EntityQueryParameter param, Integer pageNo, Integer pageSize) {
-		BizFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
+		HCFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
 		Discoverer discoverer=PanelFactory.getDiscoverer(context);
 		
 		VersionQueryParameter vParam = new VersionQueryParameter(param.getEntityCode());
@@ -394,7 +397,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 
 	@Override
 	public String mergeEntity(EntityQueryParameter param, Map<String, Object> entityMap) {
-		BizFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
+		HCFusionContext context = fFactory.getModuleConfig(param.getModuleName()).getCurrentContext(param.getUser());
 		
 		EntitySortedPagedQueryFactory sortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
 		lcriteriaFactory.appendArrayItemCriteriaParameter(sortedPagedQueryFactory, param);
@@ -438,7 +441,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	
 	private EntitySortedPagedQueryFactory getEntitySortedPagedQueryFactory(EntitiesQueryParameter param) {
 		String moduleName = param.getModuleName();
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(param.getUser());
+		 HCFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(param.getUser());
 		
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
 		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
@@ -475,7 +478,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	public SortedPagedQuery<RecordEntity> getStatSortedEntitiesQuery(EntitiesQueryParameter queryParam) {
 
 		FusionContextConfig config =  fFactory.getModuleConfig(queryParam.getModuleName());
-		BizFusionContext context = config.getCurrentContext(queryParam.getUser());
+		HCFusionContext context = config.getCurrentContext(queryParam.getUser());
 		StatUpDrillContext drillContext = new StatUpDrillContext();
 		
 		drillContext.setDimensions(queryParam.getStatDimensions());
@@ -529,7 +532,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	@Override
 	public RelationEntitySPQuery getRabcEntitiesQuery(RelationEntitiesQueryParameter queryParam) {
 		FusionContextConfig config = fFactory.getModuleConfig(queryParam.getModuleName());
-		BizFusionContext context = config.getCurrentContext(queryParam.getUser());
+		HCFusionContext context = config.getCurrentContext(queryParam.getUser());
 		
 		PartialRelationEnSPQFactory relationEnSPQFactory = new PartialRelationEnSPQFactory(context, queryParam.getRelationName());
 		EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = relationEnSPQFactory.getRelationCriteriaFactory().getEntityUnRecursionCriteriaFactory();
@@ -560,7 +563,7 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 	@Override
 	public SortedPagedQuery<Entity> getSelectionEntitiesQuery(SelectionEntityQueyrParameter queryParam) {
 		FusionContextConfig config = fFactory.getModuleConfig(queryParam.getModuleName());
-		BizFusionContext context = config.createRelationContext(queryParam.getRelationName(), queryParam.getUser());
+		HCFusionContext context = config.createRelationContext(queryParam.getRelationName(), queryParam.getUser());
 		
 		//BizFusionContext context = config.getCurrentContext(queryParam.getUser());
 		

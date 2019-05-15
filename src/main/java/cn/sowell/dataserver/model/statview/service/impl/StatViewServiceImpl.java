@@ -13,7 +13,7 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.abc.application.BizFusionContext;
+import com.abc.hc.HCFusionContext;
 import com.abc.mapping.entity.RecordEntity;
 import com.abc.panel.EntitySortedPagedQueryFactory;
 import com.abc.panel.PanelFactory;
@@ -94,7 +94,7 @@ public class StatViewServiceImpl
 		TemplateStatList statListTemplate = criteria.getStatListTemplate();
 		String moduleName = statListTemplate.getModule();
 		FusionContextConfig config =  fFactory.getModuleConfig(moduleName);
-		BizFusionContext context = config.getCurrentContext(criteria.getUser());
+		HCFusionContext context = config.getCurrentContext(criteria.getUser());
 		StatUpDrill drill = PanelFactory.getStatUpDrill(context);
 		StatUpDrillContext drillContext = new StatUpDrillContext();
 		
@@ -192,7 +192,7 @@ public class StatViewServiceImpl
 	
 	@Override
 	public void recalc(String moduleName, UserIdentifier user) {
-		BizFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
+		HCFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
 		PanelFactory.getStatGenerator().write(context);
 	}
 
