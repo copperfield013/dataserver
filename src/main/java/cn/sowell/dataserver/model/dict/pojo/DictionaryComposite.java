@@ -139,7 +139,7 @@ public class DictionaryComposite implements Composite, Serializable{
 		this.relModuleName = relModuleName;
 	}
 	public String getCompositeType() {
-		if(Integer.valueOf(1).equals(this.getIsArray())) {
+		if(!Integer.valueOf(1).equals(this.getIsArray())) {
 			return "normal";
 		}else if(Composite.RELATION_ADD_TYPE.equals(this.getAddType())) {
 			return "relation";
