@@ -2,6 +2,7 @@ package cn.sowell.dataserver.model.statview.service;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.dataserver.model.modules.service.view.StatListTemplateEntityView;
@@ -17,5 +18,7 @@ public interface StatViewService extends OpenTemplateService<TemplateStatView>{
 	void recalc(String moduleName, UserIdentifier user);
 
 	StatListTemplateEntityView stat(StatCriteria criteria);
+	
+	void bindStatViewReloadEvent(Consumer<TemplateStatView> consumer);
 
 }

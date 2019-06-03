@@ -20,7 +20,7 @@ public interface DictionaryService {
 	List<DictionaryOption> getAllOptions();
 
 	public Map<Long, List<OptionItem>> getOptionsMap(Set<Long> fieldIds);
-
+	
 	/**
 	 * 从所有配置文件中获得所有label字段的map
 	 * @return

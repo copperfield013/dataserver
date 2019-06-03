@@ -6,6 +6,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.annotation.Resource;
 
@@ -194,6 +195,11 @@ public class StatViewServiceImpl
 	public void recalc(String moduleName, UserIdentifier user) {
 		HCFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(user);
 		PanelFactory.getStatGenerator().write(context);
+	}
+	
+	@Override
+	public void bindStatViewReloadEvent(Consumer<TemplateStatView> consumer) {
+		getManager().bindStatViewReloadEvent(consumer);
 	}
 
 }

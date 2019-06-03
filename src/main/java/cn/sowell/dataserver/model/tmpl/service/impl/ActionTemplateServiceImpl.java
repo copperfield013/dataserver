@@ -204,10 +204,12 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 							}
 						}
 					});
-				int bigestKey = codeIndexMap.lastEntry().getKey();
 				List<String> codes = new ArrayList<>();
-				for (int i = 0; i <= bigestKey; i++) {
-					codes.add(codeIndexMap.get(i));
+				if(codeIndexMap.size() > 0) {
+					int bigestKey = codeIndexMap.lastEntry().getKey();
+					for (int i = 0; i <= bigestKey; i++) {
+						codes.add(codeIndexMap.get(i));
+					}
 				}
 				return codes;
 			}

@@ -4,7 +4,7 @@
 	
 	<groupId>cn.sowell.datacenter</groupId>
 	<artifactId>dataserver</artifactId>
-	<version>1.26</version>
+	<version>1.27</version>
 	<packaging>jar</packaging>
 	
 	<name>dataserver</name>
