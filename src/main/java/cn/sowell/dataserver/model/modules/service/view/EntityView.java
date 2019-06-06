@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.abc.mapping.entity.RecordEntity;
-import com.abc.model.enun.ValueType;
+import com.abc.model.enun.AttributeValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
@@ -166,7 +166,7 @@ public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends Entity
 		boolean getEffective();
 		Long getFieldId();
 		String getFieldName();
-		ValueType getFieldType();
+		AttributeValueType getFieldType();
 		String getFieldFormat();
 		String getFieldInputType();
 		String getTitle();

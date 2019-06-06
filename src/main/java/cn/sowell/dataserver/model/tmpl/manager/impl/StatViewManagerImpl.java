@@ -17,7 +17,6 @@ import cn.sowell.dataserver.model.tmpl.manager.StatListTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.StatViewManager;
 import cn.sowell.dataserver.model.tmpl.manager.prepared.GlobalPreparedToStatView;
 import cn.sowell.dataserver.model.tmpl.manager.prepared.GlobalPreparedToStatView.PreparedToStatView;
-import cn.sowell.dataserver.model.tmpl.pojo.TemplateGroup;
 import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatView;
 
 @Component

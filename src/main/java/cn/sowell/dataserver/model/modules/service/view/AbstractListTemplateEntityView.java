@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
-import com.abc.model.enun.ValueType;
+import com.abc.model.enun.AttributeValueType;
 
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
@@ -81,8 +81,8 @@ public abstract class AbstractListTemplateEntityView<
 						}
 						
 						@Override
-						public ValueType getFieldType() {
-							return ValueType.getValueType(getFieldDependency().getAbcType());
+						public AttributeValueType getFieldType() {
+							return AttributeValueType.getValueType(getFieldDependency().getAbcType());
 						}
 
 						@Override
