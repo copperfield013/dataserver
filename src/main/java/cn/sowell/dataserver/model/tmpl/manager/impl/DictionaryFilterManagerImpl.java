@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cn.sowell.copframe.utils.TextUtils;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.cachable.manager.AbstractModuleCacheManager;
 import cn.sowell.dataserver.model.cachable.prepare.PreparedToCache;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -127,7 +128,7 @@ public class DictionaryFilterManagerImpl
 	}
 
 	private boolean isTrue(Integer value) {
-		return Integer.valueOf(1).equals(value);
+		return Constants.TRUE.equals(value);
 	}
 
 

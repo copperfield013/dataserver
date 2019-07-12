@@ -4,7 +4,7 @@
 	
 	<groupId>cn.sowell.datacenter</groupId>
 	<artifactId>dataserver</artifactId>
-	<version>1.28</version>
+	<version>1.29</version>
 	<packaging>jar</packaging>
 	
 	<name>dataserver</name>
@@ -134,6 +134,18 @@
 	</dependencies>
 	<distributionManagement>
         <repository>
+	        <id>rdc-releases</id>
+	        <url>https://repo.rdc.aliyun.com/repository/78687-release-z5GPTo/</url>
+	    </repository>
+    </distributionManagement>
+    <repositories>
+		<repository>
+	        <id>rdc-releases</id>
+	        <url>https://repo.rdc.aliyun.com/repository/78687-release-z5GPTo/</url>
+	    </repository>
+	</repositories>
+	<!-- <distributionManagement>
+        <repository>
         	<id>aliyun44-nexus</id>
         	<url>http://139.196.123.44:32108/repository/nexus/</url>
         </repository>
@@ -144,7 +156,7 @@
 			<name>nexus</name>
 			<url>http://139.196.123.44:32108/repository/nexus-group/</url>
 		</repository>
-	</repositories>
+	</repositories> -->
 	<build>
 		<finalName>dataserver</finalName>
 		<plugins>

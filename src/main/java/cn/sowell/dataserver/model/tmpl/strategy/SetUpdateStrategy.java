@@ -1,5 +1,7 @@
 package cn.sowell.dataserver.model.tmpl.strategy;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -47,8 +49,13 @@ public abstract class SetUpdateStrategy<T> {
 	protected abstract void doDaoDelete(Map<Long, T> originMap, Long toRemoveId);
 	
 	
-	public void doUpdate(Set<T> originSet, Set<T> toUpdateSet){
-		Map<Long, T> originMap = CollectionUtils.toMap(originSet, originItem->getPojoId(originItem));
+	public void doUpdate(Collection<T> originSet, Collection<T> toUpdateSet){
+		Map<Long, T> originMap = null;
+		if(originSet != null) {
+			originMap = CollectionUtils.toMap(originSet, originItem->getPojoId(originItem));
+		}else {
+			originMap = new HashMap<Long, T>();
+		}
 		Set<Long> toRemoveIds = new HashSet<Long>(originMap.keySet());
 		
 		if(toUpdateSet != null){

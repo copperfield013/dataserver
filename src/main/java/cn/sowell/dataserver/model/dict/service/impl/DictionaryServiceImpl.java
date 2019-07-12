@@ -38,6 +38,7 @@ import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.ImportCompositeField;
 import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.dict.dao.DictionaryDao;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryCompositeExpand;
@@ -192,7 +193,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	private void setFieldPattern(DictionaryField field) {
-		if(Integer.valueOf(1).equals(field.getComposite().getIsArray())) {
+		if(Constants.TRUE.equals(field.getComposite().getIsArray())) {
 			if(field.getFullKey().startsWith(field.getComposite().getName() + ".")) {
 				field.setFieldPattern(
 						field.getComposite().getName() 

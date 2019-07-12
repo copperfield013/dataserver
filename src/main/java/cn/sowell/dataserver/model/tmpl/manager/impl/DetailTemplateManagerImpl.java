@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
 import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
+import cn.sowell.dataserver.model.karuiserv.manager.KaruiServManager;
 import cn.sowell.dataserver.model.tmpl.dao.DetailTemplateDao;
 import cn.sowell.dataserver.model.tmpl.manager.DetailTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
@@ -34,6 +35,9 @@ public class DetailTemplateManagerImpl
 	private static final String FIELD_GROUP_TREE_NODES_MAP = "fieldGroupTreeNodesMap";
 	@Resource
 	TreeTemplateManager treeManager;
+	
+	@Resource
+	KaruiServManager ksManager;
 	
 	@Autowired
 	public DetailTemplateManagerImpl(
@@ -112,6 +116,7 @@ public class DetailTemplateManagerImpl
 	@Override
 	protected void afterReloadCache(TemplateDetailTemplate dtmpl) {
 		tmplGroupManager.updateDetailTemplateRelatedGroups(dtmpl.getId());
+		ksManager.updateKaruServByDetailTemplate(dtmpl);
 	}
 	
 	
@@ -168,5 +173,9 @@ public class DetailTemplateManagerImpl
 		}
 		return null;
 	}
+	
+	
+	
+	
 	
 }

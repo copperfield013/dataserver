@@ -34,6 +34,7 @@ import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.EntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
 import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.abc.service.EntitiesQueryParameter;
 import cn.sowell.dataserver.model.abc.service.EntityParserParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
@@ -42,6 +43,8 @@ import cn.sowell.dataserver.model.abc.service.SelectionEntityQueyrParameter;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.pojo.OptionItem;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
+import cn.sowell.dataserver.model.karuiserv.match.KaruiEntityQueryCriteria;
+import cn.sowell.dataserver.model.karuiserv.pojo.KaruiServ;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingIterator;
 import cn.sowell.dataserver.model.modules.bean.EntityPagingQueryProxy;
 import cn.sowell.dataserver.model.modules.bean.ExportDataPageInfo;
@@ -89,8 +92,11 @@ public class EntityQuery {
 	//关系查询时，解析查询的选择模板
 	private TemplateSelectionTemplate selectionTemplate;
 	
-	//统计查询是，解析查询的统计模板
+	//统计查询时，解析查询的统计模板
 	private TemplateStatView statViewTemplate;
+	
+	//轻服务查询实体时，解析查询的轻服务
+	private KaruiServ karuiServ;
 	
 	//发起查询的用户
 	private UserIdentifier user;
@@ -208,6 +214,54 @@ public class EntityQuery {
 	}
 	
 	
+	public EntityQuery doPrepareForKaruiServ(KaruiEntityQueryCriteria qCriteria, ApplicationContext context) {
+		beforePrepare();
+		DictionaryService dictService = context.getBean(DictionaryService.class);
+		Assert.notNull(this.karuiServ, "执行prepare时，EntityQuery的kauriServ不能为null");
+		List<SuperTemplateListCriteria> tCriterias = new ArrayList<>();
+		if(this.karuiServ.getListTemplate() != null) {
+			TemplateListTemplate ltmpl = this.karuiServ.getListTemplate();
+			if(ltmpl.getCriterias() != null) {ltmpl.getCriterias().forEach(criteria->tCriterias.add(criteria));}
+		}
+		
+		//封装请求中传入的条件对象，与列表模板中条件对象进行整合
+		//整合后的对象可以允许被外部访问（Map<Long, ViewListCriteria>）
+		this.viewCriteriaMap = integrateViewCriteriaMap(this.moduleName, tCriterias, qCriteria.getRequrestLtmplCriteriaMap(), dictService);
+		
+		//按照“请求条件-列表隐藏条件-模板组合默认字段”的递增优先级
+		//创建NormalCriteria列表
+		List<NormalCriteria> nCriterias = new ArrayList<>(this.precriterias);
+		this.viewCriteriaMap.values().forEach(vCriteria->{
+			@SuppressWarnings("unchecked")
+			ViewListCriteria<? extends SuperTemplateListCriteria> vvCriteria = (ViewListCriteria<? extends SuperTemplateListCriteria>) vCriteria;
+			appendSuperTemplateListCriteria(this.moduleName, vvCriteria, nCriterias, dictService);
+		});
+		
+		nCriterias.addAll(this.hiddenCriterias);
+		
+		//构造EntitiesQueryParameter对象，调用ModuleEntityService构造EntitySortedPagedQuery对象
+		this.queryParam = new EntitiesQueryParameter(this.moduleName, this.user);
+		this.queryParam.setPageInfo(this.pageInfo);
+		if(this.karuiServ.getDetailTemplateId() != null) {
+			//根据详情模板中的Composite筛选器，构造筛选条件列表ArrayItemCriteriaList
+			ArrayItemFilterService arrayItemFilterService = context.getBean(ArrayItemFilterService.class);
+			List<ArrayItemCriteria> aCriterias = arrayItemFilterService.getArrayItemFilterCriterias(this.karuiServ.getDetailTemplateId(), this.user);
+			this.queryParam.setArrayItemCriterias(aCriterias);
+		}
+		
+		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
+		this.queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
+		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
+		this.sortedEntitiesQuery = entityService.getNormalSortedEntitiesQuery(this.queryParam);
+		this.sortedEntitiesQuery.setPageSize(this.pageInfo.getPageSize());
+		this.sortedEntitiesQuery.setCachedPageCount(10);
+		//完成准备工作
+		EntityParserParameter parserParam = new EntityParserParameter(this.moduleName, this.user);
+		this.parserConverter = entity->entityService.toEntityParser(entity, parserParam);
+		//生成查询条件值的map
+		generateCriteriaValueMap(nCriterias);
+		return this;
+	}
 	private void doPrepareForStatList(Map<Long, String> requrestCriteriaMap, ApplicationContext appContext) {
 		String moduleName = this.getModuleName();
 		
@@ -366,7 +420,7 @@ public class EntityQuery {
 		});
 		
 		for (TemplateTreeRelationCriteria lCriteria : labelCriterias) {
-			if(Integer.valueOf(1).equals(lCriteria.getIsExcludeLabel())) {
+			if(Constants.TRUE.equals(lCriteria.getIsExcludeLabel())) {
 				queryParam.addRelationExcludeLabels(lCriteria.getFilterLabels());
 			}else {
 				queryParam.addRelationIncludeLabels(lCriteria.getFilterLabels());
@@ -505,6 +559,7 @@ public class EntityQuery {
 	 */
 	private void beforePrepare() {
 		this.sortedEntitiesQuery = null;
+		this.relaltionEntitiesQuery = null;
 		this.viewCriteriaMap = null;
 		this.hiddenCriterias = new LinkedHashSet<>();
 		this.parserConverter = null;
@@ -591,6 +646,15 @@ public class EntityQuery {
 		return context.getBean(tmplServiceClass).getTemplate(tmplId);
 	}
 	
+	public CEntityPropertyParser uniqueResult() {
+		this.setPageSize(1);
+		PagedEntityList list = this.pageList(1);
+		List<CEntityPropertyParser> parsers = list.getParsers();
+		if(parsers != null && !parsers.isEmpty()) {
+			return parsers.get(0);
+		}
+		return null;
+	}
 	
 	public PagedEntityList list() {
 		return this.pageList(this.getPageNo());
@@ -758,5 +822,13 @@ public class EntityQuery {
 	public Set<Long> getStatDisabledColumnIds() {
 		return statDisabledColumnIds;
 	}
+	public EntityQuery setKaruiServ(KaruiServ ks) {
+		this.karuiServ = ks;
+		return this;
+	}
+	public KaruiServ getKaruiServ() {
+		return karuiServ;
+	}
+	
 	
 }

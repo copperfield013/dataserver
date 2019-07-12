@@ -1,5 +1,10 @@
 package cn.sowell.dataserver.model.tmpl.service.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import javax.annotation.Resource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +51,15 @@ public class DetailTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 	@Override
 	public TemplateDetailFieldGroup getFieldGroup(Long groupId) {
 		return getManager().getFieldGroup(groupId);
+	}
+
+	@Override
+	public Map<String, List<TemplateDetailTemplate>> queryByModuleNames(Set<String> moduleNames) {
+		Map<String, List<TemplateDetailTemplate>> map = new HashMap<String, List<TemplateDetailTemplate>>();
+		for (String moduleName : moduleNames) {
+			map.put(moduleName, getManager().queryByModule(moduleName));
+		}
+		return map;
 	}
 	
 

@@ -15,6 +15,7 @@ import cn.sowell.datacenter.entityResolver.FieldConfigure;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
 import cn.sowell.datacenter.entityResolver.FusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.RelationFieldConfigure;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.cachable.manager.AbstractModuleCacheManager;
 import cn.sowell.dataserver.model.cachable.prepare.ModuleTemplateReferData;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -127,7 +128,7 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 					});
 					
 					//设置数组关联的label选项
-					if(Integer.valueOf(1).equals(fieldGroup.getIsArray())) {
+					if(Constants.TRUE.equals(fieldGroup.getIsArray())) {
 						DictionaryComposite composite = fieldGroup.getComposite();
 						if(composite != null && TextUtils.hasText(composite.getName()) && composite.getRelationSubdomain() == null) {
 							FieldConfigure conf = resolver.getFieldConfigure(composite.getName());

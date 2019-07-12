@@ -15,6 +15,7 @@ import javax.persistence.Transient;
 import com.alibaba.fastjson.annotation.JSONField;
 
 import cn.sowell.datacenter.entityResolver.Composite;
+import cn.sowell.dataserver.Constants;
 
 @Entity
 @Table(name="v_sa_dictionary_composite")
@@ -139,7 +140,7 @@ public class DictionaryComposite implements Composite, Serializable{
 		this.relModuleName = relModuleName;
 	}
 	public String getCompositeType() {
-		if(!Integer.valueOf(1).equals(this.getIsArray())) {
+		if(!Constants.TRUE.equals(this.getIsArray())) {
 			return "normal";
 		}else if(Composite.RELATION_ADD_TYPE.equals(this.getAddType())) {
 			return "relation";

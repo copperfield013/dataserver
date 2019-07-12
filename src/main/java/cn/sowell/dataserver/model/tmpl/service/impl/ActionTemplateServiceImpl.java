@@ -28,6 +28,7 @@ import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.AbstractFusionContextConfigResolver;
 import cn.sowell.datacenter.entityResolver.impl.ArrayItemPropertyParser;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
@@ -105,7 +106,7 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 		if(groups != null) {
 			for (TemplateActionFieldGroup group : groups) {
 				//普通字段
-				if(!Integer.valueOf(1).equals(group.getIsArray())) {
+				if(!Constants.TRUE.equals(group.getIsArray())) {
 					List<TemplateActionField> actFields = group.getFields();
 					for (TemplateActionField aField : actFields) {
 						if(aField.getFieldAvailable()) {

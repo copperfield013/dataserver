@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import cn.sowell.dataserver.model.dict.validator.ModuleCachableMetaSupportor;
+import cn.sowell.dataserver.model.karuiserv.manager.KaruiServManager;
 import cn.sowell.dataserver.model.tmpl.dao.ListTemplateDao;
 import cn.sowell.dataserver.model.tmpl.manager.ListTemplateManager;
 import cn.sowell.dataserver.model.tmpl.manager.TemplateGroupManager;
@@ -42,6 +43,14 @@ public class ListTemplateManagerImpl
 	@Override
 	protected void updateCriteria(TemplateListCriteria originCriteria, TemplateListCriteria criteria) {
 		originCriteria.setCompositeId(criteria.getCompositeId());
+	}
+	
+	@Resource
+	KaruiServManager ksManager;
+	@Override
+	protected void afterReloadCache(TemplateListTemplate ltmpl) {
+		super.afterReloadCache(ltmpl);
+		ksManager.updateKaruServByListTemplate(ltmpl);
 	}
 
 

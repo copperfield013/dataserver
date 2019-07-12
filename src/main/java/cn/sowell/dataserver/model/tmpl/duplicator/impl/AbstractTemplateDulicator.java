@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 import org.springframework.util.Assert;
 
 import cn.sowell.copframe.utils.CollectionUtils;
+import cn.sowell.dataserver.Constants;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.dict.service.DictionaryService;
@@ -60,7 +61,7 @@ public abstract class AbstractTemplateDulicator {
 			return composites.iterator().next();
 		}
 		//字段属于多个composite，则要判断字段
-		Set<DictionaryComposite> arrayComposite = composites.stream().filter(composite->Integer.valueOf(1).equals(composite.getIsArray())).collect(Collectors.toSet());
+		Set<DictionaryComposite> arrayComposite = composites.stream().filter(composite->Constants.TRUE.equals(composite.getIsArray())).collect(Collectors.toSet());
 		if(arrayComposite.size() == 0) {
 			//全部都是非数组composite，返回空
 			return null;
