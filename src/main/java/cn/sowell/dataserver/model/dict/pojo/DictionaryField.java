@@ -3,19 +3,17 @@ package cn.sowell.dataserver.model.dict.pojo;
 import java.io.Serializable;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
 import cn.sowell.datacenter.entityResolver.Field;
 
-@Entity
-@Table(name="v_sa_dictionary_field")
+/*@Entity
+@Table(name="v_sa_dictionary_field")*/
 public class DictionaryField implements Field, Serializable{
 	/**
 	 * 
@@ -25,11 +23,11 @@ public class DictionaryField implements Field, Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@JSONField(name="id")
-	private Long id;
+	private Integer id;
 	
 	@Column(name="composite_id")
 	@JSONField(name="c_id")
-	private Long compositeId;
+	private Integer compositeId;
 	
 	@Transient
 	@JSONField(serialize=false, deserialize=false)
@@ -55,7 +53,7 @@ public class DictionaryField implements Field, Serializable{
 	private String abcType;
 	
 	@Column(name="optgroup_id")
-	private Long optionGroupId;
+	private Integer optionGroupId;
 	
 	@Column(name="c_cas_level")
 	private Integer casLevel;
@@ -69,16 +67,16 @@ public class DictionaryField implements Field, Serializable{
 	@Transient
 	private String fieldPattern;
 	
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
-	public void setId(Long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
-	public Long getCompositeId() {
+	public Integer getCompositeId() {
 		return compositeId;
 	}
-	public void setCompositeId(Long compositeId) {
+	public void setCompositeId(Integer compositeId) {
 		this.compositeId = compositeId;
 	}
 	public String getFullKey() {
@@ -99,10 +97,10 @@ public class DictionaryField implements Field, Serializable{
 	public void setType(String type) {
 		this.type = type;
 	}
-	public Long getOptionGroupId() {
+	public Integer getOptionGroupId() {
 		return optionGroupId;
 	}
-	public void setOptionGroupId(Long optionGroupId) {
+	public void setOptionGroupId(Integer optionGroupId) {
 		this.optionGroupId = optionGroupId;
 	}
 	public String getAbcType() {

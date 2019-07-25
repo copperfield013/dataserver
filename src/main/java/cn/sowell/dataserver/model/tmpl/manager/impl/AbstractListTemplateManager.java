@@ -67,7 +67,7 @@ public abstract class AbstractListTemplateManager<LT extends AbstractListTemplat
 	@Override
 	protected void handlerCache(LT latest, PreparedToListTemplate<COL, CRI> prepareToCache) {
 		beforeHandleCache(latest, prepareToCache);
-		Map<Long, DictionaryField> fieldMap = prepareToCache.getReferData().getFieldMap();
+		Map<Integer, DictionaryField> fieldMap = prepareToCache.getReferData().getFieldMap();
 		if(prepareToCache.getColumns() != null) {
 			prepareToCache.getColumns().forEach(column->{
 				if(column.getSpecialField() == null) {

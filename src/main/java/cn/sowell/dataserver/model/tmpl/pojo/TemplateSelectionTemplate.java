@@ -16,7 +16,7 @@ public class TemplateSelectionTemplate extends AbstractListTemplate<TemplateSele
 	private Integer multiple;
 	
 	@Column(name="composite_id")
-	private Long compositeId;
+	private Integer compositeId;
 	
 	@Column(name="c_nonunique")
 	private Integer nonunique;
@@ -33,10 +33,10 @@ public class TemplateSelectionTemplate extends AbstractListTemplate<TemplateSele
 	public void setNonunique(Integer nonunique) {
 		this.nonunique = nonunique;
 	}
-	public Long getCompositeId() {
+	public Integer getCompositeId() {
 		return compositeId;
 	}
-	public void setCompositeId(Long compositeId) {
+	public void setCompositeId(Integer compositeId) {
 		this.compositeId = compositeId;
 	}
 	public Integer getMultiple() {

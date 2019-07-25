@@ -24,17 +24,17 @@ public interface DictionaryDao {
 	 * @param compositeIds
 	 * @return
 	 */
-	Map<Long, List<DictionaryField>> getAllFields(Set<Long> compositeIds);
+	Map<Integer, List<DictionaryField>> getAllFields(Set<Integer> compositeIds);
 
 	public List<DictionaryOption> getAllOptions();
 
-	Map<Long, List<OptionItem>> getFieldOptionsMap(Set<Long> fieldIds);
+	Map<Integer, List<OptionItem>> getFieldOptionsMap(Set<Integer> fieldIds);
 
-	Map<Long, DictionaryField> getFieldMap(Set<Long> fieldIds);
+	Map<Integer, DictionaryField> getFieldMap(Set<Integer> fieldIds);
 
-	Map<Long, DictionaryRelationLabels> getRelationSubdomainMap(Set<Long> compositeIds);
+	Map<Integer, DictionaryRelationLabels> getRelationSubdomainMap(Set<Integer> compositeIds);
 
-	List<DictionaryOption> queryOptions(Long optGroupId);
+	List<DictionaryOption> queryOptions(Integer optGroupId);
 
 	List<DictionaryComposite> getAllComposites();
 

@@ -17,12 +17,12 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.auth.constant.AuthConstant;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.beust.jcommander.internal.Maps;
 
+import cho.carbon.auth.constant.AuthConstant;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
@@ -63,13 +63,13 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	private final TimelinessMap<String, List<DictionaryComposite>> moduleCompositesMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinessMap<String, List<DictionaryField>> moduleFieldsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final TimelinenessWrapper<List<DictionaryOption>> optionsCache = new TimelinenessWrapper<>(GLOBAL_TIMEOUT);
-	private final TimelinessMap<Long, List<OptionItem>> optionItemsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
+	private final TimelinessMap<Integer, List<OptionItem>> optionItemsMap = new TimelinessMap<>(GLOBAL_TIMEOUT);
 	private final Map<String, Set<FieldParserDescription>> fieldDescsMap = new HashMap<>();
 	
 	
 	
 	@Override
-	public synchronized DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Long fieldId) {
+	public synchronized DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Integer fieldId) {
 		DictionaryField field = getAllFields(module).stream().filter(f->fieldId.equals(f.getId())).findFirst().orElse(null);
 		return field != null? field.getComposite(): null;
 	}
@@ -93,8 +93,8 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 				Set<String> uncontainedModuleNames = moduleNames.stream().filter(moduleName->!moduleCompositesMap.contains(moduleName)).collect(Collectors.toSet());
 				if(!uncontainedModuleNames.isEmpty()) {
 					List<DictionaryComposite> composites = dictDao.getAllComposites(uncontainedModuleNames);
-					Map<Long, List<DictionaryField>> allCompositeFieldMap = dictDao.getAllFields(CollectionUtils.toSet(composites, DictionaryComposite::getId));
-					Map<Long, DictionaryRelationLabels> allRelationSubdomainMaps = 
+					Map<Integer, List<DictionaryField>> allCompositeFieldMap = dictDao.getAllFields(CollectionUtils.toSet(composites, DictionaryComposite::getId));
+					Map<Integer, DictionaryRelationLabels> allRelationSubdomainMaps = 
 							dictDao.getRelationSubdomainMap(
 									CollectionUtils.toSet(composites.stream().filter(
 											c->Composite.RELATION_ADD_TYPE.equals(c.getAddType())
@@ -113,10 +113,10 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 	private void handlerComposite(
 			List<DictionaryComposite> composites, 
-			Map<Long, List<DictionaryField>> allCompositeFieldsMap,
-			Map<Long, DictionaryRelationLabels> allRelationSubdomainMaps){
+			Map<Integer, List<DictionaryField>> allCompositeFieldsMap,
+			Map<Integer, DictionaryRelationLabels> allRelationSubdomainMaps){
 		handerWithConfig(composites);
-		Map<Long, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
+		Map<Integer, DictionaryComposite> compositeMap = CollectionUtils.toMap(composites, DictionaryComposite::getId);
 		//Map<Long, List<DictionaryField>> compositeFieldMap = dictDao.getAllFields(compositeMap.keySet());
 	
 		allCompositeFieldsMap.forEach((cId, fields)->fields.forEach(field->{
@@ -142,9 +142,9 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	
 	
 	@Override
-	public Map<Long, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Long> compositeIds) {
+	public Map<Integer, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Integer> compositeIds) {
 		if(compositeIds != null) {
-			Map<Long, DictionaryCompositeExpand> expandMap = new HashMap<>();
+			Map<Integer, DictionaryCompositeExpand> expandMap = new HashMap<>();
 			Set<DictionaryComposite> composites = getAllComposites(moduleName).stream().filter(composite->compositeIds.contains(composite.getId())).collect(Collectors.toSet());
 			for (DictionaryComposite composite : composites) {
 				DictionaryCompositeExpand expand = new DictionaryCompositeExpand();
@@ -175,7 +175,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public Set<String> getCompositeClasses(String moduleName, Long compositeId){
+	public Set<String> getCompositeClasses(String moduleName, Integer compositeId){
 		DictionaryComposite composite = getComposite(moduleName, compositeId);
 		Set<String> classes = new HashSet<>();
 		if(composite != null) {
@@ -210,7 +210,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 
 	@Override
-	public DictionaryComposite getComposite(String module, Long compositeId) {
+	public DictionaryComposite getComposite(String module, Integer compositeId) {
 		return getAllComposites(module).stream().filter(composite->compositeId.equals(composite.getId())).findFirst().orElse(null);
 	}
 	
@@ -274,7 +274,7 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public synchronized Map<Long, List<OptionItem>> getOptionsMap(Set<Long> fieldIds) {
+	public synchronized Map<Integer, List<OptionItem>> getOptionsMap(Set<Integer> fieldIds) {
 		return optionItemsMap.getMap(fieldIds, (fs, optionMap)->{
 			optionMap.putAll(dictDao.getFieldOptionsMap(fs));
 		});
@@ -365,13 +365,13 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	@Override
-	public DictionaryField getField(String module, Long fieldId) {
+	public DictionaryField getField(String module, Integer fieldId) {
 		return getAllFields(module).stream().filter(field->field.getId().equals(fieldId)).findFirst().orElse(null);
 	}
 
 	
 	@Override
-	public Map<Long, DictionaryField> getFieldMap(String module, Set<Long> fieldIds) {
+	public Map<Integer, DictionaryField> getFieldMap(String module, Set<Integer> fieldIds) {
 		return getAllFields(module)
 				.stream().filter(field->fieldIds.contains(field.getId()))
 				.collect(Collectors.toMap(field->field.getId(), field->field));
@@ -420,9 +420,9 @@ public class DictionaryServiceImpl implements DictionaryService, FieldService{
 	}
 	
 	
-	Map<Long, List<DictionaryOption>> casOptionMap;
+	Map<Integer, List<DictionaryOption>> casOptionMap;
 	@Override
-	public List<DictionaryOption> queryOptions(Long optGroupId) {
+	public List<DictionaryOption> queryOptions(Integer optGroupId) {
 		synchronized (this) {
 			if(casOptionMap == null) {
 				casOptionMap = new HashMap<>();

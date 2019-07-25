@@ -12,10 +12,8 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.ServletRequestParameterPropertyValues;
 
-import com.abc.panel.EntitySortedPagedQueryFactory;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-
+import cho.carbon.panel.EntitySortedPagedQueryFactory;
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
@@ -101,7 +99,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 	
 	
 	@Override
-	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName, EntityCriteriaFactory criteriaFactory){
+	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName, EntityConJunctionFactory conjunctionFactory){
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
@@ -113,13 +111,12 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 				}else if(nCriteria.getCompositeId() != null) {
 					nCriteria.setComposite(dictService.getComposite(moduleName, nCriteria.getCompositeId()));
 				}
-				converter.invokeAddCriteria(criteriaFactory, nCriteria);
+				converter.invokeAddCriteria(conjunctionFactory, nCriteria);
 			}
 		});
 	}
 	@Override
-	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName,
-			MultiAttrCriteriaFactory arrayItemCriteriaFactory) {
+	public void appendCompositeCriterias(List<NormalCriteria> nCriterias, String moduleName, EntityConJunctionFactory conjunctionFactory) {
 		nCriterias.forEach(nCriteria->{
 			CriteriaConverter converter = criteriaConverterFactory.getConverter(nCriteria);
 			if(converter != null) {
@@ -129,7 +126,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 						nCriteria.setComposite(dictService.getCurrencyCacheCompositeByFieldId(moduleName, nCriteria.getFieldId()));
 					}
 				}
-				converter.invokeAddCriteria(arrayItemCriteriaFactory, nCriteria);
+				converter.invokeAddCriteria(conjunctionFactory, nCriteria);
 			}
 		});
 	}
@@ -182,18 +179,23 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 		List<ArrayItemCriteria> aCriterias = queryParam.getArrayItemCriterias();
 		for (ArrayItemCriteria aCriteria : aCriterias) {
 			List<NormalCriteria> nCriterias = aCriteria.getCriterias();
-			if(aCriteria.isRelation()) {
-				EntityCriteriaFactory relationCriteriaFactory = sortedPagedQueryFactory.getSubEntityCriteriaFactory(aCriteria.getComposite().getName());
-				appendCriterias(nCriterias, aCriteria.getModuleName(), relationCriteriaFactory);
-			}else {
-				MultiAttrCriteriaFactory arrayItemCriteriaFactory = sortedPagedQueryFactory.getSubMultiAttrCriteriaFactory(aCriteria.getComposite().getName());
-				appendCriterias(nCriterias, aCriteria.getModuleName(), arrayItemCriteriaFactory);
-			}
+			appendCompositeCriterias(nCriterias, aCriteria.getModuleName(), sortedPagedQueryFactory.getHostParamFactory().getEntityConJunctionFactory());
+			/*
+			 * if(aCriteria.isRelation()) { QueryEntityParamFactory relationCriteriaFactory
+			 * =
+			 * sortedPagedQueryFactory.getSubEntityCriteriaFactory(aCriteria.getComposite().
+			 * getName()); appendCompositeCriterias(nCriterias, aCriteria.getModuleName(),
+			 * relationCriteriaFactory); }else { QueryEnGroup2DParamFactory
+			 * arrayItemCriteriaFactory =
+			 * sortedPagedQueryFactory.getGroup2DParamFactory(aCriteria.getComposite().
+			 * getName()); appendCriterias(nCriterias, aCriteria.getModuleName(),
+			 * arrayItemCriteriaFactory); }
+			 */
 		}
 	}
 
 	@Override
-	public Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias) {
+	public Consumer<EntityConJunctionFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias) {
 		return factory->{
 			appendCriterias(nCriterias, moduleName, factory);
 		};

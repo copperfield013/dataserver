@@ -19,7 +19,7 @@ public interface DictionaryService {
 	
 	List<DictionaryOption> getAllOptions();
 
-	public Map<Long, List<OptionItem>> getOptionsMap(Set<Long> fieldIds);
+	public Map<Integer, List<OptionItem>> getOptionsMap(Set<Integer> fieldIds);
 	
 	/**
 	 * 从所有配置文件中获得所有label字段的map
@@ -27,15 +27,15 @@ public interface DictionaryService {
 	 */
 	Map<String, Set<Label>> getAllLabelsMap();
 
-	DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Long fieldId);
+	DictionaryComposite getCurrencyCacheCompositeByFieldId(String module, Integer fieldId);
 
 	Map<String, Label> getModuleLabelMap(String module);
 	
 	Map<String, Label> getModuleLabelMap(String module, Set<String> criteriaFieldNames);
 
-	DictionaryField getField(String module, Long fieldId);
+	DictionaryField getField(String module, Integer fieldId);
 
-	Map<Long, DictionaryField> getFieldMap(String module, Set<Long> fieldIds);
+	Map<Integer, DictionaryField> getFieldMap(String module, Set<Integer> fieldIds);
 
 	Map<String, Set<String>> getFieldInputTypeMap();
 
@@ -45,16 +45,16 @@ public interface DictionaryService {
 	 * @param compositeId
 	 * @return
 	 */
-	DictionaryComposite getComposite(String module, Long compositeId);
+	DictionaryComposite getComposite(String module, Integer compositeId);
 
 	/**
 	 * 
 	 * @param optGroupId
 	 * @return
 	 */
-	List<DictionaryOption> queryOptions(Long optGroupId);
+	List<DictionaryOption> queryOptions(Integer optGroupId);
 
-	Set<String> getCompositeClasses(String moduleName, Long compositeId);
+	Set<String> getCompositeClasses(String moduleName, Integer compositeId);
 
 	/**
 	 * 获得字段在目标模块中的字段对象
@@ -70,7 +70,7 @@ public interface DictionaryService {
 
 	Map<String, List<DictionaryField>> getAllFields(Set<String> moduleNames);
 
-	Map<Long, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Long> compositeIds);
+	Map<Integer, DictionaryCompositeExpand> getCompositeExpandMap(String moduleName, Set<Integer> compositeIds);
 
 
 }

@@ -12,10 +12,10 @@ import javax.persistence.Table;
 public class DictionaryOption {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	private Long id;
+	private Integer id;
 	
 	@Column(name="group_id")
-	private Long groupId;
+	private Integer groupId;
 	
 	@Column(name="c_title")
 	private String title;
@@ -41,19 +41,19 @@ public class DictionaryOption {
 //	@Column(name="c_authority")
 //	private String authority;
 
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
-	public Long getGroupId() {
+	public Integer getGroupId() {
 		return groupId;
 	}
 
-	public void setGroupId(Long groupId) {
+	public void setGroupId(Integer groupId) {
 		this.groupId = groupId;
 	}
 

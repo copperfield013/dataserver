@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.abc.mapping.entity.Entity;
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.rrc.query.entity.RelationEntitySPQuery;
-import com.abc.rrc.query.entity.SortedPagedQuery;
-
+import cho.carbon.entity.entity.Entity;
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.query.entity.RelationEntitySPQuery;
+import cho.carbon.query.entity.SortedPagedQuery;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;

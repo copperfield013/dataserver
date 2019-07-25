@@ -55,7 +55,7 @@ public class ArrayItemFilterManagerImpl
 
 	@Override
 	protected void handlerCache(TemplateDetailArrayItemFilter latest, PreparedToArrayItemFilter prepareToCache) {
-		Map<Long, DictionaryField> fieldMap = prepareToCache.getReferData().getFieldMap();
+		Map<Integer, DictionaryField> fieldMap = prepareToCache.getReferData().getFieldMap();
 		if(prepareToCache.getCriterias() != null) {
 			prepareToCache.getCriterias().forEach(criteria->{
 				if(criteria.getFieldId() != null) {

@@ -6,8 +6,7 @@ import java.util.Map;
 
 import org.springframework.util.Assert;
 
-import com.abc.model.enun.AttributeValueType;
-
+import cho.carbon.meta.enun.AttributeValueType;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
@@ -16,9 +15,9 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateSelectionTemplate;
 
 public class SelectionTemplateEntityView extends EntityView<TemplateSelectionTemplate, SelectionTemplateEntityViewCriteria>{
 
-	private Map<Long, DictionaryField> fieldMap;
+	private Map<Integer, DictionaryField> fieldMap;
 	
-	public SelectionTemplateEntityView(TemplateSelectionTemplate selectionTemplate, Map<Long, DictionaryField> fieldMap) {
+	public SelectionTemplateEntityView(TemplateSelectionTemplate selectionTemplate, Map<Integer, DictionaryField> fieldMap) {
 		super();
 		Assert.notNull(selectionTemplate);
 		Assert.notNull(fieldMap);
@@ -62,7 +61,7 @@ public class SelectionTemplateEntityView extends EntityView<TemplateSelectionTem
 						}
 						
 						@Override
-						public Long getFieldId() {
+						public Integer getFieldId() {
 							return tColumn.getFieldId();
 						}
 
@@ -73,7 +72,7 @@ public class SelectionTemplateEntityView extends EntityView<TemplateSelectionTem
 						
 						@Override
 						public AttributeValueType getFieldType() {
-							return AttributeValueType.getValueType(getFieldDependency().getAbcType());
+							return AttributeValueType.getType(getFieldDependency().getAbcType());
 						}
 
 						@Override

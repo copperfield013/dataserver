@@ -2,12 +2,9 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
 import javax.annotation.Resource;
 
-import com.abc.rrc.query.criteria.CommonSymbol;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
-import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
-import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-
+import cho.carbon.meta.enun.operator.UnaryOperator;
+import cho.carbon.query.entity.factory.EnRightRelationJunctionFactory;
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
@@ -27,19 +24,30 @@ public class UserRelationExistCriteriaConverter implements CriteriaConverter{
 	}
 
 	@Override
-	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory,
+	public void invokeAddCriteria(EntityConJunctionFactory conjunctionFactory,
 			NormalCriteria nCriteria) {
 		if(nCriteria.getComposite() != null && TextUtils.hasText(nCriteria.getValue())) {
 			String compositeName = nCriteria.getComposite().getName();
 			
-			EntityRelationCriteriaFactory relationCriteriaFactory = criteriaFactory.getRelationCriteriaFacotry(compositeName);
-			EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = relationCriteriaFactory.getEntityUnRecursionCriteriaFactory();
+			EnRightRelationJunctionFactory rightCriteriaFactory = conjunctionFactory.getRighterCriteriaFactory(compositeName);
 			
 			String userCode = getUserCode();
-			unrecursionCriteriaFactory
-				.setIncludeRType(nCriteria.getValue()).getRightEntityCriteriaFactory()
-				.addCriteria(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, userCode, CommonSymbol.EQUAL)
-			;
+			rightCriteriaFactory.getRightRelationCriterionFactory()
+				.getRightJunctionFactory().getGroupFactory()
+				.addCommon(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, userCode, UnaryOperator.EQUAL);
+			
+			
+			/*
+			 * EntityRelationCriteriaFactory relationCriteriaFactory =
+			 * criteriaFactory.getRelationCriteriaFacotry(compositeName);
+			 * EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory =
+			 * relationCriteriaFactory.getEntityUnRecursionCriteriaFactory();
+			 * 
+			 * String userCode = getUserCode(); unrecursionCriteriaFactory
+			 * .setIncludeRType(nCriteria.getValue()).getRightEntityCriteriaFactory()
+			 * .addCriteria(ABCNodeProxy.CODE_PROPERTY_NAME_NORMAL, userCode,
+			 * CommonSymbol.EQUAL) ;
+			 */
 			
 			/*
 			String mappingName = fusionContext.getABCNode().getRelation(compositeName).getFullTitle();
@@ -72,10 +80,4 @@ public class UserRelationExistCriteriaConverter implements CriteriaConverter{
 	public void setUserCodeSupplier(UserCodeSupplier userCodeSupplier) {
 		this.userCodeSupplier = userCodeSupplier;
 	}
-	
-	@Override
-	public void invokeAddCriteria(MultiAttrCriteriaFactory arrayItemCriteriaFactory, NormalCriteria nCriteria) {
-		throw new UnsupportedOperationException();
-	}
-
 }

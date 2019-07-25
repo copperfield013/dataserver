@@ -12,9 +12,8 @@ import javax.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.rrc.query.entity.SortedPagedQuery;
-
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.query.entity.SortedPagedQuery;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
@@ -103,7 +102,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 			}
 			Assert.notNull(lCriteria.getListTemplateId(), "ListTemplateEntiryViewCriteria的listTemplateId不能为空");
 			TemplateListTemplate ltmpl = ltmplService.getTemplate(lCriteria.getListTemplateId());
-			Map<Long, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(ltmpl.getColumns(), col->col.getFieldId()));
+			Map<Integer, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(ltmpl.getColumns(), col->col.getFieldId()));
 			ListTemplateEntityView lview = new ListTemplateEntityView(ltmpl, fieldMap);
 			view = lview;
 			entities = queryEntities(lCriteria, ltmpl);
@@ -112,7 +111,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 			//parsers = CollectionUtils.toList(entities, entity->entityService.getModuleEntityParser(moduleName, entity, criteria.getUser()));
 		}else if(criteria instanceof SelectionTemplateEntityViewCriteria){
 			SelectionTemplateEntityViewCriteria sCriteria = (SelectionTemplateEntityViewCriteria) criteria;
-			Map<Long, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(sCriteria.getSelectionTemplate().getColumns(), col->col.getFieldId()));
+			Map<Integer, DictionaryField> fieldMap = dService.getFieldMap(moduleName, CollectionUtils.toSet(sCriteria.getSelectionTemplate().getColumns(), col->col.getFieldId()));
 			SelectionTemplateEntityView sview = new SelectionTemplateEntityView(sCriteria.getSelectionTemplate(), fieldMap);
 			view = sview;
 			entities = queryEntities(sCriteria, sCriteria.getSelectionTemplate());
@@ -125,7 +124,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 		}
 		
 		view.setCriteria(criteria);
-		Set<Long> criteriaFieldIds = view.getCriteria().getCriteriaEntries().stream().filter(entry->entry.getFieldId() != null).map(CriteriaEntry::getFieldId).collect(Collectors.toSet());
+		Set<Integer> criteriaFieldIds = view.getCriteria().getCriteriaEntries().stream().filter(entry->entry.getFieldId() != null).map(CriteriaEntry::getFieldId).collect(Collectors.toSet());
 		Set<String> criteriaFieldNames = view.getCriteria()
 					.getCriteriaEntries().stream().map(entry->{
 						DictionaryField field = dService.getField(moduleName, entry.getFieldId());
@@ -240,7 +239,7 @@ public class ViewDataServiceImpl implements ViewDataService{
 			nCriterias.add(nCriteria);
 		}
 		
-		param.setCriteriaFactoryConsumer((criteriaFactory)->{
+		param.setConjunctionFactoryConsumer(criteriaFactory->{
 			lcriteriaFactory.appendCriterias(nCriterias, 
 					criteria.getModule(), 
 					criteriaFactory

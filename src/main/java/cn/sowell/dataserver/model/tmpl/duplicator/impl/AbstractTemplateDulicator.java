@@ -37,7 +37,7 @@ public abstract class AbstractTemplateDulicator {
 			AbstractDetailFieldGroup<? extends AbstractDetailField> group) {
 		Assert.notEmpty(tfields);
 		//获得目标模块下的所有字段
-		Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(targetModuleName), f->f.getId());
+		Map<Integer, DictionaryField> fieldMap = CollectionUtils.toMap(dictService.getAllFields(targetModuleName), f->f.getId());
 		Set<DictionaryComposite> composites = new LinkedHashSet<>();
 		Set<AbstractDetailField> toRemoves = new HashSet<>();
 		for (AbstractDetailField tfield : tfields) {

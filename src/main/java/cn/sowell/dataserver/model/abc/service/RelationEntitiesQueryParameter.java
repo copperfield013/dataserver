@@ -4,8 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.TextUtils;
@@ -16,7 +15,7 @@ public class RelationEntitiesQueryParameter {
 	private String relationName;
 	private UserIdentifier user;
 	private PageInfo pageInfo;
-	private Consumer<EntityCriteriaFactory> criteriaFactoryConsumer;
+	private Consumer<EntityConJunctionFactory> criteriaFactoryConsumer;
 	private Set<String> relationExcludeLabels = new HashSet<>();
 	private Set<String> relationIncludeLabels = new HashSet<>();
 	
@@ -52,11 +51,11 @@ public class RelationEntitiesQueryParameter {
 		return user;
 	}
 
-	public Consumer<EntityCriteriaFactory> getCriteriaFactoryConsumer() {
+	public Consumer<EntityConJunctionFactory> getCriteriaFactoryConsumer() {
 		return criteriaFactoryConsumer;
 	}
 
-	public RelationEntitiesQueryParameter setCriteriaFactoryConsumer(Consumer<EntityCriteriaFactory> criteriaFactoryConsumer) {
+	public RelationEntitiesQueryParameter setCriteriaFactoryConsumer(Consumer<EntityConJunctionFactory> criteriaFactoryConsumer) {
 		this.criteriaFactoryConsumer = criteriaFactoryConsumer;
 		return this;
 	}

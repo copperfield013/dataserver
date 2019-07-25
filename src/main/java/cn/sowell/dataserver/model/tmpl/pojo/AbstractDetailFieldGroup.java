@@ -35,7 +35,7 @@ public class AbstractDetailFieldGroup<FIELD extends AbstractDetailField> {
 	private Long selectionTemplateId;
 	
 	@Column(name="composite_id")
-	private Long compositeId;
+	private Integer compositeId;
 	
 	@Transient
 	private String relationLabelAccess;
@@ -118,10 +118,10 @@ public class AbstractDetailFieldGroup<FIELD extends AbstractDetailField> {
 	public void setIsArray(Integer isArray) {
 		this.isArray = isArray;
 	}
-	public Long getCompositeId() {
+	public Integer getCompositeId() {
 		return compositeId;
 	}
-	public void setCompositeId(Long compositeId) {
+	public void setCompositeId(Integer compositeId) {
 		this.compositeId = compositeId;
 	}
 	public DictionaryComposite getComposite() {

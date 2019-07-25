@@ -3,7 +3,7 @@ package cn.sowell.dataserver.model.tmpl.bean;
 import java.util.Date;
 import java.util.List;
 
-import com.abc.rrc.query.queryrecord.criteria.Criteria;
+import org.hibernate.Criteria;
 
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;

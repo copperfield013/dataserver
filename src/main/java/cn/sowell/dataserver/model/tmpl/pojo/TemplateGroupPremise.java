@@ -16,7 +16,7 @@ public class TemplateGroupPremise {
 	private Long id;
 	
 	@Column(name="field_id")
-	private Long fieldId;
+	private Integer fieldId;
 	
 	@Column(name="group_id")
 	private Long groupId;
@@ -41,11 +41,11 @@ public class TemplateGroupPremise {
 		this.id = id;
 	}
 
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
 
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 

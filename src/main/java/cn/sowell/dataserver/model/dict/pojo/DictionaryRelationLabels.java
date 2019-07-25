@@ -3,20 +3,20 @@ package cn.sowell.dataserver.model.dict.pojo;
 import java.util.Set;
 
 public class DictionaryRelationLabels {
-	private Long relationId;
-	private Long labelId;
+	private Integer relationId;
+	private Integer labelId;
 	private Set<String> labels;
 	private String access;
-	public Long getRelationId() {
+	public Integer getRelationId() {
 		return relationId;
 	}
-	public void setRelationId(Long relationId) {
+	public void setRelationId(Integer relationId) {
 		this.relationId = relationId;
 	}
-	public Long getLabelId() {
+	public Integer getLabelId() {
 		return labelId;
 	}
-	public void setLabelId(Long labelId) {
+	public void setLabelId(Integer labelId) {
 		this.labelId = labelId;
 	}
 	public Set<String> getLabels() {

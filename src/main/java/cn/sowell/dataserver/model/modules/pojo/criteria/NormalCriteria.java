@@ -5,8 +5,8 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatCriteria;
 
 public class NormalCriteria implements Cloneable{
 	private Long criteriaId;
-	private Long fieldId;
-	private Long compositeId;
+	private Integer fieldId;
+	private Integer compositeId;
 	private String fieldName;
 	private String comparator;
 	private String value;
@@ -49,10 +49,10 @@ public class NormalCriteria implements Cloneable{
 	public void setComposite(DictionaryComposite composite) {
 		this.composite = composite;
 	}
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 	public String getFieldName() {
@@ -74,11 +74,11 @@ public class NormalCriteria implements Cloneable{
 		this.relationLabel = relationLabel;
 	}
 
-	public Long getCompositeId() {
+	public Integer getCompositeId() {
 		return compositeId;
 	}
 
-	public void setCompositeId(Long compositeId) {
+	public void setCompositeId(Integer compositeId) {
 		this.compositeId = compositeId;
 	}
 

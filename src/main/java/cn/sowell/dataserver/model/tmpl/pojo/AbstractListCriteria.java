@@ -22,7 +22,7 @@ public class AbstractListCriteria {
 	private String title;
 	
 	@Column(name="field_id")
-	private Long fieldId;
+	private Integer fieldId;
 	
 	//@Column(name="c_field_key")
 	@Transient
@@ -88,11 +88,11 @@ public class AbstractListCriteria {
 		this.title = title;
 	}
 
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
 
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 

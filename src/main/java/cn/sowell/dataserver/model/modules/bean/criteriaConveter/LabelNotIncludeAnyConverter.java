@@ -1,10 +1,9 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import java.util.Set;
+import java.util.List;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
-import com.abc.rrc.query.criteria.IncludeSymbol;
+import cho.carbon.meta.enun.operator.IncludeOperator;
+import cho.carbon.query.entity.factory.EnGroupJunctionFactory;
 
 public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
 	
@@ -14,15 +13,8 @@ public class LabelNotIncludeAnyConverter extends LabelIncludeAnyConverter{
 	
 	
 	@Override
-	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
-		Set<String> valueSet = getValueSet(value);
-		cFactory.addIncludeCriteria(fieldName, valueSet, IncludeSymbol.NOT_INCLUDES);
+	protected void addNormalCriteria(EnGroupJunctionFactory cFactory, String fieldName, String value) {
+		List<String> valueSet = getValues(value);
+		cFactory.addInclude(fieldName, valueSet, IncludeOperator.EXCLUDES);
 	}
-	
-	@Override
-	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
-		Set<String> valueSet = getValueSet(value);
-		relationEntityFactory.addIncludeCriteria(suffix, valueSet, IncludeSymbol.NOT_INCLUDES);
-	}
-
 }

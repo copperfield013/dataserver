@@ -9,8 +9,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.util.Assert;
 
-import com.abc.model.enun.AttributeValueType;
-
+import cho.carbon.meta.enun.AttributeValueType;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 import cn.sowell.dataserver.model.modules.exception.UnknowFieldException;
@@ -22,12 +21,12 @@ public abstract class AbstractListTemplateEntityView<
 		T extends AbstractListTemplate<COL, CRI>, 
 		COL extends AbstractListColumn, 
 		CRI extends AbstractListCriteria, EC extends EntityViewCriteria> extends EntityView<T, EC>{
-	private Map<Long, DictionaryField> fieldMap;
+	private Map<Integer, DictionaryField> fieldMap;
 	
 	private Set<Long> disabledColumns = new HashSet<>();
 
 
-	public AbstractListTemplateEntityView(T listTemplate, Map<Long, DictionaryField> fieldMap) {
+	public AbstractListTemplateEntityView(T listTemplate, Map<Integer, DictionaryField> fieldMap) {
 		super();
 		Assert.notNull(listTemplate);
 		Assert.notNull(fieldMap);
@@ -71,7 +70,7 @@ public abstract class AbstractListTemplateEntityView<
 						}
 						
 						@Override
-						public Long getFieldId() {
+						public Integer getFieldId() {
 							return tColumn.getFieldId();
 						}
 
@@ -82,7 +81,7 @@ public abstract class AbstractListTemplateEntityView<
 						
 						@Override
 						public AttributeValueType getFieldType() {
-							return AttributeValueType.getValueType(getFieldDependency().getAbcType());
+							return AttributeValueType.getType(getFieldDependency().getAbcType());
 						}
 
 						@Override

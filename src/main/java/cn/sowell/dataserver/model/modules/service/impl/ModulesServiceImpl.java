@@ -66,7 +66,7 @@ public class ModulesServiceImpl implements ModulesService{
 	}
 	
 	@Override
-	public ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId) {
+	public ModuleMeta getCompositeRelatedModule(String moduleName, Integer compositeId) {
 		DictionaryComposite composite = dictService.getComposite(moduleName, compositeId);
 		String compositeName = composite.getName();
 		return getRelationModule(moduleName, compositeName);

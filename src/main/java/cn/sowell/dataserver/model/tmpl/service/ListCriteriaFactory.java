@@ -8,10 +8,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.MutablePropertyValues;
 
-import com.abc.panel.EntitySortedPagedQueryFactory;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-
+import cho.carbon.panel.EntitySortedPagedQueryFactory;
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.dataserver.model.abc.service.EntityQueryParameter;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 import cn.sowell.dataserver.model.tmpl.pojo.AbstractListCriteria;
@@ -24,7 +22,7 @@ public interface ListCriteriaFactory {
 			Map<Long, ? extends AbstractListCriteria> defaultCriteriaMap);
 
 	void appendCriterias(List<NormalCriteria> nCriterias, String moduleName,
-			EntityCriteriaFactory criteriaFactory);
+			EntityConJunctionFactory criteriaFactory);
 
 	Map<Long, String> exractTemplateCriteriaMap(HttpServletRequest request);
 
@@ -37,9 +35,9 @@ public interface ListCriteriaFactory {
 	void appendArrayItemCriteriaParameter(EntitySortedPagedQueryFactory sortedPagedQueryFactory,
 			EntityQueryParameter queryParam);
 
-	void appendCriterias(List<NormalCriteria> criterias, String moduleName,
-			MultiAttrCriteriaFactory multiCriteriaFactory);
+	void appendCompositeCriterias(List<NormalCriteria> criterias, String moduleName,
+			EntityConJunctionFactory multiCriteriaFactory);
 
-	Consumer<EntityCriteriaFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias);
+	Consumer<EntityConJunctionFactory> getNormalCriteriaFactoryConsumer(String moduleName, List<NormalCriteria> nCriterias);
 
 }

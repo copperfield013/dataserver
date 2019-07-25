@@ -1,8 +1,6 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.utils.TextUtils;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 
@@ -10,26 +8,16 @@ public class RelationExistCriteriaConverter implements CriteriaConverter{
 
 	@Override
 	public boolean support(NormalCriteria nCriteria) {
-		return nCriteria.getCompositeId() != null && "re1".equals(nCriteria.getComparator());
+		return "re1".equals(nCriteria.getComparator()) && nCriteria.getCompositeId() != null && nCriteria.getComposite().getRelationSubdomain() != null;
 	}
 
 	@Override
-	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory,
+	public void invokeAddCriteria(EntityConJunctionFactory conjunctionFactory,
 			NormalCriteria nCriteria) {
 		if(nCriteria.getComposite() != null && TextUtils.hasText(nCriteria.getValue())) {
 			String compositeName = nCriteria.getComposite().getName();
-			criteriaFactory.getRelationCriteriaFacotry(compositeName)
-				.getEntityUnRecursionCriteriaFactory()
-				.setIncludeRType(nCriteria.getValue());
-			//criteriaFactory.addRelationCriteria(compositeName, nCriteria.getValue(), null);
+			conjunctionFactory.getRighterCriteriaFactory(compositeName).getRightRelationCriterionFactory().setInRelationTypes(nCriteria.getValue());
 		}
 	}
-
-	@Override
-	public void invokeAddCriteria(MultiAttrCriteriaFactory arrayItemCriteriaFactory, NormalCriteria nCriteria) {
-		throw new UnsupportedOperationException();
-	}
-	
-	
 
 }

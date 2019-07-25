@@ -18,7 +18,7 @@ public class AbstractDetailField {
 	private Long id;
 	
 	@Column(name="field_id")
-	private Long fieldId;
+	private Integer fieldId;
 	
 	@Column(name="group_id")
 	private Long groupId;
@@ -60,7 +60,7 @@ public class AbstractDetailField {
 	
 	@Transient
 	@Column(name="optgroup_id")
-	private Long optionGroupId;
+	private Integer optionGroupId;
 	
 	@Transient
 	private String optionGroupKey;
@@ -79,10 +79,10 @@ public class AbstractDetailField {
 	public void setId(Long id) {
 		this.id = id;
 	}
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 	public Long getGroupId() {
@@ -139,10 +139,10 @@ public class AbstractDetailField {
 	public void setType(String type) {
 		this.type = type;
 	}
-	public Long getOptionGroupId() {
+	public Integer getOptionGroupId() {
 		return optionGroupId;
 	}
-	public void setOptionGroupId(Long optionGroupId) {
+	public void setOptionGroupId(Integer optionGroupId) {
 		this.optionGroupId = optionGroupId;
 	}
 	public void setFieldUnavailable() {

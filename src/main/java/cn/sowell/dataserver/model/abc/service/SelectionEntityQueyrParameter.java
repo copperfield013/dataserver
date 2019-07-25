@@ -3,15 +3,14 @@ package cn.sowell.dataserver.model.abc.service;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 
 public class SelectionEntityQueyrParameter extends AbstractPureEntityQueryParameter {
 	private Set<String> entityCodes;
 	private PageInfo pageInfo;
-	private Consumer<EntityCriteriaFactory> criteriaFactoryConsumer;
+	private Consumer<EntityConJunctionFactory> conjunctionFactoryConsumer;
 	public SelectionEntityQueyrParameter(String moduleName, String relationName, UserIdentifier user) {
 		super(moduleName, user);
 		setRelationName(relationName);
@@ -28,11 +27,11 @@ public class SelectionEntityQueyrParameter extends AbstractPureEntityQueryParame
 	public void setEntityCodes(Set<String> entityCodes) {
 		this.entityCodes = entityCodes;
 	}
-	public Consumer<EntityCriteriaFactory> getCriteriaFactoryConsumer() {
-		return criteriaFactoryConsumer;
+	public Consumer<EntityConJunctionFactory> getConjunctionFactoryConsumer() {
+		return conjunctionFactoryConsumer;
 	}
-	public void setCriteriaFactoryConsumer(Consumer<EntityCriteriaFactory> criteriaFactoryConsumer) {
-		this.criteriaFactoryConsumer = criteriaFactoryConsumer;
+	public void setConjunctionFactoryConsumer(Consumer<EntityConJunctionFactory> conjunctionFactoryConsumer) {
+		this.conjunctionFactoryConsumer = conjunctionFactoryConsumer;
 	}
 
 }

@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
@@ -13,7 +12,7 @@ import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 public class EntitiesQueryParameter extends AbstractEntityQueryParameter{
 	private Set<String> entityCodes;
 	private PageInfo pageInfo;
-	private Consumer<EntityCriteriaFactory> criteriaFactoryConsumer;
+	private Consumer<EntityConJunctionFactory> criteriaFactoryConsumer;
 	private List<NormalCriteria> statNormalCriterias;
 	private Set<String> statDimensions;
 	public EntitiesQueryParameter(String moduleName, UserIdentifier user) {
@@ -31,12 +30,12 @@ public class EntitiesQueryParameter extends AbstractEntityQueryParameter{
 	public void setEntityCodes(Set<String> entityCodes) {
 		this.entityCodes = entityCodes;
 	}
-	public Consumer<EntityCriteriaFactory> getCriteriaFactoryConsumer() {
+	public Consumer<EntityConJunctionFactory> getConjunctionFactoryConsumer() {
 		return criteriaFactoryConsumer;
 	}
-	public void setCriteriaFactoryConsumer(Consumer<EntityCriteriaFactory> criteriaFactoryConsumer) {
+	public void setConjunctionFactoryConsumer(Consumer<EntityConJunctionFactory> criteriaFactoryConsumer) {
 		this.criteriaFactoryConsumer = criteriaFactoryConsumer;
-	}
+	}	
 	public List<NormalCriteria> getStatNormalCriterias() {
 		return this.statNormalCriterias;
 	}

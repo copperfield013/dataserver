@@ -10,8 +10,7 @@ import javax.annotation.Resource;
 import org.apache.log4j.Logger;
 import org.springframework.util.Assert;
 
-import com.abc.model.enun.NodeOptType;
-
+import cho.carbon.meta.enun.StrucOptType;
 import cn.sowell.copframe.utils.CollectionUtils;
 import cn.sowell.copframe.utils.FormatUtils;
 import cn.sowell.datacenter.entityResolver.FusionContextConfig;
@@ -38,13 +37,13 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 	
 	@Override
 	public String getRelationLabelAccess(DictionaryComposite composite, boolean moduleEntityWritable) {
-		final String READ = NodeOptType.READ.getName();
+		final String READ = StrucOptType.READ.getName();
 		if(!moduleEntityWritable) {
 			return READ;
 		}
 		if(READ.equals(composite.getAccess()) 
-				|| NodeOptType.ADD.getName().equals(composite.getAccess())
-				|| NodeOptType.SUPPLEMENT.getName().equals(composite.getAccess())) {
+				|| StrucOptType.ADD.getName().equals(composite.getAccess())
+				|| StrucOptType.SUPPLEMENT.getName().equals(composite.getAccess())) {
 			return READ;
 		}else {
 			return composite.getRelationLabelAccess();
@@ -53,11 +52,11 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 
 	@Override
 	public String getAdditionRelationLabelAccess(DictionaryComposite composite, boolean moduleEntityWritable) {
-		final String READ = NodeOptType.READ.getName();
+		final String READ = StrucOptType.READ.getName();
 		if(!moduleEntityWritable) {
 			return READ;
 		}
-		if(READ.equals(composite.getAccess()) || NodeOptType.SUPPLEMENT.getName().equals(composite.getAccess())) {
+		if(READ.equals(composite.getAccess()) || StrucOptType.SUPPLEMENT.getName().equals(composite.getAccess())) {
 			return READ;
 		}else {
 			return composite.getRelationLabelAccess();
@@ -69,7 +68,7 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 		Assert.notNull(field);
 		String fAccess = field.getFieldAccess();
 		DictionaryComposite composite = field.getComposite();
-		final NodeOptType READ = NodeOptType.READ;
+		final StrucOptType READ = StrucOptType.READ;
 		if(!moduleEntityWritable) {
 			return READ.getName();
 		}else {
@@ -79,13 +78,13 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 				String cAccess = composite.getAccess();
 				if(READ.getName().equals(cAccess)) {
 					return cAccess;
-				}else if(NodeOptType.ADD.getName().equals(cAccess)) {
+				}else if(StrucOptType.ADD.getName().equals(cAccess)) {
 					//为增的话，已有记录的字段为只读
 					return READ.getName();
-				}else if(NodeOptType.SUPPLEMENT.getName().equals(cAccess)) {
+				}else if(StrucOptType.SUPPLEMENT.getName().equals(cAccess)) {
 					//为补的话，已有记录的字段为只读
 					return READ.getName();
-				}else if(NodeOptType.MERGE.getName().equals(cAccess)) {
+				}else if(StrucOptType.MERGE.getName().equals(cAccess)) {
 					//为并的话，已有记录的字段根据其配置
 					return fAccess;
 				}else {
@@ -100,7 +99,7 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 		Assert.notNull(field);
 		String fAccess = field.getFieldAccess();
 		DictionaryComposite composite = field.getComposite();
-		final NodeOptType READ = NodeOptType.READ;
+		final StrucOptType READ = StrucOptType.READ;
 		if(!moduleEntityWritable) {
 			return READ.getName();
 		}
@@ -130,8 +129,8 @@ public class ModuleCachableMetaSupportorImpl implements ModuleCachableMetaSuppor
 		Map<String, List<DictionaryComposite>> allCompositeMap = dictService.getAllCompositesMap(moduleNames);
 		Map<String, List<DictionaryField>> allFieldsMap = dictService.getAllFields(moduleNames);
 		
-		Map<String, Map<Long, DictionaryComposite>> compositeMap = new HashMap<>();
-		Map<String, Map<Long, DictionaryField>> fieldMap = new HashMap<>();
+		Map<String, Map<Integer, DictionaryComposite>> compositeMap = new HashMap<>();
+		Map<String, Map<Integer, DictionaryField>> fieldMap = new HashMap<>();
 		
 		allCompositeMap.forEach((moduleName, composites)->compositeMap.put(moduleName, CollectionUtils.toMap(composites, DictionaryComposite::getId)));
 		allFieldsMap.forEach((moduleName, fields)->fieldMap.put(moduleName, CollectionUtils.toMap(fields, DictionaryField::getId)));

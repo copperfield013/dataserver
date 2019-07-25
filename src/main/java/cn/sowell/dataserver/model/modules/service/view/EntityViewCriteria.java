@@ -26,8 +26,8 @@ public class EntityViewCriteria {
 	private Map<Long, String> templateCriteriaMap = new HashMap<>();
 	
 	public static class CriteriaEntry{
-		private Long fieldId;
-		private Long compositeId; 
+		private Integer fieldId;
+		private Integer compositeId; 
 		private String comparator;
 		private String value;
 		private String relationLabel;
@@ -49,16 +49,16 @@ public class EntityViewCriteria {
 		public void setRelationLabel(String relationLabel) {
 			this.relationLabel = relationLabel;
 		}
-		public Long getFieldId() {
+		public Integer getFieldId() {
 			return fieldId;
 		}
-		public void setFieldId(Long fieldId) {
+		public void setFieldId(Integer fieldId) {
 			this.fieldId = fieldId;
 		}
-		public Long getCompositeId() {
+		public Integer getCompositeId() {
 			return compositeId;
 		}
-		public void setCompositeId(Long compositeId) {
+		public void setCompositeId(Integer compositeId) {
 			this.compositeId = compositeId;
 		}
 	}

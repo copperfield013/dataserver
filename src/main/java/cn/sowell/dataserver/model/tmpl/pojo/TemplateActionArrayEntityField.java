@@ -31,7 +31,7 @@ public class TemplateActionArrayEntityField {
 	private String value;
 
 	@Transient
-	private Long fieldId;
+	private Integer fieldId;
 	
 	@Transient
 	private String fieldName;
@@ -77,11 +77,11 @@ public class TemplateActionArrayEntityField {
 		this.value = value;
 	}
 
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
 
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 

@@ -10,7 +10,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateStatList;
 public class StatListTemplateEntityView 
 	extends AbstractListTemplateEntityView<TemplateStatList, TemplateStatColumn, TemplateStatCriteria, EntityViewCriteria>{
 
-	public StatListTemplateEntityView(TemplateStatList listTemplate, Map<Long, DictionaryField> fieldMap) {
+	public StatListTemplateEntityView(TemplateStatList listTemplate, Map<Integer, DictionaryField> fieldMap) {
 		super(listTemplate, fieldMap);
 		// TODO Auto-generated constructor stub
 	}

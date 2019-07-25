@@ -13,7 +13,7 @@ public class AbstractListTemplate<COL extends AbstractListColumn, CRI extends Ab
 	private Integer defaultPageSize;
 	
 	@Column(name="def_order_field_id")
-	private Long defaultOrderFieldId;
+	private Integer defaultOrderFieldId;
 	
 	@Column(name="c_def_order_dir")
 	private String defaultOrderDirection;
@@ -33,11 +33,11 @@ public class AbstractListTemplate<COL extends AbstractListColumn, CRI extends Ab
 		this.defaultPageSize = defaultPageSize;
 	}
 
-	public Long getDefaultOrderFieldId() {
+	public Integer getDefaultOrderFieldId() {
 		return defaultOrderFieldId;
 	}
 
-	public void setDefaultOrderFieldId(Long defaultOrderFieldId) {
+	public void setDefaultOrderFieldId(Integer defaultOrderFieldId) {
 		this.defaultOrderFieldId = defaultOrderFieldId;
 	}
 

@@ -120,7 +120,7 @@ public class ActionTemplateServiceImpl extends AbstractRelateToGroupService<Temp
 						DictionaryComposite composite = group.getComposite();
 						if(composite != null) {
 							boolean isRelation = DictionaryComposite.RELATION_ADD_TYPE.equals(composite.getAddType());
-							Map<Long, DictionaryField> fieldMap = CollectionUtils.toMap(composite.getFields(), DictionaryField::getId);
+							Map<Integer, DictionaryField> fieldMap = CollectionUtils.toMap(composite.getFields(), DictionaryField::getId);
 							int compositeEntityIndex = 0;
 							
 							//如果sourceMap中传入了该composite的数据，那么舍弃existEntity中的composite的所有值，

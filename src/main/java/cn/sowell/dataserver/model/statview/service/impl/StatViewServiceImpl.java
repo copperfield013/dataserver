@@ -14,15 +14,14 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.abc.hc.HCFusionContext;
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.panel.EntitySortedPagedQueryFactory;
-import com.abc.panel.PanelFactory;
-import com.abc.panel.StatUpDrill;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.entity.SortedPagedQuery;
-import com.abc.stat.StatUpDrillContext;
-
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.hc.HCFusionContext;
+import cho.carbon.panel.EntitySortedPagedQueryFactory;
+import cho.carbon.panel.PanelFactory;
+import cho.carbon.panel.StatUpDrill;
+import cho.carbon.query.entity.SortedPagedQuery;
+import cho.carbon.query.entity.factory.QueryEntityParamFactory;
+import cho.carbon.stat.StatUpDrillContext;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
@@ -101,8 +100,8 @@ public class StatViewServiceImpl
 		
 		List<TemplateStatColumn> columns = statListTemplate.getColumns();
 		
-		Set<Long> fieldIds = CollectionUtils.toSet(columns, col->col.getFieldId());
-		Map<Long, DictionaryField> fieldMap = dictService.getFieldMap(moduleName, fieldIds);
+		Set<Integer> fieldIds = CollectionUtils.toSet(columns, col->col.getFieldId());
+		Map<Integer, DictionaryField> fieldMap = dictService.getFieldMap(moduleName, fieldIds);
 		LinkedHashSet<String> dimensions = new LinkedHashSet<String>();
 		
 		for (TemplateStatColumn column : columns) {
@@ -152,17 +151,18 @@ public class StatViewServiceImpl
 		
 		
 		EntitySortedPagedQueryFactory beforeEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostCriteriaFactory();
-		lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, beforeEntityCriteriaFactory);
+		QueryEntityParamFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostParamFactory();
+		//EntityCriteriaFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostCriteriaFactory();
+		lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, beforeEntityCriteriaFactory.getEntityConJunctionFactory());
 		
 		//EntityCriteriaFactory beforeEntityCriteriaFactory = lcriteriaFactory.appendCriterias(beforeCriterias, moduleName, context);
-		drillContext.setBeforeCriteria(beforeEntityCriteriaFactory.getCriterias());
+		drillContext.setBeforeJunction(beforeEntityCriteriaFactory.getConJunction());
 		
 		EntitySortedPagedQueryFactory afterEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostCriteriaFactory();
-		lcriteriaFactory.appendCriterias(afterCriterias, moduleName, afterEntityCriteriaFactory);
+		QueryEntityParamFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostParamFactory();
+		lcriteriaFactory.appendCriterias(afterCriterias, moduleName, afterEntityCriteriaFactory.getEntityConJunctionFactory());
 		//EntityCriteriaFactory afterEntityCriteriaFactory = lcriteriaFactory.appendCriterias(afterCriterias, moduleName, context);
-		drillContext.setAfterCriteria(afterEntityCriteriaFactory.getCriterias());
+		drillContext.setAfterJunction(afterEntityCriteriaFactory.getConJunction());
 		
 		
 		//执行查询
@@ -177,7 +177,7 @@ public class StatViewServiceImpl
 		ModuleMeta module = mService.getModule(moduleName);
 		List<? extends CEntityPropertyParser> parsers = CollectionUtils.toList(entities, entity->entityService.toEntityParser(entity, new EntityParserParameter(moduleName, criteria.getUser())));
 		
-		Set<Long> criteriaFieldIds = CollectionUtils.toSet(criterias, TemplateStatCriteria::getFieldId);
+		Set<Integer> criteriaFieldIds = CollectionUtils.toSet(criterias, TemplateStatCriteria::getFieldId);
 		view.setCriteriaOptionMap(dictService.getOptionsMap(criteriaFieldIds));
 		/*Set<String> criteriaFieldNames = view.getCriteria()
 				.getCriteriaEntries().stream().map(entry->{

@@ -22,7 +22,7 @@ public class AbstractListColumn {
 	private String title;
 	
 	@Column(name="field_id")
-	private Long fieldId;
+	private Integer fieldId;
 	
 	//@Column(name="c_field_key")
 	@Transient
@@ -67,10 +67,10 @@ public class AbstractListColumn {
 	public void setTitle(String title) {
 		this.title = title;
 	}
-	public Long getFieldId() {
+	public Integer getFieldId() {
 		return fieldId;
 	}
-	public void setFieldId(Long fieldId) {
+	public void setFieldId(Integer fieldId) {
 		this.fieldId = fieldId;
 	}
 	public String getFieldKey() {

@@ -13,14 +13,14 @@ import org.springframework.beans.MutablePropertyValues;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
-import com.abc.mapping.entity.Entity;
-import com.abc.mapping.entity.FreeRelationEntity;
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.panel.PanelFactory;
-import com.abc.rrc.query.entity.RelationEntitySPQuery;
-import com.abc.rrc.query.entity.SortedPagedQuery;
 import com.beust.jcommander.internal.Lists;
 
+import cho.carbon.entity.entity.Entity;
+import cho.carbon.entity.entity.FreeRelationEntity;
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.panel.PanelFactory;
+import cho.carbon.query.entity.RelationEntitySPQuery;
+import cho.carbon.query.entity.SortedPagedQuery;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.CommonPageInfo;
 import cn.sowell.copframe.dto.page.PageInfo;
@@ -33,8 +33,8 @@ import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.ABCNodeProxy;
 import cn.sowell.datacenter.entityResolver.impl.EntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.impl.RabcModuleEntityPropertyParser;
-import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
 import cn.sowell.dataserver.Constants;
+import cn.sowell.dataserver.model.abc.service.AbstractEntityQueryParameter.ArrayItemCriteria;
 import cn.sowell.dataserver.model.abc.service.EntitiesQueryParameter;
 import cn.sowell.dataserver.model.abc.service.EntityParserParameter;
 import cn.sowell.dataserver.model.abc.service.ModuleEntityService;
@@ -250,7 +250,7 @@ public class EntityQuery {
 		}
 		
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
-		this.queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
+		this.queryParam.setConjunctionFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
 		this.sortedEntitiesQuery = entityService.getNormalSortedEntitiesQuery(this.queryParam);
 		this.sortedEntitiesQuery.setPageSize(this.pageInfo.getPageSize());
@@ -268,9 +268,9 @@ public class EntityQuery {
 		TemplateStatList statListTemplate = getTemplate(appContext, StatListTemplateService.class, this.statViewTemplate.getStatListTemplateId());
 		List<TemplateStatColumn> columns = statListTemplate.getColumns();
 		
-		Set<Long> fieldIds = CollectionUtils.toSet(columns, col->col.getFieldId());
+		Set<Integer> fieldIds = CollectionUtils.toSet(columns, col->col.getFieldId());
 		DictionaryService dictService = appContext.getBean(DictionaryService.class);
-		Map<Long, DictionaryField> fieldMap = dictService.getFieldMap(moduleName, fieldIds);
+		Map<Integer, DictionaryField> fieldMap = dictService.getFieldMap(moduleName, fieldIds);
 		LinkedHashSet<String> dimensions = new LinkedHashSet<String>();
 		
 		for (TemplateStatColumn column : columns) {
@@ -336,7 +336,7 @@ public class EntityQuery {
 		EntitiesQueryParameter queryParam = new EntitiesQueryParameter(nodeModuleName, this.user);
 		queryParam.setPageInfo(this.pageInfo);
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
-		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(nodeModuleName, nCriterias));
+		queryParam.setConjunctionFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(nodeModuleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
 		this.sortedEntitiesQuery = entityService.getQuickSortedEntitiesQuery(queryParam);
 		//完成准备工作
@@ -375,7 +375,7 @@ public class EntityQuery {
 		SelectionEntityQueyrParameter queryParam = new SelectionEntityQueyrParameter(this.moduleName, selectionTemplate.getRelationName(), this.user);
 		queryParam.setPageInfo(this.pageInfo);
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
-		queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
+		queryParam.setConjunctionFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
 		this.sortedEntitiesQuery = entityService.getSelectionEntitiesQuery(queryParam);
 		//完成准备工作
@@ -485,7 +485,7 @@ public class EntityQuery {
 		this.queryParam.setPageInfo(this.pageInfo);
 		this.queryParam.setArrayItemCriterias(aCriterias);
 		ListCriteriaFactory lcFactory = context.getBean(ListCriteriaFactory.class);
-		this.queryParam.setCriteriaFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
+		this.queryParam.setConjunctionFactoryConsumer(lcFactory.getNormalCriteriaFactoryConsumer(this.moduleName, nCriterias));
 		ModuleEntityService entityService = context.getBean(ModuleEntityService.class);
 		this.sortedEntitiesQuery = entityService.getQuickSortedEntitiesQuery(this.queryParam);
 		this.sortedEntitiesQuery.setPageSize(this.pageInfo.getPageSize());
@@ -528,11 +528,11 @@ public class EntityQuery {
 		Map<Long, ViewListCriteria<? extends AbstractListCriteria>> vCriteriaMap = new HashMap<>();
 		if(tCriterias != null && !tCriterias.isEmpty()) {
 			//获得条件中的枚举值
-			Set<Long> fieldIds = CollectionUtils.toSet(tCriterias, AbstractListCriteria::getFieldId);
+			Set<Integer> fieldIds = CollectionUtils.toSet(tCriterias, AbstractListCriteria::getFieldId);
 			fieldIds.remove(null);
 			Set<String> criteriaFieldNames = CollectionUtils.toSet(tCriterias, AbstractListCriteria::getFieldKey);
 			Map<String, Label> labelMap = dictService.getModuleLabelMap(criteriaModuleName, criteriaFieldNames);
-			Map<Long, List<OptionItem>> optionsMap = dictService.getOptionsMap(fieldIds);
+			Map<Integer, List<OptionItem>> optionsMap = dictService.getOptionsMap(fieldIds);
 			for (CRI tCriteria : tCriterias) {
 				ViewListCriteria<CRI> vCriteria = new ViewListCriteria<CRI>(tCriteria);
 				if(requrestCriteriaMap != null && requrestCriteriaMap.containsKey(tCriteria.getId())) {

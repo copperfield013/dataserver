@@ -5,11 +5,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.alibaba.fastjson.annotation.JSONField;
@@ -17,8 +15,8 @@ import com.alibaba.fastjson.annotation.JSONField;
 import cn.sowell.datacenter.entityResolver.Composite;
 import cn.sowell.dataserver.Constants;
 
-@Entity
-@Table(name="v_sa_dictionary_composite")
+/*@Entity
+@Table(name="v_sa_dictionary_composite")*/
 public class DictionaryComposite implements Composite, Serializable{
 	/**
 	 * 
@@ -28,7 +26,7 @@ public class DictionaryComposite implements Composite, Serializable{
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	@JSONField(name="c_id")
-	private Long id;
+	private Integer id;
 	
 	@Column(name="c_name")
 	@JSONField(name="name")
@@ -67,11 +65,11 @@ public class DictionaryComposite implements Composite, Serializable{
 	private Set<String> relationSubdomain;
 	
 	
-	public Long getId() {
+	public Integer getId() {
 		return id;
 	}
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(Integer integer) {
+		this.id = integer;
 	}
 	public String getName() {
 		return name;

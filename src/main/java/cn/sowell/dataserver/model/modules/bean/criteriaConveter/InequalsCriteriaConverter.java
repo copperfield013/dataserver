@@ -3,10 +3,8 @@ package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.abc.rrc.query.criteria.CommonSymbol;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
-
+import cho.carbon.meta.enun.operator.UnaryOperator;
+import cho.carbon.query.entity.factory.EnGroupJunctionFactory;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 
 public class InequalsCriteriaConverter extends ComparatorCriteriaConverter{
@@ -31,14 +29,8 @@ public class InequalsCriteriaConverter extends ComparatorCriteriaConverter{
 	}
 
 	@Override
-	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
-		cFactory.addCriteria(fieldName, value, CommonSymbol.INEQUAL);
+	protected void addNormalCriteria(EnGroupJunctionFactory cFactory, String fieldName, String value) {
+		cFactory.addCommon(fieldName, value, UnaryOperator.INEQUAL);
 	}
 	
-	@Override
-	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
-		relationEntityFactory.addCriteria(suffix, value, CommonSymbol.INEQUAL);
-	}
-	
-
 }

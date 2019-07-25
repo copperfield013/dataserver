@@ -10,7 +10,7 @@ import cn.sowell.dataserver.model.tmpl.pojo.TemplateListTemplate;
 public class ListTemplateEntityView extends 
 	AbstractListTemplateEntityView<TemplateListTemplate, TemplateListColumn, TemplateListCriteria, ListTemplateEntityViewCriteria>{
 
-	public ListTemplateEntityView(TemplateListTemplate listTemplate, Map<Long, DictionaryField> fieldMap) {
+	public ListTemplateEntityView(TemplateListTemplate listTemplate, Map<Integer, DictionaryField> fieldMap) {
 		super(listTemplate, fieldMap);
 	}
 

@@ -1,8 +1,7 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import com.abc.rrc.query.criteria.BetweenSymbol;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.IMultiAttrCriteriaFactory;
+import cho.carbon.meta.enun.operator.BetweenOperator;
+import cho.carbon.query.entity.factory.EnGroupJunctionFactory;
 
 public class DateBeforeCriteriaConverter extends MultiSupportComparatorCriteriaConverter {
 
@@ -12,13 +11,8 @@ public class DateBeforeCriteriaConverter extends MultiSupportComparatorCriteriaC
 	
 
 	@Override
-	protected void addNormalCriteria(IMultiAttrCriteriaFactory cFactory, String fieldName, String value) {
-		cFactory.addBetweenCriteria(fieldName, null, value, BetweenSymbol.BETWEEN);
-	}
-	
-	@Override
-	protected void appendRelationCriterias(EntityCriteriaFactory relationEntityFactory, String suffix, String value) {
-		relationEntityFactory.addBetweenCriteria(suffix, null, value, BetweenSymbol.BETWEEN);
+	protected void addNormalCriteria(EnGroupJunctionFactory cFactory, String fieldName, String value) {
+		cFactory.addBetween(fieldName, null, value, BetweenOperator.BETWEEN);
 	}
 	
 

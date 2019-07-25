@@ -8,17 +8,17 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 import cn.sowell.dataserver.model.dict.pojo.DictionaryField;
 
 public class ModuleTemplateReferData {
-	private Map<Long, DictionaryComposite> compositeMap;
-	private Map<Long, DictionaryField> fieldMap;
+	private Map<Integer, DictionaryComposite> compositeMap;
+	private Map<Integer, DictionaryField> fieldMap;
 	private FusionContextConfig fusionContextConfig;
 	private Map<String, Set<String>> fieldInputTypeMap;
-	public Map<Long, DictionaryComposite> getCompositeMap() {
+	public Map<Integer, DictionaryComposite> getCompositeMap() {
 		return this.compositeMap;
 	}
 	public Map<String, Set<String>> getFieldInputTypeMap() {
 		return this.fieldInputTypeMap;
 	}
-	public Map<Long, DictionaryField> getFieldMap() {
+	public Map<Integer, DictionaryField> getFieldMap() {
 		return this.fieldMap;
 	}
 	public boolean getEntityWriatble() {
@@ -27,10 +27,10 @@ public class ModuleTemplateReferData {
 	public FusionContextConfig getFusionContextConfig() {
 		return this.fusionContextConfig;
 	}
-	public void setCompositeMap(Map<Long, DictionaryComposite> compositeMap) {
+	public void setCompositeMap(Map<Integer, DictionaryComposite> compositeMap) {
 		this.compositeMap = compositeMap;
 	}
-	public void setFieldMap(Map<Long, DictionaryField> fieldMap) {
+	public void setFieldMap(Map<Integer, DictionaryField> fieldMap) {
 		this.fieldMap = fieldMap;
 	}
 	public void setFusionContextConfig(FusionContextConfig fusionContextConfig) {

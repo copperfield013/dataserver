@@ -19,7 +19,7 @@ public class GlobalPreparedToTree extends PreparedToCache{
 	private Map<Long, List<TemplateTreeNode>> nodeListMap = new LinkedHashMap<Long, List<TemplateTreeNode>>();
 	private Map<Long, List<TemplateTreeRelation>> nodeRelationsMap  = new LinkedHashMap<>();
 	private Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap  = new LinkedHashMap<>();
-	private Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
+	private Map<String, Map<Integer, DictionaryField>> moduleFieldsMap = new HashMap<>();
 	private Map<String, Map<String, String>> moduleRelationModuleMap = new HashMap<>();
 	private Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = new HashMap<>();
 	private Set<String> moduleFlagSet = new HashSet<>();
@@ -29,7 +29,7 @@ public class GlobalPreparedToTree extends PreparedToCache{
 		private List<TemplateTreeNode> nodeList = new ArrayList<>();
 		private Map<Long, List<TemplateTreeRelation>> nodeRelationsMap = new LinkedHashMap<>();
 		private Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap = new LinkedHashMap<>();
-		private Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
+		private Map<String, Map<Integer, DictionaryField>> moduleFieldsMap = new HashMap<>();
 		private Map<String, Map<String, String>> moduleRelationModuleMap = new HashMap<>();
 		private Map<Long, List<TemplateTreeNodeCriteria>> nodeCriteriasMap = new HashMap<>();
 		public List<TemplateTreeNode> getNodeList() {
@@ -50,10 +50,10 @@ public class GlobalPreparedToTree extends PreparedToCache{
 		public void setRelationCriteriasMap(Map<Long, List<TemplateTreeRelationCriteria>> relationCriteriasMap) {
 			this.relationCriteriasMap = relationCriteriasMap;
 		}
-		public Map<String, Map<Long, DictionaryField>> getModuleFieldsMap() {
+		public Map<String, Map<Integer, DictionaryField>> getModuleFieldsMap() {
 			return moduleFieldsMap;
 		}
-		public void setModuleFieldsMap(Map<String, Map<Long, DictionaryField>> moduleFieldsMap) {
+		public void setModuleFieldsMap(Map<String, Map<Integer, DictionaryField>> moduleFieldsMap) {
 			this.moduleFieldsMap = moduleFieldsMap;
 		}
 		public Map<String, Map<String, String>> getModuleRelationModuleMap() {
@@ -108,12 +108,12 @@ public class GlobalPreparedToTree extends PreparedToCache{
 	}
 
 
-	public Map<String, Map<Long, DictionaryField>> getModuleFieldsMap() {
+	public Map<String, Map<Integer, DictionaryField>> getModuleFieldsMap() {
 		return moduleFieldsMap;
 	}
 
 
-	public void setModuleFieldsMap(Map<String, Map<Long, DictionaryField>> moduleFieldsMap) {
+	public void setModuleFieldsMap(Map<String, Map<Integer, DictionaryField>> moduleFieldsMap) {
 		this.moduleFieldsMap = moduleFieldsMap;
 	}
 

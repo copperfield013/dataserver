@@ -3,9 +3,8 @@ package cn.sowell.dataserver.model.modules.bean;
 import java.util.List;
 import java.util.Set;
 
-import com.abc.mapping.entity.Entity;
-import com.abc.rrc.query.entity.SortedPagedQuery;
-
+import cho.carbon.entity.entity.Entity;
+import cho.carbon.query.entity.SortedPagedQuery;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.utils.Assert;
 import cn.sowell.copframe.utils.CollectionUtils;

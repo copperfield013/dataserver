@@ -22,7 +22,7 @@ public interface ModulesService {
 
 	boolean getModuleEntityWritable(String moduleName);
 
-	ModuleMeta getCompositeRelatedModule(String moduleName, Long compositeId);
+	ModuleMeta getCompositeRelatedModule(String moduleName, Integer compositeId);
 
 	ModuleConfigStructure getModuleConfigStructure(String moduleName);
 	/**

@@ -62,7 +62,7 @@ public class TreeTemplateManagerImpl
 	}
 	
 
-	private Map<String, Map<Long, DictionaryField>> getModuleFieldsMap(Map<Long, List<TemplateTreeNode>> nodeListMap){
+	private Map<String, Map<Integer, DictionaryField>> getModuleFieldsMap(Map<Long, List<TemplateTreeNode>> nodeListMap){
 		Set<String> moduleNames = new HashSet<>();
 		nodeListMap.values().forEach(nodes->{
 			for (TemplateTreeNode node : nodes) {
@@ -70,7 +70,7 @@ public class TreeTemplateManagerImpl
 			}
 		});
 		Map<String, List<DictionaryField>> fieldsMap = dictService.getAllFields(moduleNames);
-		Map<String, Map<Long, DictionaryField>> moduleFieldsMap = new HashMap<>();
+		Map<String, Map<Integer, DictionaryField>> moduleFieldsMap = new HashMap<>();
 		fieldsMap.forEach((moduleName, fields)->{
 			moduleFieldsMap.put(moduleName, CollectionUtils.toMap(fields, DictionaryField::getId));
 		});
@@ -223,7 +223,7 @@ public class TreeTemplateManagerImpl
 		
 		for (SuperTemplateListCriteria criteria : criterias) {
 			if(criteria.getFieldId() != null) {
-				Map<Long, DictionaryField> fieldMap = prepareToCache.getModuleFieldsMap().get(relationModuleName);
+				Map<Integer, DictionaryField> fieldMap = prepareToCache.getModuleFieldsMap().get(relationModuleName);
 				DictionaryField field = fieldMap.get(criteria.getFieldId());
 				if(field != null) {
 					if(getMetaSupportor().supportFieldInputType(criteria.getInputType(), field.getType(), prepareToCache.getReferData().getFieldInputTypeMap())) {

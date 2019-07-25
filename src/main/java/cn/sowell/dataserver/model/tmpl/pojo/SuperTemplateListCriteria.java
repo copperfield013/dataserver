@@ -12,7 +12,7 @@ import cn.sowell.dataserver.model.dict.pojo.DictionaryComposite;
 public abstract class SuperTemplateListCriteria extends AbstractListCriteria {
 
 	@Column(name = "composite_id")
-	protected Long compositeId;
+	protected Integer compositeId;
 	
 	@Transient
 	@JSONField(serialize=false)
@@ -22,11 +22,11 @@ public abstract class SuperTemplateListCriteria extends AbstractListCriteria {
 		super();
 	}
 
-	public Long getCompositeId() {
+	public Integer getCompositeId() {
 		return compositeId;
 	}
 
-	public void setCompositeId(Long compositeId) {
+	public void setCompositeId(Integer compositeId) {
 		this.compositeId = compositeId;
 	}
 

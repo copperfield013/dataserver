@@ -5,11 +5,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.model.enun.AttributeValueType;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.meta.enun.AttributeValueType;
 import cn.sowell.datacenter.entityResolver.CEntityPropertyParser;
 import cn.sowell.datacenter.entityResolver.Label;
 import cn.sowell.datacenter.entityResolver.ModuleEntityPropertyParser;
@@ -62,14 +62,14 @@ public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends Entity
 	}
 	
 	
-	private Map<Long, List<OptionItem>> criteriaOptionMap = new HashMap<>();
+	private Map<Integer, List<OptionItem>> criteriaOptionMap = new HashMap<>();
 	private Map<String, Label> criteriaLabelMap = new HashMap<>();
 	
-	public Map<Long, List<OptionItem>> getCriteriaOptionMap() {
+	public Map<Integer, List<OptionItem>> getCriteriaOptionMap() {
 		return criteriaOptionMap;
 	}
 
-	public void setCriteriaOptionMap(Map<Long, List<OptionItem>> criteriaOptionMap) {
+	public void setCriteriaOptionMap(Map<Integer, List<OptionItem>> criteriaOptionMap) {
 		this.criteriaOptionMap = criteriaOptionMap;
 	}
 
@@ -164,7 +164,7 @@ public class EntityView<LT extends AbstractListTemplate<?, ?>, EC extends Entity
 	public static interface EntityColumn{
 		int getIndex();
 		boolean getEffective();
-		Long getFieldId();
+		Integer getFieldId();
 		String getFieldName();
 		AttributeValueType getFieldType();
 		String getFieldFormat();

@@ -1,9 +1,8 @@
 package cn.sowell.dataserver.model.modules.bean.criteriaConveter;
 
-import java.util.Set;
+import java.util.List;
 
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
 import cn.sowell.dataserver.model.modules.pojo.criteria.NormalCriteria;
 
 public class LabelIncludeAllConverter extends LabelIncludeAnyConverter{
@@ -13,13 +12,13 @@ public class LabelIncludeAllConverter extends LabelIncludeAnyConverter{
 	}
 	
 	@Override
-	public void invokeAddCriteria(EntityCriteriaFactory criteriaFactory,
+	public void invokeAddCriteria(EntityConJunctionFactory conjunctionFactory,
 			NormalCriteria nCriteria) {
-		Set<String> valueSet = getValueSet(nCriteria.getValue());
+		List<String> valueSet = getValues(nCriteria.getValue());
 		valueSet.forEach(label->{
 			NormalCriteria nc = nCriteria.clone();
 			nc.setValue(label);
-			super.invokeAddCriteria(criteriaFactory, nc);
+			super.invokeAddCriteria(conjunctionFactory, nc);
 		});
 	}
 	

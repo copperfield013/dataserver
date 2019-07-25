@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.Resource;
@@ -14,27 +15,27 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
-import com.abc.auth.pojo.UserInfo;
-import com.abc.auth.service.ServiceFactory;
-import com.abc.dto.VersionQueryParameter;
-import com.abc.extface.dto.Version;
-import com.abc.hc.HCFusionContext;
-import com.abc.mapping.entity.Entity;
-import com.abc.mapping.entity.RecordEntity;
-import com.abc.panel.Discoverer;
-import com.abc.panel.EntitySortedPagedQueryFactory;
-import com.abc.panel.PanelFactory;
-import com.abc.panel.PartialRelationEnSPQFactory;
-import com.abc.panel.StatUpDrill;
-import com.abc.record.VersionEntity;
-import com.abc.rrc.query.criteria.EntityCriteriaFactory;
-import com.abc.rrc.query.criteria.EntityRelationCriteriaFactory;
-import com.abc.rrc.query.criteria.EntityUnRecursionCriteriaFactory;
-import com.abc.rrc.query.criteria.MultiAttrCriteriaFactory;
-import com.abc.rrc.query.entity.RelationEntitySPQuery;
-import com.abc.rrc.query.entity.SortedPagedQuery;
-import com.abc.stat.StatUpDrillContext;
-
+import cho.carbon.auth.pojo.UserInfo;
+import cho.carbon.auth.service.ServiceFactory;
+import cho.carbon.dto.VersionQueryParameter;
+import cho.carbon.entity.entity.Entity;
+import cho.carbon.entity.entity.RecordEntity;
+import cho.carbon.extface.dto.Version;
+import cho.carbon.hc.HCFusionContext;
+import cho.carbon.meta.criteria.model.ModelConJunction;
+import cho.carbon.panel.Discoverer;
+import cho.carbon.panel.EntitySortedPagedQueryFactory;
+import cho.carbon.panel.PanelFactory;
+import cho.carbon.panel.PartialRelationEnSPQFactory;
+import cho.carbon.panel.StatUpDrill;
+import cho.carbon.query.entity.RelationEntitySPQuery;
+import cho.carbon.query.entity.SortedPagedQuery;
+import cho.carbon.query.entity.factory.EnRelationCriterionFactory;
+import cho.carbon.query.entity.factory.EntityConJunctionFactory;
+import cho.carbon.query.entity.factory.QueryEntityParamFactory;
+import cho.carbon.record.VersionEntity;
+import cho.carbon.rrc.query.queryrecord.condition.QueryParameter;
+import cho.carbon.stat.StatUpDrillContext;
 import cn.sowell.copframe.common.UserIdentifier;
 import cn.sowell.copframe.dto.page.PageInfo;
 import cn.sowell.copframe.utils.CollectionUtils;
@@ -284,23 +285,18 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		FusionContextConfig config = fFactory.getModuleConfig(param.getModuleName());
 		HCFusionContext context = config.getCurrentContext(param.getUser());
 		//Discoverer discoverer=PanelFactory.getDiscoverer(context);
+		
+		
 		//EntitySortedPagedQuery sortedPagedQuery = discoverer.discover(param.getMainCriterias(), "编辑时间", param.getCriteriasMap());
 		
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
-		if(!TextUtils.hasText(param.getRelationName())) {
-			if(param.getCriteriaFactoryConsumer() != null) {
-				param.getCriteriaFactoryConsumer().accept(criteriaFactory);
-			}
-		}else {
-			EntityRelationCriteriaFactory relationFactory = criteriaFactory.getRelationCriteriaFacotry(param.getRelationName());
-			EntityUnRecursionCriteriaFactory unRecursionCriteriaFactory = relationFactory
-					.getEntityUnRecursionCriteriaFactory();
-			if(param.getCriteriaFactoryConsumer() != null) {
-				param.getCriteriaFactoryConsumer().accept(unRecursionCriteriaFactory.getRightEntityCriteriaFactory());
-			}
+		QueryEntityParamFactory criteriaFactory = entitySortedPagedQueryFactory.getHostParamFactory();
+		
+		Assert.isTrue(!TextUtils.hasText(param.getRelationName()), "relationName只能为空");
+		if(param.getConjunctionFactoryConsumer() != null) {
+			param.getConjunctionFactoryConsumer().accept(criteriaFactory.getEntityConJunctionFactory());
 		}
-		criteriaFactory.addSortedColumn("编辑时间");
+		criteriaFactory.getEnSortedColumnFactory().addSortedColumn("编辑时间");
 		
 		SortedPagedQuery<Entity> sortedPagedQuery = entitySortedPagedQueryFactory.getEntityQuery();
 		
@@ -401,7 +397,15 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		
 		EntitySortedPagedQueryFactory sortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
 		lcriteriaFactory.appendArrayItemCriteriaParameter(sortedPagedQueryFactory, param);
-		return fFactory.getModuleResolver(param.getModuleName()).saveEntity(entityMap, null, param.getUser(), sortedPagedQueryFactory.getSubQueryParaMap());
+		
+		Map<Integer, QueryParameter> paramMap = sortedPagedQueryFactory.getSubQueryParaMap();
+		Map<Integer, ModelConJunction> conjunctionMap = new LinkedHashMap<Integer, ModelConJunction>();
+		for (Entry<Integer, QueryParameter> paramEntry : paramMap.entrySet()) {
+			QueryParameter queryParam = paramEntry.getValue();
+			conjunctionMap.put(paramEntry.getKey(), queryParam.getJunction());
+		}
+				
+		return fFactory.getModuleResolver(param.getModuleName()).saveEntity(entityMap, null, param.getUser(), conjunctionMap);
 	}
 	
 	@Override
@@ -444,33 +448,27 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		 HCFusionContext context = fFactory.getModuleConfig(moduleName).getCurrentContext(param.getUser());
 		
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
+		QueryEntityParamFactory criteriaFactory = entitySortedPagedQueryFactory.getHostParamFactory();
 		
-		if(!TextUtils.hasText(param.getRelationName())) {
-			if(param.getCriteriaFactoryConsumer() != null) {
-				param.getCriteriaFactoryConsumer().accept(criteriaFactory);
-			}
-		}else {
-			EntityRelationCriteriaFactory relationFactory = criteriaFactory.getRelationCriteriaFacotry(param.getRelationName());
-			EntityUnRecursionCriteriaFactory unRecursionCriteriaFactory = relationFactory
-					.getEntityUnRecursionCriteriaFactory();
-			if(param.getCriteriaFactoryConsumer() != null) {
-				param.getCriteriaFactoryConsumer().accept(unRecursionCriteriaFactory.getRightEntityCriteriaFactory());
-			}
+		
+		Assert.isTrue(!TextUtils.hasText(param.getRelationName()), "relationName只能为空");
+		if(param.getConjunctionFactoryConsumer() != null) {
+			param.getConjunctionFactoryConsumer().accept(criteriaFactory.getEntityConJunctionFactory());
 		}
+		
 		if(param.getArrayItemCriterias() != null && !param.getArrayItemCriterias().isEmpty()) {
 			for (ArrayItemCriteria aCriteria : param.getArrayItemCriterias()) {
 				if(aCriteria.isRelation()) {
-					EntityCriteriaFactory relationCriteriaFactory = entitySortedPagedQueryFactory.getSubEntityCriteriaFactoryWithABCNode(aCriteria.getComposite().getName());
-					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), relationCriteriaFactory);
+					QueryEntityParamFactory relationCriteriaFactory = entitySortedPagedQueryFactory.getSubEntityCriteriaFactory(aCriteria.getComposite().getName());
+					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), relationCriteriaFactory.getEntityConJunctionFactory());
 				}else {
-					MultiAttrCriteriaFactory multiCriteriaFactory = entitySortedPagedQueryFactory.getSubMultiAttrCriteriaFactory(aCriteria.getComposite().getName());
-					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), multiCriteriaFactory);
+					QueryEntityParamFactory multiCriteriaFactory = entitySortedPagedQueryFactory.getSubEntityCriteriaFactory(aCriteria.getComposite().getName());
+					lcriteriaFactory.appendCriterias(aCriteria.getCriterias(), aCriteria.getModuleName(), multiCriteriaFactory.getEntityConJunctionFactory());
 				}
 				
 			}
 		}
-		criteriaFactory.addSortedColumn("编辑时间");
+		criteriaFactory.getEnSortedColumnFactory().addSortedColumn("编辑时间");
 		return entitySortedPagedQueryFactory;
 	}
 	
@@ -503,15 +501,15 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		
 		
 		EntitySortedPagedQueryFactory beforeEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostCriteriaFactory();
-		lcriteriaFactory.appendCriterias(beforeCriterias, queryParam.getModuleName(), beforeEntityCriteriaFactory);
+		QueryEntityParamFactory beforeEntityCriteriaFactory = beforeEntitySortedPagedQueryFactory.getHostParamFactory();
+		lcriteriaFactory.appendCriterias(beforeCriterias, queryParam.getModuleName(), beforeEntityCriteriaFactory.getEntityConJunctionFactory());
 		
-		drillContext.setBeforeCriteria(beforeEntityCriteriaFactory.getCriterias());
+		drillContext.setBeforeJunction(beforeEntityCriteriaFactory.getConJunction());
 		
 		EntitySortedPagedQueryFactory afterEntitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostCriteriaFactory();
-		lcriteriaFactory.appendCriterias(afterCriterias, queryParam.getModuleName(), afterEntityCriteriaFactory);
-		drillContext.setAfterCriteria(afterEntityCriteriaFactory.getCriterias());
+		QueryEntityParamFactory afterEntityCriteriaFactory = afterEntitySortedPagedQueryFactory.getHostParamFactory();
+		lcriteriaFactory.appendCriterias(afterCriterias, queryParam.getModuleName(), afterEntityCriteriaFactory.getEntityConJunctionFactory());
+		drillContext.setAfterJunction(afterEntityCriteriaFactory.getConJunction());
 		
 		StatUpDrill drill = PanelFactory.getStatUpDrill(context);
 		//执行查询
@@ -535,26 +533,28 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		HCFusionContext context = config.getCurrentContext(queryParam.getUser());
 		
 		PartialRelationEnSPQFactory relationEnSPQFactory = new PartialRelationEnSPQFactory(context, queryParam.getRelationName());
-		EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = relationEnSPQFactory.getRelationCriteriaFactory().getEntityUnRecursionCriteriaFactory();
+		EnRelationCriterionFactory relationCriterionFactory = relationEnSPQFactory.getEnQueryRelaParamFactory().getEnRelationCriterionFactory();
+//		EntityUnRecursionCriteriaFactory unrecursionCriteriaFactory = relationEnSPQFactory.getRelationCriteriaFactory().getEntityUnRecursionCriteriaFactory();
+		
 		//添加父实体的code约束
 		if(queryParam.getParentEntityCode() != null) {
-			unrecursionCriteriaFactory.addLeftCode(queryParam.getParentEntityCode());
+			relationCriterionFactory.setInLeftCodes(queryParam.getParentEntityCode());
+			//unrecursionCriteriaFactory.addLeftCode(queryParam.getParentEntityCode());
 		}
 		//关系名称过滤
 		if(!queryParam.getRelationIncludeLabels().isEmpty()) {
-			unrecursionCriteriaFactory.setIncludeRType(queryParam.getRelationIncludeLabels());
+			relationCriterionFactory.setInRelationTypes(queryParam.getRelationIncludeLabels());
 		}
 		if(!queryParam.getRelationExcludeLabels().isEmpty()) {
-			unrecursionCriteriaFactory.setExcludeRType(queryParam.getRelationExcludeLabels());
+			relationCriterionFactory.setExRelationTypes(queryParam.getRelationExcludeLabels());
 		}
-		EntityCriteriaFactory rightEntityCriteriaFactory = unrecursionCriteriaFactory.getRightEntityCriteriaFactory();
 		//添加关系筛选条件
 		if(queryParam.getCriteriaFactoryConsumer() != null) {
-			queryParam.getCriteriaFactoryConsumer().accept(rightEntityCriteriaFactory);
+			queryParam.getCriteriaFactoryConsumer().accept(relationEnSPQFactory.getEnQueryRelaParamFactory().getEnRelationCriterionFactory().getRightJunctionFactory());
 		}
 		
 		
-		RelationEntitySPQuery query = relationEnSPQFactory.getRABCNodeQuery();
+		RelationEntitySPQuery query = relationEnSPQFactory.getRStrucQuery();
 		PageInfo pageInfo = queryParam.getPageInfo();
 		query.setPageSize(pageInfo.getPageSize());
 		return query;
@@ -568,12 +568,12 @@ public class ModuleEntityServiceImpl implements ModuleEntityService {
 		//BizFusionContext context = config.getCurrentContext(queryParam.getUser());
 		
 		EntitySortedPagedQueryFactory entitySortedPagedQueryFactory = new EntitySortedPagedQueryFactory(context);
-		EntityCriteriaFactory criteriaFactory = entitySortedPagedQueryFactory.getHostCriteriaFactory();
+		EntityConJunctionFactory conjunctionFactory = entitySortedPagedQueryFactory.getHostParamFactory().getEntityConJunctionFactory();
 		
 		
 		//添加关系筛选条件
-		if(queryParam.getCriteriaFactoryConsumer() != null) {
-			queryParam.getCriteriaFactoryConsumer().accept(criteriaFactory);
+		if(queryParam.getConjunctionFactoryConsumer() != null) {
+			queryParam.getConjunctionFactoryConsumer().accept(conjunctionFactory);
 		}
 		
 		SortedPagedQuery<Entity> query = entitySortedPagedQueryFactory.getEntityQuery();

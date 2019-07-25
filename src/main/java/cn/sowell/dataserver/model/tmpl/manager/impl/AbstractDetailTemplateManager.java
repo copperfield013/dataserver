@@ -91,8 +91,8 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 		Map<Long, List<FT>> groupFieldsMap = prepareToCache.getGroupFieldsMap();
 		if(fieldGroups != null) {
 			dtmpl.setGroups(fieldGroups);
-			Map<Long, DictionaryComposite> compositeMap = referData.getCompositeMap();
-			Map<Long, DictionaryField> fieldMap = referData.getFieldMap();
+			Map<Integer, DictionaryComposite> compositeMap = referData.getCompositeMap();
+			Map<Integer, DictionaryField> fieldMap = referData.getFieldMap();
 			boolean moduleEntityWritable = referData.getEntityWriatble();
 			fieldGroups.forEach(fieldGroup->{
 				List<FT> groupFields = groupFieldsMap.get(fieldGroup.getId());
@@ -152,9 +152,9 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 
 	@Override
 	protected Long doCreate(DT template) {
-		Set<Long> fieldIds = new HashSet<Long>();
+		Set<Integer> fieldIds = new HashSet<Integer>();
 		template.getGroups().forEach(group->group.getFields().forEach(field->fieldIds.add(field.getFieldId())));
-		Map<Long, DictionaryField> fieldMap = dictService.getFieldMap(template.getModule(), fieldIds);
+		Map<Integer, DictionaryField> fieldMap = dictService.getFieldMap(template.getModule(), fieldIds);
 		Date now = new Date();
 		template.setCreateTime(now);
 		template.setUpdateTime(now);
@@ -182,17 +182,17 @@ public abstract class AbstractDetailTemplateManager<DT extends AbstractDetailTem
 	protected void doUpdate(DT template) {
 		DT origin = get(template.getId());
 		if(origin != null){
-			Set<Long> addFieldIds = new HashSet<Long>();
+			Set<Integer> allFieldIds = new HashSet<Integer>();
 			template.getGroups().forEach(group->
 				group.getFields().forEach(field->{
 					if(field.getId() == null){
-						addFieldIds.add(field.getFieldId());
+						allFieldIds.add(field.getFieldId());
 					}
 				})
 			);
 			Set<Long> originGroupFieldIds = new HashSet<Long>();
 			origin.getGroups().forEach(group->group.getFields().forEach(field->originGroupFieldIds.add(field.getId())));
-			Map<Long, DictionaryField> fieldMap = dictService.getFieldMap(template.getModule(), addFieldIds);
+			Map<Integer, DictionaryField> fieldMap = dictService.getFieldMap(template.getModule(), allFieldIds);
 			
 			Date now = new Date();
 			origin.setTitle(template.getTitle());
