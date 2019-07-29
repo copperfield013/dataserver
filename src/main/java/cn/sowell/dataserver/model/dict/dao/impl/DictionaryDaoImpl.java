@@ -63,7 +63,8 @@ public class DictionaryDaoImpl implements DictionaryDao{
 	@Override
 	public List<DictionaryComposite> getAllComposites(Set<String> moduleNames) {
 		if(moduleNames != null && !moduleNames.isEmpty()) {
-			return HydCarbonMetadata.getInstance().getAllDicFieldComposite().stream()
+			Collection<DictionaryCompositeVO> allComposite = HydCarbonMetadata.getInstance().getAllDicFieldComposite();
+			return allComposite.stream()
 				.filter(composite->moduleNames.contains(composite.getModuleName()))
 				.map(DictionaryDaoImpl::toComposite)
 				.collect(Collectors.toList());
@@ -148,7 +149,7 @@ public class DictionaryDaoImpl implements DictionaryDao{
 		field.setCompositeId(source.getCompositeId());
 		field.setFullKey(source.getFullKey());
 		field.setFieldAccess(source.getOpt().getName());
-		field.setType(source.getType());
+		field.setType(source.getInputType());
 		field.setAbcType(source.getAbcType().getName());
 		field.setOptionGroupId(source.getOptGroupId());
 		field.setCasLevel(source.getCasLevel());
