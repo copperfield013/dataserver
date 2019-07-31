@@ -52,6 +52,7 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 		return criteriaMap;
 	}
 	
+	
 	@Override
 	public Map<Long, NormalCriteria> getCriteriasFromRequest(
 			MutablePropertyValues pvs, 
@@ -63,19 +64,8 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 				 AbstractListCriteria criteria = defaultCriteriaMap.get(criteriaId);
 				 if(criteria != null){
 					 NormalCriteria ncriteria = new NormalCriteria();
-					 //TODO: 需要将fieldKey转换成attributeName
-					 ncriteria.setFieldId(criteria.getFieldId());
-					 if(criteria instanceof TemplateListCriteria) {
-						 ncriteria.setCompositeId(((TemplateListCriteria)criteria).getCompositeId());
-					 }
-					 if(criteria instanceof TemplateStatCriteria) {
-						 ncriteria.setFilterOccasion(((TemplateStatCriteria) criteria).getFilterOccasion());
-					 }
-					 ncriteria.setCriteriaId(criteriaId);
-					 ncriteria.setFieldName(criteria.getFieldKey());
-					 ncriteria.setComparator(criteria.getComparator());
+					 bindNormalCriteria(criteria, ncriteria);
 					 ncriteria.setValue(FormatUtils.toString(pv.getValue()));
-					 ncriteria.setRelationLabel(criteria.getRelationLabel());
 					 map.put(criteriaId, ncriteria);
 				 }
 			 }
@@ -83,13 +73,9 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 		 defaultCriteriaMap.forEach((criteriaId, criteria)->{
 			 if(TextUtils.hasText(criteria.getDefaultValue()) && !map.containsKey(criteriaId)){
 				 NormalCriteria nCriteria = new NormalCriteria();
-				 //TODO: 需要将fieldKey转换成attributeName
+				 bindNormalCriteria(criteria, nCriteria);
 				 nCriteria.setCriteriaId(criteriaId);
-				 nCriteria.setFieldId(criteria.getFieldId());
-				 nCriteria.setFieldName(criteria.getFieldKey());
-				 nCriteria.setComparator(criteria.getComparator());
 				 nCriteria.setValue(criteria.getDefaultValue());
-				 nCriteria.setRelationLabel(criteria.getRelationLabel());
 				 map.put(criteriaId, nCriteria);
 			 }
 		 });;
@@ -98,6 +84,21 @@ public class ListCriteriaFactoryImpl implements ListCriteriaFactory{
 	
 	
 	
+	private void bindNormalCriteria(AbstractListCriteria criteria, NormalCriteria ncriteria) {
+		//TODO: 需要将fieldKey转换成attributeName
+		 ncriteria.setFieldId(criteria.getFieldId());
+		 if(criteria instanceof TemplateListCriteria) {
+			 ncriteria.setCompositeId(((TemplateListCriteria)criteria).getCompositeId());
+		 }
+		 if(criteria instanceof TemplateStatCriteria) {
+			 ncriteria.setFilterOccasion(((TemplateStatCriteria) criteria).getFilterOccasion());
+		 }
+		 ncriteria.setFieldName(criteria.getFieldKey());
+		 ncriteria.setComparator(criteria.getComparator());
+		 ncriteria.setRelationLabel(criteria.getRelationLabel());
+	}
+
+
 	@Override
 	public void appendCriterias(List<NormalCriteria> nCriterias, String moduleName, EntityConJunctionFactory conjunctionFactory){
 		nCriterias.forEach(nCriteria->{
