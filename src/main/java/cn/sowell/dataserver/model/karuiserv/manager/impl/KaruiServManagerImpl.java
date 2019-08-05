@@ -3,8 +3,10 @@ package cn.sowell.dataserver.model.karuiserv.manager.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.annotation.Resource;
@@ -172,6 +174,41 @@ public class KaruiServManagerImpl
 	public synchronized void clearCache() {
 		super.clearCache();
 		criteriasMap = null;
+	}
+	
+	@Override
+	public void reloadCache(long cachableId) {
+		reloadCriteriaCache(cachableId);
+		super.reloadCache(cachableId);
+	}
+
+	
+	Set<Long> reloadingCriteria = new HashSet<Long>();
+	/**
+	 * 重新加载某个轻服务的条件的缓存
+	 * @param ksId
+	 */
+	private void reloadCriteriaCache(long ksId) {
+		if(criteriasMap != null) {
+			if(!reloadingCriteria.contains(ksId)) {
+				synchronized (criteriasMap) {
+					if(!reloadingCriteria.contains(ksId)) {
+						try {
+							reloadingCriteria.add(ksId);
+							List<KaruiServCriteria> criterias = getDao().getCriteriasByKsId(ksId);
+							CollectionUtils.removesMapItem(criteriasMap, (id, c)->c.getKaruiServId() != null && c.getKaruiServId() == ksId);
+							for (KaruiServCriteria criteria : criterias) {
+								criteriasMap.put(criteria.getId(), criteria);
+							}
+						} catch (Exception e) {
+							throw e;
+						}finally {
+							reloadingCriteria.remove(ksId);
+						}
+					}
+				}
+			}
+		}
 	}
 
 

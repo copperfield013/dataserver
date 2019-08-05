@@ -59,5 +59,4 @@ public class KaruiServDaoImpl extends AbsctractCachableDao<KaruiServ> implements
 			.setLong("id", ksId)
 			.executeUpdate();
 	}
-	
 }

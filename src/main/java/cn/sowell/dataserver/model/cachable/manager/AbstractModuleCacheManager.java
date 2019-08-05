@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.springframework.transaction.interceptor.TransactionAspectSupport;
@@ -39,7 +40,7 @@ public abstract class AbstractModuleCacheManager<T extends Cachable, D extends C
 		synchronized (this) {
 			if(cacheMap == null) {
 				ModuleTemplateReferDataGenerator referDataGenerator = metaSupportor.getTemplateReferDataGenetator();
-				cacheMap = new HashMap<>();
+				cacheMap = new ConcurrentHashMap<Long, T>();
 				List<T> latests = dao.queryAll();
 				Map<String, List<T>> moduleLatestsMap = CollectionUtils.toListMap(latests, Cachable::getModule);
 				Iterator<Entry<String, List<T>>> itr = moduleLatestsMap.entrySet().iterator();
